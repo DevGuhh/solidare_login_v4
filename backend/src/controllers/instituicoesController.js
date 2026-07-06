@@ -9,7 +9,7 @@ import { da } from "zod/v4/locales"
 import { error } from "node:console"
 import { Prisma } from "@prisma/client"
 
-const register = async (req, res) => {
+const cadastrarInstituicao = async (req, res) => {
     try {
         const data = criarInstituicaoSchema.parse(req.body) 
 
@@ -203,4 +203,13 @@ const atualizaStatus = async (req, res) => {
     }
 }
 
-export {register, listarInstituicoes, detalheDaInstituicao, atualizarDadosInstituicao, removeInstituicao, atualizaStatus}
+// GET `/instituicoes/:id/beneficiarios`
+
+const listarBeneficiariosInstituicao = async (req, res) => {
+    const id = Number(req.params.id)
+    if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({ erro: 'ID inválido. Use um inteiro positivo' })
+    }
+}
+
+export {cadastrarInstituicao, listarInstituicoes, detalheDaInstituicao, atualizarDadosInstituicao, removeInstituicao, atualizaStatus}

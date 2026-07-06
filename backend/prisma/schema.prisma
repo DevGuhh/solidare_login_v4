@@ -23,6 +23,13 @@ enum StatusInstituicao {
   PENDENTE
 }
 
+enum TipoBeneficio {
+  CESTA
+  GRANEL
+  AMBOS
+}
+
+
 model Usuario {
   id            Int         @id @default(autoincrement())
   nome          String
@@ -56,6 +63,45 @@ model InstituicaoParceira {
   atualizadoEm     DateTime          @updatedAt
 
   usuario          Usuario?
+  beneficiarios    Beneficiario[]
 
   @@map("instituicoes_parceiras")
+}
+
+model Beneficiario {
+  id                     Int            @id @default(autoincrement())
+  nomeCompleto           String
+  cpf                    String         @unique
+  dataNascimento         DateTime
+
+  // Endereço
+  logradouro             String
+  numero                 String
+  complemento            String?
+  cep                    String?
+  regiao                 String
+  cidade                 String
+  uf                     String
+
+  // Contato
+  telefonePrincipal      String
+  telefoneSecundario     String?
+  email                  String?
+
+  instituicaoId          Int
+  instituicao            InstituicaoParceira @relation(fields: [instituicaoId], references: [id])
+
+  tipoBeneficio          TipoBeneficio  @default(CESTA)
+  situacaoSocioeconomica String?
+
+  dataCadastro           DateTime       @default(now())
+
+  observacoes            String?
+  ativo                  Boolean        @default(true)
+
+  criadoEm               DateTime       @default(now())
+  atualizadoEm           DateTime       @updatedAt
+
+  @@index([instituicaoId])
+  @@map("beneficiarios")
 }
