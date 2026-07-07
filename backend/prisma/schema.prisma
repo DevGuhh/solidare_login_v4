@@ -64,7 +64,6 @@ model InstituicaoParceira {
 
   usuario          Usuario?
   beneficiarios    Beneficiario[]
-  doacoes          Doacao[]
 
   @@map("instituicoes_parceiras")
 }
@@ -100,35 +99,10 @@ model Beneficiario {
   observacoes            String?
   ativo                  Boolean        @default(true)
 
-  doacoes                Doacao[]
-
   criadoEm               DateTime       @default(now())
   atualizadoEm           DateTime       @updatedAt
   deletedAt              DateTime?
 
   @@index([instituicaoId])
   @@map("beneficiarios")
-}
-
-model Doacao {
-  id                Int            @id @default(autoincrement())
-
-  dataDoacao        DateTime       @default(now())
-
-  beneficiarioId    Int
-  beneficiario      Beneficiario   @relation(fields: [beneficiarioId], references: [id])
-
-  instituicaoId     Int
-  instituicao       InstituicaoParceira @relation(fields: [instituicaoId], references: [id])
-
-  tipoDoacao        TipoBeneficio  @default(CESTA)
-  
-  observacoes       String?
-
-  criadoEm          DateTime       @default(now())
-
-  @@index([dataDoacao])
-  @@index([beneficiarioId])
-  @@index([instituicaoId])
-  @@map("doacoes")
 }
