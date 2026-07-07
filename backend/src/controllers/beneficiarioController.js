@@ -124,10 +124,13 @@ const listarBeneficiarios = async (req, res) => {
         return res.status(200).json(beneficiario)
     } catch (error) {
 
-        // Caso ocorra algum erro durante a consulta, retorna um erro interno do servidor.
+        console.error("ERRO AO LISTAR BENEFICIÁRIOS:");
+        console.error(error);
+    
         return res.status(500).json({
             error: 'Erro ao listar os beneficiários.'
-        })
+        });
+    
     }
 }
 
