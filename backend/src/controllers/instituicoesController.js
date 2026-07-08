@@ -23,9 +23,11 @@ const cadastrarInstituicao = async (req, res) => {
             })
         }
 
-        const senhaGerada = createPassword()
+       // const senhaGerada = createPassword()
+       // const senhaHash = await bcrypt.hash(senhaGerada, 10)
 
-        const senhaHash = await bcrypt.hash(senhaGerada, 10)
+        const senhaPadrao = "senac123"
+        const senhaHash = await bcrypt.hash(senhaPadrao, 10)
 
         const novoUsuario = await prisma.usuario.create({
             data: {
@@ -53,7 +55,7 @@ const cadastrarInstituicao = async (req, res) => {
         res.status(201).json({
             mensagem: "Instituição cadastrada com sucesso!",
             email: novoUsuario.email,
-            senhaProvisoria: senhaGerada
+            senhaProvisoria: senhaPadrao
         })
     } catch (error) {
         if (error instanceof ZodError) {
@@ -76,7 +78,11 @@ const cadastrarInstituicao = async (req, res) => {
 
 const listarInstituicoes = async (req, res) => {
     try {
-        const instituicoes = await prisma.instituicaoParceira.findMany()
+        const instituicoes = await prisma.instituicaoParceira.findMany({
+            where: {
+                deletedAt: null
+            }
+        })
         return res.status(200).json(instituicoes)
     } catch (error) {
         return res.status(500).json({ error: 'Erro ao listar as instituições'})
@@ -93,7 +99,7 @@ const detalheDaInstituicao = async (req, res) => {
     }
 
     try {
-        const instituicao = await prisma.instituicaoParceira.findUnique({ where: {id}})
+        const instituicao = await prisma.instituicaoParceira.findFirst({ where: {id}})
 
         if (!instituicao) {
             return res.status(404).json({ error: 'Instituição não encontrada'})
@@ -143,14 +149,36 @@ const atualizarDadosInstituicao = async (req, res) => {
 const removeInstituicao = async (req, res) => {
     const id = Number(req.params.id) 
     if (!Number.isInteger(id) || id <= 0) {
-        return res.status(400).json({ error: 'ID inválido. Use um inteiro positivo'})
+        return res.status(400).json({ error: 'ID inválido'})
     }
 
     try {
-        await prisma.instituicaoParceira.delete({ where: { id }})
-        return res.status(204).json({
-            mensagem: "Instituição deletada com sucesso!"
+        const instituicao = await prisma.instituicaoParceira.findFirst({
+            where: {
+                id,
+                deletedAt: null
+            }
         })
+
+        if (!instituicao) {
+            return res.status(404).json({
+                error: "Instituição não encontrada."
+            })
+        }
+
+        await prisma.instituicaoParceira.update({
+            where: {
+                id
+            },
+            data: {
+                deletedAt: new Date()
+            }
+        })
+
+        return res.status(204).json({
+            mensagem: "Instituição deletada com sucesso"
+        })
+
     } catch (error) {
         if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
             return res.status(404).json({ error: 'Instituição não encontrada.'})
@@ -180,8 +208,11 @@ const atualizaStatus = async (req, res) => {
             })
         }
 
-        const instituicaoParceira = await prisma.instituicaoParceira.findUnique({
-            where: { id }
+        const instituicaoParceira = await prisma.instituicaoParceira.findFirst({
+            where: { 
+                id,
+                deletedAt: null
+             }
         })
         if (!instituicaoParceira) {
             return res.status(404).json({ erro: 'Instituição não encontrada' })

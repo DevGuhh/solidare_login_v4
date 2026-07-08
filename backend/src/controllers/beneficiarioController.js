@@ -78,7 +78,6 @@ const cadastrarBeneficiario = async (req, res) => {
                 // instituicaoId não veio do usuário.
                 // Ele foi colocado em req.user por um middleware de autenticação anteriormente. Dessa forma o beneficiário ficará associado à instituição do usuário logado.
                 instituicaoId: req.user.instituicaoId,
-                deletedAt: null
             }
         })
 
@@ -345,10 +344,10 @@ const removeBeneficiario = async (req, res) => {
 
     try {
         const beneficiario = await prisma.beneficiario.findFirst({
-        where: {
-            id,
-            instituicaoId: req.user.instituicaoId,
-            deletedAt: null
+            where: {
+                id,
+                instituicaoId: req.user.instituicaoId,
+                deletedAt: null
         }
         })
 
