@@ -61,11 +61,21 @@ async function carregarBeneficiarios() {
                 <td>${beneficiario.tipoBeneficio}</td>
 
                 <td>
-                    ${
-                        beneficiario.ativo
-                            ? '<span class="status ativo">ATIVO</span>'
-                            : '<span class="status inativo">INATIVO</span>'
-                    }
+
+                    <button
+                        class="btnStatusBeneficiario"
+                        data-id="${beneficiario.id}"
+                        data-ativo="${beneficiario.ativo}"
+                    >
+
+                        ${
+                            beneficiario.ativo
+                                ? "🟢 ATIVO"
+                                : "🔴 INATIVO"
+                        }
+
+                    </button>
+
                 </td>
 
                 <td>
@@ -98,17 +108,150 @@ document
     .getElementById("btnAtualizarBeneficiarios")
     .addEventListener("click", carregarBeneficiarios);
 
-document.addEventListener("click", async (event) => {
+    document.addEventListener("click", async (event) => {
 
-    if (!event.target.classList.contains("btnEditar")) {
-        return;
-    }
-
-    const id = event.target.dataset.id;
-
-    editarBeneficiario(id);
-
-});
+        // ===========================================
+        // BOTÃO EDITAR
+        // ===========================================
+    
+        const botaoEditar = event.target.closest(".btnEditar");
+    
+        if (botaoEditar) {
+    
+            const id = botaoEditar.dataset.id;
+    
+            editarBeneficiario(id);
+    
+            return;
+    
+        }
+    
+        // ===========================================
+        // BOTÃO EXCLUIR
+        // ===========================================
+    
+        const botaoExcluir = event.target.closest(".btnExcluir");
+    
+        if (botaoExcluir) {
+    
+            const id = botaoExcluir.dataset.id;
+    
+            const confirmar = confirm(
+                "Deseja realmente excluir este beneficiário?"
+            );
+    
+            if (!confirmar) {
+                return;
+            }
+    
+            const token = localStorage.getItem("token");
+    
+            try {
+    
+                const resposta = await fetch(`${API_URL}/beneficiarios/${id}`, {
+    
+                    method: "DELETE",
+    
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+    
+                });
+    
+                if (!resposta.ok) {
+    
+                    const erro = await resposta.json();
+    
+                    alert(erro.error);
+    
+                    return;
+    
+                }
+    
+                alert("Beneficiário excluído com sucesso!");
+    
+                carregarBeneficiarios();
+    
+            } catch (erro) {
+    
+                console.error(erro);
+    
+                alert("Erro ao excluir beneficiário.");
+    
+            }
+    
+            return;
+    
+        }
+    
+        // ===========================================
+        // BOTÃO STATUS
+        // ===========================================
+    
+        const botaoStatus = event.target.closest(".btnStatusBeneficiario");
+    
+        if (botaoStatus) {
+    
+            const id = botaoStatus.dataset.id;
+    
+            const ativoAtual = botaoStatus.dataset.ativo === "true";
+    
+            const novoStatus = !ativoAtual;
+    
+            const token = localStorage.getItem("token");
+    
+            try {
+    
+                const resposta = await fetch(
+                    `${API_URL}/beneficiarios/${id}`,
+                    {
+    
+                        method: "PATCH",
+    
+                        headers: {
+    
+                            "Content-Type": "application/json",
+    
+                            Authorization: `Bearer ${token}`
+    
+                        },
+    
+                        body: JSON.stringify({
+    
+                            ativo: novoStatus
+    
+                        })
+    
+                    }
+                );
+    
+                const resultado = await resposta.json();
+    
+                if (!resposta.ok) {
+    
+                    alert(resultado.error || resultado.erro);
+    
+                    return;
+    
+                }
+    
+                alert("Status atualizado com sucesso!");
+    
+                carregarBeneficiarios();
+    
+            } catch (erro) {
+    
+                console.error(erro);
+    
+                alert("Erro ao atualizar o status.");
+    
+            }
+    
+            return;
+    
+        }
+    
+    });
 
 async function editarBeneficiario(id) {
 

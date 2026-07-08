@@ -5,7 +5,7 @@ import { prisma } from "../config/db.js"
 
 // Importa o tipo de erro do Zod. 
 // O Zod é uma biblioteca que verifica se os dados enviados pelo usuário estão corretos antes de salvar no banco.
-import { date, ZodError } from "zod"
+import { ZodError } from "zod"
 
 // Importa o esquema (schema) de validação. 
 // Esse arquivo contém todas as regras que um beneficiário deve seguir. 
@@ -14,8 +14,6 @@ import { date, ZodError } from "zod"
 // - CPF é obrigatório. 
 // - CPF precisa estar no formato correto.
 import {criarBeneficiarioSchema} from "../validators/beneficiarioValidator.js"
-import { be } from "zod/v4/locales"
-import { error } from "node:console"
 
 // Cria a função responsável por cadastrar um beneficiário.
 // "async" significa que essa função fará operações demoradas, como consultar ou salvar dados no banco.
@@ -115,16 +113,34 @@ const cadastrarBeneficiario = async (req, res) => {
 // Função responsável por listar os beneficiários da instituição do usuário autenticado.
 const listarBeneficiarios = async (req, res) => {
     try {
-
-        const where = {
-            deletedAt: null
-        };
-
-        // Apenas usuários que NÃO são ADMIN são filtrados pela instituição
-        if (req.user.role !== "ADMIN") {
+        // Monta o filtro dinamicamente, dependendo de quem está logado
+        const where = { deletedAt: null };
+ 
+        if (req.user.role === 'INSTITUICAO') {
+            // Instituição NUNCA escolhe o filtro — é travado no próprio id dela, vindo do token
             where.instituicaoId = req.user.instituicaoId;
+ 
+        } else if (req.user.role === 'ADMIN') {
+            // Admin pode opcionalmente filtrar por uma instituição específica via query string
+            // Ex: GET /beneficiarios?instituicaoId=5
+            if (req.query.instituicaoId !== undefined) {
+                const instituicaoId = Number(req.query.instituicaoId);
+ 
+                if (!Number.isInteger(instituicaoId) || instituicaoId <= 0) {
+                    return res.status(400).json({
+                        error: 'O parâmetro instituicaoId deve ser um número inteiro válido.'
+                    });
+                }
+ 
+                where.instituicaoId = instituicaoId;
+            }
+            // se não passar nada, "where" fica só com deletedAt: null → traz de todas as instituições
+ 
+        } else {
+            // Papel desconhecido/não previsto: nunca deixa passar sem filtro (default-deny)
+            return res.status(403).json({ error: 'Acesso não autorizado.' });
         }
-
+ 
         const beneficiarios = await prisma.beneficiario.findMany({
             where,
             include: {
@@ -136,18 +152,15 @@ const listarBeneficiarios = async (req, res) => {
                 }
             },
             orderBy: {
-                nomeCompleto: "asc"
+                nomeCompleto: 'asc'
             }
         });
-
+ 
         return res.status(200).json(beneficiarios);
-
+ 
     } catch (error) {
-        console.error("ERRO AO LISTAR BENEFICIÁRIOS:");
-        console.error(error);
-
         return res.status(500).json({
-            error: "Erro ao listar os beneficiários."
+            error: 'Erro ao listar os beneficiários.'
         });
     }
 };
@@ -249,60 +262,68 @@ const detalheDoBeneficiario = async (req, res) => {
 const atualizarBeneficiarioSchema = criarBeneficiarioSchema.partial()
 
 const atualizarDadosBeneficiario = async (req, res) => {
-    const id = Number(req.params.id)
+
+    const id = Number(req.params.id);
 
     if (!Number.isInteger(id) || id <= 0) {
         return res.status(400).json({
-            error: 'ID inválido'
-        })
+            error: "ID inválido"
+        });
     }
-    
-    
 
     try {
-        const beneficiario = await prisma.beneficiario.findFirst({
-        where: {
+
+        const where = {
             id,
-            instituicaoId: req.user.instituicaoId,
             deletedAt: null
+        };
+
+        if (req.user.role !== "ADMIN") {
+            where.instituicaoId = req.user.instituicaoId;
         }
-        })
+
+        const beneficiario = await prisma.beneficiario.findFirst({
+            where
+        });
 
         if (!beneficiario) {
             return res.status(404).json({
                 error: "Beneficiário não encontrado."
-            })
+            });
         }
 
-        const data = atualizarBeneficiarioSchema.parse(req.body)
+        const data = atualizarBeneficiarioSchema.parse(req.body);
+
         const update = await prisma.beneficiario.update({
             where: {
                 id
             },
             data
-        }
-        )
-        return res.status(200).json(update)
-        } catch (error) {
+        });
+
+        return res.status(200).json(update);
+
+    } catch (error) {
+
         if (error instanceof ZodError) {
             return res.status(400).json({
                 error: "Payload inválido",
                 issues: error.issues.map((e) => ({
-                    path: e.path.join('.'),
-                     message: e.message,
+                    path: e.path.join("."),
+                    message: e.message,
                 }))
-            })
+            });
         }
-        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-            return res.status(404).json({ error: 'Beneficiário não encontrado.'})
-        }
-        
-        console.error(`PUT /beneficiarios/${req.params.id} error:`, error)
+
+        console.error(`PUT /beneficiarios/${req.params.id} error:`, error);
+
         return res.status(500).json({
-            error: 'Erro interno ao atualizar beneficiário.'
-        })
+            error: "Erro interno ao atualizar beneficiário."
+        });
+
     }
-}
+
+};
 
 const atualizarStatus = async (req, res) => {
     const id = Number(req.params.id)
@@ -353,6 +374,7 @@ const atualizarStatus = async (req, res) => {
 
 }
 
+//Remover Beneficiario
 const removeBeneficiario = async (req, res) => {
     const id = Number(req.params.id) 
     if (!Number.isInteger(id) || id <= 0) {
@@ -360,13 +382,18 @@ const removeBeneficiario = async (req, res) => {
     }
 
     try {
-        const beneficiario = await prisma.beneficiario.findFirst({
-            where: {
-                id,
-                instituicaoId: req.user.instituicaoId,
-                deletedAt: null
+        const where = {
+            id,
+            deletedAt: null
+        };
+        
+        if (req.user.role !== "ADMIN") {
+            where.instituicaoId = req.user.instituicaoId;
         }
-        })
+        
+        const beneficiario = await prisma.beneficiario.findFirst({
+            where
+        });
 
         if (!beneficiario) {
             return res.status(404).json({
