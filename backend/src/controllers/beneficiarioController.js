@@ -1,4 +1,3 @@
-console.log(Object.keys(prisma));
 // Importa a instância do Prisma. 
 // O Prisma é a ferramenta responsável por conversar com o banco de dados. 
 // // Sempre que precisarmos buscar, criar, editar ou excluir informações, usaremos o prisma.
@@ -62,25 +61,32 @@ const cadastrarBeneficiario = async (req, res) => {
             })
         }
 
-        // Caso nenhum beneficiário tenha sido encontrado, podemos criar um novo registro no banco.
+        // Define a instituição que será utilizada
+        let instituicaoId;
+
+        // Usuário ADMIN escolhe a instituição no formulário
+        if (req.user.role === "ADMIN") {
+
+            instituicaoId = data.instituicaoId;
+
+        } else {
+
+            // Usuário da instituição utiliza a própria instituição
+            instituicaoId = req.user.instituicaoId;
+
+        }
+
         const novoBeneficiario = await prisma.beneficiario.create({
 
-            // data representa os dados que serão salvos.
             data: {
 
-                // O operador ... copia todas as propriedades 
-                // existentes dentro do objeto "data". 
-                // ...data equivale a escrever: 
-                // nome: "Maria" 
-                // cpf: "12345678900" 
-                ...data, 
+                ...data,
 
-                // Acrescenta mais um campo ao objeto. 
-                // instituicaoId não veio do usuário.
-                // Ele foi colocado em req.user por um middleware de autenticação anteriormente. Dessa forma o beneficiário ficará associado à instituição do usuário logado.
-                instituicaoId: req.user.instituicaoId,
+                instituicaoId
+
             }
-        })
+
+        });
 
         res.status(201).json({
             mensagem: "Beneficiário cadastrado com sucesso!",
@@ -110,29 +116,41 @@ const cadastrarBeneficiario = async (req, res) => {
 const listarBeneficiarios = async (req, res) => {
     try {
 
-        // Busca todos os beneficiários no banco que pertencem à mesma instituição do usuário logado.
-        const beneficiario = await prisma.beneficiario.findMany({
-
-            // Filtro da consulta.
-            // Retorna apenas os registros cujo instituicaoId seja igual ao da instituição do usuário.
-            where: {
-            instituicaoId: req.user.instituicaoId,
+        const where = {
             deletedAt: null
-        },
-    })
-        // Retorna a lista de beneficiários.
-        return res.status(200).json(beneficiario)
-    } catch (error) {
+        };
 
+        // Apenas usuários que NÃO são ADMIN são filtrados pela instituição
+        if (req.user.role !== "ADMIN") {
+            where.instituicaoId = req.user.instituicaoId;
+        }
+
+        const beneficiarios = await prisma.beneficiario.findMany({
+            where,
+            include: {
+                instituicao: {
+                    select: {
+                        id: true,
+                        nome: true
+                    }
+                }
+            },
+            orderBy: {
+                nomeCompleto: "asc"
+            }
+        });
+
+        return res.status(200).json(beneficiarios);
+
+    } catch (error) {
         console.error("ERRO AO LISTAR BENEFICIÁRIOS:");
         console.error(error);
-    
+
         return res.status(500).json({
-            error: 'Erro ao listar os beneficiários.'
+            error: "Erro ao listar os beneficiários."
         });
-    
     }
-}
+};
 
 // Função responsável por buscar os detalhes de um beneficiário.
 // "async" significa que ela pode esperar operações demoradas,
@@ -185,24 +203,19 @@ const detalheDoBeneficiario = async (req, res) => {
 
         // findFirst()
         // procura o primeiro registro que atender às condições.
-        const beneficiario = await prisma.beneficiario.findFirst({
-            // where significa:
-            // "Procure apenas registros que satisfaçam estas condições."
-            where: {
-                // Primeira condição:
-                // o ID precisa ser exatamente igual ao informado na URL.
-                id,
+        const where = {
+            id,
+            deletedAt: null
+        };
 
-                // Segunda condição:
-                // o beneficiário precisa pertencer à mesma instituição do usuário que está autenticado.
-                //
-                // req.user contém informações do usuário logado, normalmente adicionadas por um middleware de autenticação.
-                //
-                // Isso impede que um usuário veja dados de outra instituição.
-                instituicaoId: req.user.instituicaoId,
-                deletedAt: null
-            }
-        })
+        // Apenas usuários que NÃO são ADMIN ficam limitados à instituição
+        if (req.user.role !== "ADMIN") {
+            where.instituicaoId = req.user.instituicaoId;
+        }
+
+        const beneficiario = await prisma.beneficiario.findFirst({
+            where
+        });
         // Se nenhum beneficiário atender às condições acima,
         // o Prisma retorna null.
         //
@@ -382,5 +395,6 @@ const removeBeneficiario = async (req, res) => {
                 })
     }
 }
+
 
 export {cadastrarBeneficiario, listarBeneficiarios, detalheDoBeneficiario, atualizarDadosBeneficiario, atualizarStatus, removeBeneficiario}

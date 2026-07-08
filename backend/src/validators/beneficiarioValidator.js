@@ -79,4 +79,18 @@ export const criarBeneficiarioSchema = z.object({
 
   ativo: z
     .boolean()
+    .optional(),
+
+  instituicaoId: z
+    .number()
+    .int()
+    .positive()
+    .optional(),
+
+  tipoBeneficio: z.enum([
+    "CESTA",
+    "GRANEL",
+    "AMBOS"
+]),
+
 });
