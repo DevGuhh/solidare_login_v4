@@ -1,3 +1,4 @@
+console.log(Object.keys(prisma));
 // Importa a instância do Prisma. 
 // O Prisma é a ferramenta responsável por conversar com o banco de dados. 
 // // Sempre que precisarmos buscar, criar, editar ou excluir informações, usaremos o prisma.
