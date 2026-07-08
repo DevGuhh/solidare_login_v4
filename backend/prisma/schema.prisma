@@ -61,6 +61,7 @@ model InstituicaoParceira {
 
   criadoEm         DateTime          @default(now())
   atualizadoEm     DateTime          @updatedAt
+  deletedAt        DateTime?
 
   usuario          Usuario?
   beneficiarios    Beneficiario[]
