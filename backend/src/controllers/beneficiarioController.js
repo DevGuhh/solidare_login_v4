@@ -333,13 +333,18 @@ const atualizarStatus = async (req, res) => {
 
     try {
 
-        const beneficiario = await prisma.beneficiario.findFirst({
-        where: {
+        const where = {
             id,
-            instituicaoId: req.user.instituicaoId,
             deletedAt: null
+        };
+
+        if (req.user.role !== "ADMIN") {
+            where.instituicaoId = req.user.instituicaoId;
         }
-        })
+
+        const beneficiario = await prisma.beneficiario.findFirst({
+            where
+        });
 
         if (!beneficiario) {
             return res.status(404).json({
