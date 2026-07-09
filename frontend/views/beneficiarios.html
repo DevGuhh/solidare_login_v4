@@ -9,13 +9,49 @@
 <body>
     <h1>Beneficiários</h1>
 
-<button id="btnNovoBeneficiario">
-    Novo Beneficiário
-</button>
+<div class="toolbar">
 
-<button id="btnAtualizarBeneficiarios">
-    Atualizar Lista
-</button>
+    <div class="toolbar-left">
+
+        <div class="search-box">
+
+            <i class="fa-solid fa-magnifying-glass"></i>
+
+            <input
+                type="text"
+                id="pesquisaBeneficiario"
+                placeholder="Pesquisar por nome, CPF ou benefício..."
+            >
+
+        </div>
+
+    </div>
+
+    <div class="toolbar-right">
+
+        <button
+            id="btnAtualizarBeneficiarios"
+            class="btn btn-info">
+
+            <i class="fa-solid fa-rotate"></i>
+
+            Atualizar
+
+        </button>
+
+        <button
+            id="btnNovoBeneficiario"
+            class="btn btn-primary">
+
+            <i class="fa-solid fa-plus"></i>
+
+            Novo Beneficiário
+
+        </button>
+
+    </div>
+
+</div>
 
 <br><br>
 

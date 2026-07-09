@@ -22,6 +22,10 @@ async function carregarPagina(pagina) {
             import("../js/dashboard.js");
         }
 
+        if (pagina === "relatorios.html") {
+            import("../js/relatorios/relatorios.js");
+        }
+
     } catch (erro) {
 
         conteudo.innerHTML = `

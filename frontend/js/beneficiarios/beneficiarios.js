@@ -24,10 +24,13 @@ import {
     alterarTitulo
 } from "./beneficiariosModal.js";
 
+import { filtrarBeneficiarios } from "./beneficiariosPesquisa.js";
+
 console.log("beneficiarios.js carregado");
 
 let usuarioLogado = null;
 let beneficiarioEditando = null;
+let listaBeneficiarios = [];
 
 const API_URL = "http://localhost:3000";
 
@@ -40,7 +43,9 @@ const elementos = {
     selectInstituicao: document.getElementById("instituicaoId"),
     btnNovo: document.getElementById("btnNovoBeneficiario"),
     btnAtualizar: document.getElementById("btnAtualizarBeneficiarios"),
-    btnFecharModal: document.getElementById("btnFecharModal")
+    btnFecharModal: document.getElementById("btnFecharModal"),
+    pesquisa: document.getElementById("pesquisaBeneficiario")
+
 };
 
 const campos = {
@@ -109,7 +114,9 @@ async function carregarBeneficiarios() {
             return;
         }
 
-        renderizarTabela(elementos.tabela, dados);
+        listaBeneficiarios = dados;
+
+        renderizarTabela(elementos.tabela, listaBeneficiarios);
 
     } catch (erro) {
 
@@ -469,6 +476,13 @@ function configurarEventos() {
         carregarBeneficiarios
     );
 
+    document
+    .getElementById("pesquisaBeneficiario")
+    .addEventListener(
+        "input",
+        pesquisarBeneficiario
+    );
+
     elementos.btnNovo.addEventListener(
         "click",
         abrirModalNovoBeneficiario
@@ -484,10 +498,30 @@ function configurarEventos() {
         salvarBeneficiario
     );
 
+    const campoPesquisa = document.getElementById("pesquisaBeneficiario");
+
+    if (campoPesquisa) {
+
+        campoPesquisa.addEventListener(
+            "input",
+            pesquisarBeneficiario
+        );
+
+    }
+
     campos.cep.addEventListener(
         "blur",
         preencherEnderecoPorCEP
     );
+
+    if (elementos.pesquisa) {
+
+        elementos.pesquisa.addEventListener(
+            "input",
+            pesquisarBeneficiario
+        );
+
+    }
 
     document.addEventListener("click", async (event) => {
 
@@ -526,6 +560,26 @@ function configurarMascaras() {
     aplicarMascaraCEP(campos.cep);
     aplicarMascaraTelefone(campos.telefonePrincipal);
     aplicarMascaraTelefone(campos.telefoneSecundario);
+
+}
+
+// =====================================================
+// PESQUISA
+// =====================================================
+
+function pesquisarBeneficiario() {
+
+    const texto = elementos.pesquisa.value;
+
+    const resultado = filtrarBeneficiarios(
+        listaBeneficiarios,
+        texto
+    );
+
+    renderizarTabela(
+        elementos.tabela,
+        resultado
+    );
 
 }
 

@@ -1,353 +1,350 @@
-console.log("instituicoes.js VERSÃO NOVA");
+import {
+    listarInstituicoes,
+    buscarInstituicao,
+    cadastrarInstituicaoAPI,
+    editarInstituicaoAPI,
+    excluirInstituicaoAPI,
+    alterarStatusInstituicaoAPI
+} from "./api/instituicoesApi.js";
 
-const API_URL = "http://localhost:3000";
+import { renderizarTabelaInstituicoes } from "./instituicoes/instituicoesTabela.js";
+
+import {
+    abrirModal,
+    fecharModal,
+    limparFormulario,
+    alterarTitulo
+} from "./instituicoes/instituicoesModal.js";
+
+import { filtrarInstituicoes } from "./instituicoes/instituicoesPesquisa.js";
+
+console.log("instituicoes.js carregado");
 
 let instituicaoEditando = null;
+let listaInstituicoes = [];
+
+const elementos = {
+    tabela: document.getElementById("tabelaInstituicoes"),
+    modal: document.getElementById("modalInstituicao"),
+    formulario: document.getElementById("formInstituicao"),
+    tituloModal: document.getElementById("tituloModalInstituicao"),
+    btnNova: document.getElementById("btnNovaInstituicao"),
+    btnAtualizar: document.getElementById("btnAtualizar"),
+    btnFecharModal: document.getElementById("btnFecharModal"),
+    pesquisa: document.getElementById("pesquisaInstituicao")
+};
+
+const campos = {
+    nome: document.getElementById("nome"),
+    responsavel: document.getElementById("responsavel"),
+    email: document.getElementById("email"),
+    telefone: document.getElementById("telefone"),
+    tipo: document.getElementById("tipo"),
+    endereco: document.getElementById("endereco"),
+    cidade: document.getElementById("cidade")
+};
 
 async function carregarInstituicoes() {
 
-    const token = localStorage.getItem("token");
-
-    console.log("TOKEN:", token);
-
     try {
 
-        const resposta = await fetch(API_URL + "/instituicoes", {
-            method: "GET",
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-
-        console.log("Status:", resposta.status);
+        const resposta = await listarInstituicoes();
 
         const dados = await resposta.json();
 
-        console.log("Resposta da API:", dados);
-
         if (!resposta.ok) {
-            alert(dados.error);
+            alert(dados.error || "Erro ao carregar instituições.");
             return;
         }
 
-        const tabela = document.getElementById("tabelaInstituicoes");
-        tabela.innerHTML = "";
-
-        dados.forEach(instituicao => {
-
-            tabela.innerHTML += `
-                <tr>
-                    <td>${instituicao.id}</td>
-                    <td>${instituicao.nome}</td>
-                    <td>${instituicao.responsavel}</td>
-                    <td>${instituicao.email}</td>
-                    <td>${instituicao.cidade}</td>
-                    <td>
-
-                        <button
-                            class="btnStatus"
-                            data-id="${instituicao.id}"
-                            data-status="${instituicao.statusOk}"
-                        >
-                            ${instituicao.statusOk}
-                        </button>
-
-                    </td>
-
-                    <td>
-
-                        <button class="btnEditar" data-id="${instituicao.id}">
-                            ✏️ Editar
-                        </button>
-
-                        <button class="btnExcluir" data-id="${instituicao.id}">
-                            🗑️ Excluir
-                        </button>
-
-                    </td>
-                </tr>
-            `;
-
-        });
-
-        document.querySelectorAll(".btnEditar").forEach(botao => {
-
-            botao.addEventListener("click", () => {
-
-                const id = botao.dataset.id;
-
-                console.log("Cliquei em editar:", id);
-
-                editarInstituicao(id);
-
-            });
-
-        });
-
-        document.querySelectorAll(".btnExcluir").forEach(botao => {
-
-            botao.addEventListener("click", async () => {
-
-                const id = botao.dataset.id;
-
-                const confirmar = confirm("Deseja realmente excluir esta instituição?");
-
-                if (!confirmar) {
-                    return;
-                }
-
-                const token = localStorage.getItem("token");
-
-                try {
-
-                    const resposta = await fetch(API_URL + "/instituicoes/" + id, {
-
-                        method: "DELETE",
-
-                        headers: {
-                            Authorization: `Bearer ${token}`
-                        }
-
-                    });
-
-                    if (!resposta.ok) {
-
-                        const erro = await resposta.json();
-
-                        alert(erro.error);
-
-                        return;
-
-                    }
-
-                    alert("Instituição excluída com sucesso!");
-
-                    carregarInstituicoes();
-
-                } catch (erro) {
-
-                    console.error(erro);
-
-                    alert("Erro ao excluir a instituição.");
-
-                }
-
-            });
-
-        });
-
-        document.querySelectorAll(".btnStatus").forEach(botao => {
-
-            botao.addEventListener("click", async () => {
-
-                const id = botao.dataset.id;
-                const statusAtual = botao.dataset.status;
-
-                const novoStatus = statusAtual === "OK"
-                    ? "PENDENTE"
-                    : "OK";
-
-                const token = localStorage.getItem("token");
-
-                try {
-
-                    const resposta = await fetch(API_URL + "/instituicoes/" + id + "/status_ok", {
-
-                        method: "PATCH",
-
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`
-                        },
-
-                        body: JSON.stringify({
-                            statusOk: novoStatus
-                        })
-
-                    });
-
-                    const resultado = await resposta.json();
-
-                    if (!resposta.ok) {
-
-                        alert(resultado.error || resultado.erro);
-
-                        return;
-
-                    }
-
-                    alert("Status atualizado com sucesso!");
-
-                    carregarInstituicoes();
-
-                } catch (erro) {
-
-                    console.error(erro);
-
-                    alert("Erro ao atualizar o status.");
-
-                }
-
-            });
-
-        });
+        listaInstituicoes = dados;
+
+        renderizarTabelaInstituicoes(
+            elementos.tabela,
+            listaInstituicoes
+        );
 
     } catch (erro) {
 
-        console.error("Erro:", erro);
+        console.error("Erro ao carregar instituições:", erro);
+
+        alert("Erro ao carregar instituições.");
 
     }
 
 }
 
-document
-    .getElementById("btnAtualizar")
-    .addEventListener("click", carregarInstituicoes);
+function montarDadosFormulario() {
 
-// Abrir o modal
-document
-    .getElementById("btnNovaInstituicao")
-    .addEventListener("click", () => {
-
-        document.getElementById("modalInstituicao").style.display = "block";
-
-    });
-
-// Fechar o modal
-document
-    .getElementById("btnFecharModal")
-    .addEventListener("click", () => {
-
-        document.getElementById("modalInstituicao").style.display = "none";
-
-    });
-
-    carregarInstituicoes();
-
-    // Função para fechar o modal
-    function fecharModal() {
-    
-        document.getElementById("modalInstituicao").style.display = "none";
-    
-    }
-    
-    document
-        .getElementById("formInstituicao")
-        .addEventListener("submit", cadastrarInstituicao);
-    
-    async function cadastrarInstituicao(e) {
-
-    e.preventDefault();
-
-    const token = localStorage.getItem("token");
-
-    const dados = {
-
-        nome: document.getElementById("nome").value,
-        responsavel: document.getElementById("responsavel").value,
-        email: document.getElementById("email").value,
-        telefone: document.getElementById("telefone").value,
-        endereco: document.getElementById("endereco").value,
-        cidade: document.getElementById("cidade").value,
-        tipo: document.getElementById("tipo").value
-
+    return {
+        nome: campos.nome.value,
+        responsavel: campos.responsavel.value,
+        email: campos.email.value,
+        telefone: campos.telefone.value,
+        tipo: campos.tipo.value,
+        endereco: campos.endereco.value,
+        cidade: campos.cidade.value
     };
+
+}
+
+function abrirModalNovaInstituicao() {
+
+    instituicaoEditando = null;
+
+    alterarTitulo(
+        elementos.tituloModal,
+        "Nova Instituição"
+    );
+
+    limparFormulario(elementos.formulario);
+
+    abrirModal(elementos.modal);
+
+}
+
+function fecharModalInstituicao() {
+
+    fecharModal(elementos.modal);
+
+    limparFormulario(elementos.formulario);
+
+    instituicaoEditando = null;
+
+}
+
+async function salvarInstituicao(event) {
+
+    event.preventDefault();
+
+    const dados = montarDadosFormulario();
 
     try {
 
-        let url = API_URL + "/instituicoes";
-        let metodo = "POST";
+        let resposta;
 
         if (instituicaoEditando !== null) {
 
-            url = API_URL + "/instituicoes/" + instituicaoEditando;
-            metodo = "PUT";
+            resposta = await editarInstituicaoAPI(
+                instituicaoEditando,
+                dados
+            );
+
+        } else {
+
+            resposta = await cadastrarInstituicaoAPI(dados);
 
         }
 
-        const resposta = await fetch(url, {
-
-            method: metodo,
-
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`
-            },
-
-            body: JSON.stringify(dados)
-
-        });
-
         const resultado = await resposta.json();
 
-        console.log("Método:", metodo);
-        console.log("Status:", resposta.status);
-
         if (!resposta.ok) {
-
-            alert(resultado.error);
+            alert(resultado.error || "Erro ao salvar instituição.");
             return;
-
         }
 
         alert("Instituição salva com sucesso!");
 
-        instituicaoEditando = null;
-
-        fecharModal();
-
-        document.getElementById("formInstituicao").reset();
+        fecharModalInstituicao();
 
         carregarInstituicoes();
 
     } catch (erro) {
 
-        console.error("ERRO COMPLETO:", erro);
+        console.error("Erro ao salvar instituição:", erro);
 
-        alert("Erro ao cadastrar.");
-
-    }
+        alert("Erro ao salvar instituição.");
 
     }
 
-    //Função editarInstituicao
-    async function editarInstituicao(id) {
+}
 
-        const token = localStorage.getItem("token");
-    
-        try {
-    
-            const resposta = await fetch(API_URL + "/instituicoes/" + id, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-    
-            const instituicao = await resposta.json();
+async function editarInstituicao(id) {
 
-            console.log("Instituição recebida:", instituicao);
-    
-            instituicaoEditando = id;
-    
-            document.getElementById("nome").value = instituicao.nome;
-            document.getElementById("responsavel").value = instituicao.responsavel;
-            document.getElementById("email").value = instituicao.email;
-            document.getElementById("telefone").value = instituicao.telefone;
-            document.getElementById("endereco").value = instituicao.endereco;
-            document.getElementById("cidade").value = instituicao.cidade;
-            document.getElementById("tipo").value = instituicao.tipo;
-    
-            console.log("Abrindo modal...");
+    try {
 
-            document.getElementById("modalInstituicao").style.display = "block";
-    
-        } catch (erro) {
-    
-            console.error(erro);
-            alert("Erro ao carregar a instituição.");
-    
+        const resposta = await buscarInstituicao(id);
+
+        const instituicao = await resposta.json();
+
+        if (!resposta.ok) {
+            alert(instituicao.error || "Erro ao buscar instituição.");
+            return;
         }
-    
+
+        instituicaoEditando = id;
+
+        alterarTitulo(
+            elementos.tituloModal,
+            "Editar Instituição"
+        );
+
+        campos.nome.value = instituicao.nome;
+        campos.responsavel.value = instituicao.responsavel;
+        campos.email.value = instituicao.email;
+        campos.telefone.value = instituicao.telefone;
+        campos.tipo.value = instituicao.tipo;
+        campos.endereco.value = instituicao.endereco;
+        campos.cidade.value = instituicao.cidade;
+
+        abrirModal(elementos.modal);
+
+    } catch (erro) {
+
+        console.error("Erro ao carregar instituição:", erro);
+
+        alert("Erro ao carregar instituição.");
+
     }
 
-    window.editarInstituicao = editarInstituicao;
+}
+
+async function excluirInstituicao(id) {
+
+    const confirmar = confirm(
+        "Deseja realmente excluir esta instituição?"
+    );
+
+    if (!confirmar) {
+        return;
+    }
+
+    try {
+
+        const resposta = await excluirInstituicaoAPI(id);
+
+        if (!resposta.ok) {
+            const erro = await resposta.json();
+            alert(erro.error || "Erro ao excluir instituição.");
+            return;
+        }
+
+        alert("Instituição excluída com sucesso!");
+
+        carregarInstituicoes();
+
+    } catch (erro) {
+
+        console.error("Erro ao excluir instituição:", erro);
+
+        alert("Erro ao excluir instituição.");
+
+    }
+
+}
+
+async function alterarStatusInstituicao(botao) {
+
+    const id = botao.dataset.id;
+
+    const statusAtual = botao.dataset.status;
+
+    const novoStatus = statusAtual === "OK"
+        ? "PENDENTE"
+        : "OK";
+
+    try {
+
+        const resposta = await alterarStatusInstituicaoAPI(
+            id,
+            novoStatus
+        );
+
+        const resultado = await resposta.json();
+
+        if (!resposta.ok) {
+            alert(resultado.error || resultado.erro || "Erro ao atualizar status.");
+            return;
+        }
+
+        alert("Status atualizado com sucesso!");
+
+        carregarInstituicoes();
+
+    } catch (erro) {
+
+        console.error("Erro ao atualizar status:", erro);
+
+        alert("Erro ao atualizar status.");
+
+    }
+
+}
+
+function pesquisarInstituicao() {
+
+    if (!elementos.pesquisa) {
+        return;
+    }
+
+    const resultado = filtrarInstituicoes(
+        listaInstituicoes,
+        elementos.pesquisa.value
+    );
+
+    renderizarTabelaInstituicoes(
+        elementos.tabela,
+        resultado
+    );
+
+}
+
+function configurarEventos() {
+
+    elementos.btnAtualizar.addEventListener(
+        "click",
+        carregarInstituicoes
+    );
+
+    elementos.btnNova.addEventListener(
+        "click",
+        abrirModalNovaInstituicao
+    );
+
+    elementos.btnFecharModal.addEventListener(
+        "click",
+        fecharModalInstituicao
+    );
+
+    elementos.formulario.addEventListener(
+        "submit",
+        salvarInstituicao
+    );
+
+    if (elementos.pesquisa) {
+        elementos.pesquisa.addEventListener(
+            "input",
+            pesquisarInstituicao
+        );
+    }
+
+    document.addEventListener("click", (event) => {
+
+        const botaoEditar = event.target.closest(".btnEditarInstituicao");
+
+        if (botaoEditar) {
+            editarInstituicao(botaoEditar.dataset.id);
+            return;
+        }
+
+        const botaoExcluir = event.target.closest(".btnExcluirInstituicao");
+
+        if (botaoExcluir) {
+            excluirInstituicao(botaoExcluir.dataset.id);
+            return;
+        }
+
+        const botaoStatus = event.target.closest(".btnStatusInstituicao");
+
+        if (botaoStatus) {
+            alterarStatusInstituicao(botaoStatus);
+            return;
+        }
+
+    });
+
+}
+
+configurarEventos();
+
+carregarInstituicoes();
