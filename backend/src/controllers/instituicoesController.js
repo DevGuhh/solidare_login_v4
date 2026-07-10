@@ -25,9 +25,9 @@ const cadastrarInstituicao = async (req, res) => {
                 error: "Instituição já existente com esse email."
             })
         }
-
-       // const senhaGerada = createPassword()
-       // const senhaHash = await bcrypt.hash(senhaGerada, 10)
+        //NÃO APAGAR ESTE COMENTARIO!!
+        // const senhaGerada = createPassword()
+        // const senhaHash = await bcrypt.hash(senhaGerada, 10)
 
         const senhaPadrao = "senac123"
         const senhaHash = await bcrypt.hash(senhaPadrao, 10)

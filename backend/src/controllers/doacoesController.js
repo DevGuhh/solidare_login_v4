@@ -45,19 +45,18 @@ const cadastrarDoacao = async (req, res) => {
     const data = criarDoacaoSchema.parse(req.body);
 
     const beneficiario = await prisma.beneficiario.findFirst({
-    where: {
-      id: data.beneficiarioId,
-      instituicaoId: req.user.instituicaoId,
-      deletedAt: null,
-    },
-  });
-
-  if (!beneficiario) {
-    return res.status(403).json({
-      error: "Este beneficiário não pertence à sua instituição.",
+      where: {
+        id: data.beneficiarioId,
+        instituicaoId: req.user.instituicaoId,
+        deletedAt: null,
+      },
     });
-  }
 
+    if (!beneficiario) {
+      return res.status(403).json({
+        error: "Este beneficiário não pertence à sua instituição.",
+      });
+    }
 
     // Pega a data/hora atual (new Date()) e calcula o primeiro dia do
     // mês corrente. Ex: se hoje é 08/07/2026, inicioMes = 01/07/2026.
@@ -86,7 +85,7 @@ const cadastrarDoacao = async (req, res) => {
         // mês atual.
         dataDoacao: {
           gte: inicioMes, // gte = "greater than or equal" (maior ou igual ao início do mês)
-          lte: fimMes,    // lte = "less than or equal" (menor ou igual ao fim do mês)
+          lte: fimMes, // lte = "less than or equal" (menor ou igual ao fim do mês)
         },
       },
     });
@@ -108,20 +107,19 @@ const cadastrarDoacao = async (req, res) => {
     // "await" novamente, porque salvar no banco também leva um tempo.
     const doacao = await prisma.doacao.create({
       data: {
-        codigo,                              // código gerado acima
+        codigo, // código gerado acima
         beneficiarioId: data.beneficiarioId, // quem recebe a doação
         instituicaoId: req.user.instituicaoId, // instituição do usuário logado
-        usuarioId: req.user.id,              // quem está cadastrando (peguei do login)
-        tipo: data.tipo,                     // tipo da doação (defalt: "CESTA")
-        quantidade: data.quantidade,         // quantidade doada
-        observacoes: data.observacoes,       // observações extras, se houver
+        usuarioId: req.user.id, // quem está cadastrando (peguei do login)
+        tipo: data.tipo, // tipo da doação (defalt: "CESTA")
+        quantidade: data.quantidade, // quantidade doada
+        observacoes: data.observacoes, // observações extras, se houver
       },
     });
 
     // status(201) = "código HTTP" que indica "criado com sucesso".
     // Devolve a doação recém-criada como resposta.
     return res.status(201).json(doacao);
-
   } catch (error) {
     // ------------------------------------------------------------------
     // Bloco "catch": é o "plano B" para quando algo dá errado no "try".
@@ -135,8 +133,8 @@ const cadastrarDoacao = async (req, res) => {
         // Monta uma lista amigável mostrando exatamente quais campos
         // deram problema e por quê, para facilitar a correção.
         issues: error.issues.map((e) => ({
-          path: e.path.join("."),   // caminho do campo com erro (ex: "quantidade")
-          message: e.message,       // mensagem explicando o erro
+          path: e.path.join("."), // caminho do campo com erro (ex: "quantidade")
+          message: e.message, // mensagem explicando o erro
         })),
       });
     }
@@ -167,34 +165,34 @@ const listarDoacoes = async (req, res) => {
     // Esse objeto vai sendo completado mais abaixo, dependendo de quem
     // está fazendo a requisição.
     const where = {
-      deletedAt: null
+      deletedAt: null,
     };
- 
+
     // "req.user.role" é o "cargo"/tipo do usuário que está logado
     // (isso normalmente vem de um token de autenticação verificado
     // antes de chegar aqui).
- 
+
     // CASO 1: o usuário logado é de uma INSTITUIÇÃO.
-    if (req.user.role === 'INSTITUICAO') {
+    if (req.user.role === "INSTITUICAO") {
       // Uma instituição só pode ver as PRÓPRIAS doações, então forçamos
       // o filtro a usar o instituicaoId de quem está logado — mesmo que
       // ele tente pedir dados de outra instituição, o filtro sempre usa
       // o dele mesmo. Isso é uma proteção de segurança.
       where.instituicaoId = req.user.instituicaoId;
- 
-    // CASO 2: o usuário logado é ADMIN.
-    } else if (req.user.role === 'ADMIN') {
+
+      // CASO 2: o usuário logado é ADMIN.
+    } else if (req.user.role === "ADMIN") {
       // Um admin pode ver doações de QUALQUER instituição. Por isso,
       // aqui a gente permite que ele passe um filtro opcional pela URL,
       // tipo: /doacoes?instituicaoId=5
- 
+
       // "req.query" contém os parâmetros que vêm depois do "?" na URL.
       // Verificamos se o admin passou esse parâmetro.
       if (req.query.instituicaoId !== undefined) {
         // Tudo que vem da URL chega como TEXTO (string), então
         // convertemos para número usando Number().
         const instituicaoId = Number(req.query.instituicaoId);
- 
+
         // Validamos se o valor convertido é realmente um número inteiro
         // válido e maior que zero (um ID nunca pode ser 0 ou negativo).
         // Number.isInteger() verifica se é um número inteiro (sem casas
@@ -204,18 +202,19 @@ const listarDoacoes = async (req, res) => {
           // Se for inválido, avisamos o usuário com status 400
           // ("seu pedido tem algo errado") e paramos a execução aqui.
           return res.status(400).json({
-            error: 'O parâmetro instituiçãoId deve ser um número inteiro válido'
+            error:
+              "O parâmetro instituiçãoId deve ser um número inteiro válido",
           });
         }
- 
+
         // Se passou na validação, adicionamos o filtro por instituição.
         where.instituicaoId = instituicaoId;
       }
       // Se o admin NÃO passou instituicaoId nenhum, o filtro fica só
       // com "deletedAt: null" — ou seja, ele vê doações de TODAS as
       // instituições.
- 
-    // CASO 3: qualquer outro tipo de usuário (nem instituição, nem admin).
+
+      // CASO 3: qualquer outro tipo de usuário (nem instituição, nem admin).
     } else {
       // Bloqueamos o acesso. status(403) = "Forbidden", ou seja,
       // "eu sei quem você é, mas você não tem permissão para isso".
@@ -226,60 +225,42 @@ const listarDoacoes = async (req, res) => {
       // enviar de novo. O certo é usar .status(403) para definir o
       // código, e só UM .json() com o corpo da resposta.
       return res.status(403).json({
-        error: 'Acesso não autorizado.'
+        error: "Acesso não autorizado.",
       });
     }
- 
+
     // Agora sim: busca no banco de dados TODAS as doações que batem
     // com os filtros definidos no objeto "where" lá em cima.
     // "await" = espera a resposta do banco antes de continuar.
     const doacao = await prisma.doacao.findMany({
       where,
- 
-      // "include" serve para trazer, junto com cada doação, os dados de
-      // uma RELAÇÃO (uma tabela ligada) — nesse caso, os dados do
-      // beneficiário relacionado a cada doação.
-      //
-      // CORREÇÃO: no código original estava:
-      //   include: { select: { id: true, nome: true } }
-      // Isso está errado porque "include" precisa saber O NOME da
-      // relação que você quer trazer (ex: "beneficiario"), e não pode
-      // usar "select" direto dentro dele sem indicar essa relação.
-      //
-      // Abaixo, a versão corrigida: troque "beneficiario" pelo nome
-      // real do campo de relação definido no seu schema.prisma
-      // (pode ser diferente, dependendo de como seu modelo foi criado).
       include: {
         beneficiario: {
-          // Aqui sim o "select" faz sentido: escolhemos trazer
-          // apenas os campos "id" e "nome" do beneficiário, em vez
-          // de todos os campos dele (isso deixa a resposta mais leve).
           select: {
             id: true,
-            nomeCompleto: true
-          }
+            nomeCompleto: true,
+          },
         },
 
         instituicao: {
-            select: {
-                id: true,
-                nome: true
-            }
+          select: {
+            id: true,
+            nome: true,
+          },
         },
 
         usuario: {
-            select: {
-                id: true,
-                nome: true
-            }
-        }
+          select: {
+            id: true,
+            nome: true,
+          },
+        },
       },
     });
- 
+
     // status(200) = "OK, deu tudo certo". Devolve a lista de doações
     // encontrada (pode ser uma lista vazia, se não houver nenhuma).
     return res.status(200).json(doacao);
- 
   } catch (error) {
     // Se qualquer coisa inesperada der errado no try (ex: banco fora
     // do ar), caímos aqui. status(500) = erro interno do servidor.
@@ -289,44 +270,65 @@ const listarDoacoes = async (req, res) => {
     // função "cadastrarDoacao", para facilitar encontrar o problema
     // depois — no código original esse log não existe.
     return res.status(500).json({
-      error: 'Erro ao listar as doações.'
+      error: "Erro ao listar as doações.",
     });
   }
 };
 
 const detalheDeDoacao = async (req, res) => {
-    const id = Number(req.params.id)
+  const id = Number(req.params.id);
 
-    if (!Number.isInteger(id) || id <= 0) {
-        return res.status(400).json({
-            error: 'ID Inválido.'
-        })
+  if (!Number.isInteger(id) || id <= 0) {
+    return res.status(400).json({
+      error: "ID Inválido.",
+    });
+  }
+
+  try {
+    const doacao = await prisma.doacao.findFirst({
+      where: {
+        id,
+        instituicaoId: req.user.instituicaoId,
+        deletedAt: null,
+      },
+      include: {
+        beneficiario: {
+          select: {
+            id: true,
+            nomeCompleto: true,
+          },
+        },
+
+        instituicao: {
+          select: {
+            id: true,
+            nome: true,
+          },
+        },
+
+        usuario: {
+          select: {
+            id: true,
+            nome: true,
+          },
+        },
+      },
+
+    });
+
+    if (!doacao) {
+      return res.status(404).json({
+        error: "Doação não encontrada.",
+      });
     }
 
-    try {
-        const doacao = await prisma.doacao.findFirst({
-            where: {
-                id,
-                codigo,
-                instituicaoId: req.user.instituicaoId,
-                deletedAt: null
-            }
-        })
-
-        if (!doacao) {
-            return res.status(404).json({
-                error: 'Doação não encontrada.'
-            })
-        }
-
-        return res.status(200).json(doacao)
-    } catch (error) {
-        return res.status(500).json({
-            error: 'Erro ao buscar doação.'
-        })
-    }
-}
-
+    return res.status(200).json(doacao);
+  } catch (error) {
+    return res.status(500).json({
+      error: "Erro ao buscar doação.",
+    });
+  }
+};
 
 // Exporta a função para que ela possa ser usada em outros arquivos
 // (por exemplo, no arquivo de rotas que liga essa função a uma URL,
