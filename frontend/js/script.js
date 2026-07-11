@@ -35,7 +35,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
 
             alert("Login realizado com sucesso!");
 
-            window.location.href = "views/dashboard.html";
+            window.location.href = "./views/dashboard.html";
 
         } else {
 

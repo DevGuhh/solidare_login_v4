@@ -1,56 +1,80 @@
+// =====================================================
+// PAINEL ADMINISTRATIVO
+// =====================================================
+
 const API_URL = "http://localhost:3000";
 
-// ===============================
-// Verifica se o usuário está logado
-// ===============================
+
+// =====================================================
+// VERIFICAR LOGIN
+// =====================================================
+
 async function verificarLogin() {
 
     const token = localStorage.getItem("token");
 
     if (!token) {
+
         window.location.href = "../index.html";
+
         return;
+
     }
 
     try {
 
-        const resposta = await fetch(API_URL + "/auth/me", {
-            method: "GET",
-            headers: {
-                Authorization: `Bearer ${token}`
+        const resposta = await fetch(
+            `${API_URL}/auth/me`,
+            {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
             }
-        });
+        );
 
         if (!resposta.ok) {
 
             localStorage.removeItem("token");
+
             window.location.href = "../index.html";
+
             return;
 
         }
 
         const dados = await resposta.json();
 
-        console.log(dados);
+        const nomeUsuario =
+            document.getElementById("nomeUsuario");
 
-        // Exibe o nome do usuário
-        document.getElementById("nomeUsuario").textContent =
-            dados.usuario.nome;
+        if (nomeUsuario) {
+
+            nomeUsuario.textContent =
+                dados.usuario.nome;
+
+        }
 
     } catch (erro) {
 
-        console.error(erro);
+        console.error(
+            "Erro ao verificar login:",
+            erro
+        );
 
         localStorage.removeItem("token");
+
         window.location.href = "../index.html";
 
     }
 
 }
 
-// ===============================
-// Logout
-// ===============================
+
+// =====================================================
+// LOGOUT
+// =====================================================
+
 function logout() {
 
     localStorage.removeItem("token");
@@ -59,10 +83,23 @@ function logout() {
 
 }
 
-document
-    .getElementById("logout")
-    .addEventListener("click", logout);
 
-verificarLogin();
+// =====================================================
+// INICIALIZAÇÃO DO PAINEL
+// =====================================================
+
+const botaoLogout =
+    document.getElementById("logout");
+
+if (botaoLogout) {
+
+    botaoLogout.addEventListener(
+        "click",
+        logout
+    );
+
+}
+
+await verificarLogin();
 
 carregarPagina("home.html");

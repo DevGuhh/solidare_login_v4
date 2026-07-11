@@ -1,25 +1,306 @@
-<h1>Dashboard</h1>
+<!-- ==================================================
+     DASHBOARD
+================================================== -->
 
-<div class="cards">
+<section class="dashboard-header">
 
-    <div class="card">
-        <h3>Beneficiários</h3>
-        <div class="numero">0</div>
+    <div>
+
+        <p class="dashboard-subtitle">
+            Visão geral do sistema
+        </p>
+
+        <h1>
+            Olá,
+            <span id="nomeDashboard">
+                Usuário
+            </span>
+            👋
+        </h1>
+
+        <p class="dashboard-description">
+            Bem-vindo ao painel do Instituto Solidare.
+        </p>
+
+        <p
+            id="dataDashboard"
+            class="dashboard-date">
+        </p>
+
     </div>
 
-    <div class="card">
-        <h3>Instituições</h3>
-        <div class="numero">0</div>
+</section>
+
+
+<!-- ============================
+     CARDS
+============================ -->
+
+<section class="dashboard-cards">
+
+    <article class="dashboard-card">
+
+        <div class="dashboard-card-icon">
+            <i class="fa-solid fa-users"></i>
+        </div>
+
+        <div class="dashboard-card-content">
+
+            <span class="dashboard-card-label">
+                Beneficiários
+            </span>
+
+            <strong
+                id="totalBeneficiariosDashboard"
+                class="dashboard-card-number">
+
+                0
+
+            </strong>
+
+            <span class="dashboard-card-description">
+                Total cadastrados
+            </span>
+
+        </div>
+
+    </article>
+
+
+    <article
+        id="cardInstituicoesDashboard"
+        class="dashboard-card">
+
+        <div class="dashboard-card-icon">
+            <i class="fa-solid fa-building"></i>
+        </div>
+
+        <div class="dashboard-card-content">
+
+            <span class="dashboard-card-label">
+                Instituições
+            </span>
+
+            <strong
+                id="totalInstituicoesDashboard"
+                class="dashboard-card-number">
+
+                0
+
+            </strong>
+
+            <span class="dashboard-card-description">
+                Instituições parceiras
+            </span>
+
+        </div>
+
+    </article>
+
+
+    <article class="dashboard-card">
+
+        <div class="dashboard-card-icon">
+            <i class="fa-solid fa-user-check"></i>
+        </div>
+
+        <div class="dashboard-card-content">
+
+            <span class="dashboard-card-label">
+                Beneficiários Ativos
+            </span>
+
+            <strong
+                id="beneficiariosAtivosDashboard"
+                class="dashboard-card-number">
+
+                0
+
+            </strong>
+
+            <span class="dashboard-card-description">
+                Cadastros ativos
+            </span>
+
+        </div>
+
+    </article>
+
+
+    <article class="dashboard-card">
+
+        <div class="dashboard-card-icon">
+            <i class="fa-solid fa-user-xmark"></i>
+        </div>
+
+        <div class="dashboard-card-content">
+
+            <span class="dashboard-card-label">
+                Beneficiários Inativos
+            </span>
+
+            <strong
+                id="beneficiariosInativosDashboard"
+                class="dashboard-card-number">
+
+                0
+
+            </strong>
+
+            <span class="dashboard-card-description">
+                Cadastros inativos
+            </span>
+
+        </div>
+
+    </article>
+
+</section>
+
+
+<!-- ============================
+     GRID
+============================ -->
+
+<section class="dashboard-grid">
+
+    <article class="dashboard-panel">
+
+        <div class="dashboard-panel-header">
+
+            <div>
+
+                <span class="dashboard-panel-eyebrow">
+
+                    Indicadores
+
+                </span>
+
+                <h2>
+
+                    Gráfico
+
+                </h2>
+
+            </div>
+
+        </div>
+
+        <div
+            id="graficoDashboard"
+            class="dashboard-chart-placeholder">
+
+            <i class="fa-solid fa-chart-column"></i>
+
+            <p>
+
+                O gráfico será implementado
+                na próxima etapa.
+
+            </p>
+
+        </div>
+
+    </article>
+
+
+    <article class="dashboard-panel">
+
+        <div class="dashboard-panel-header">
+
+            <div>
+
+                <span class="dashboard-panel-eyebrow">
+
+                    Últimos Cadastros
+
+                </span>
+
+                <h2>
+
+                    Beneficiários
+
+                </h2>
+
+            </div>
+
+        </div>
+
+        <div
+            id="ultimosBeneficiariosDashboard">
+
+            <p class="dashboard-empty">
+
+                Carregando...
+
+            </p>
+
+        </div>
+
+    </article>
+
+</section>
+
+
+<!-- ============================
+     AÇÕES RÁPIDAS
+============================ -->
+
+<section class="dashboard-panel">
+
+    <div class="dashboard-panel-header">
+
+        <div>
+
+            <span class="dashboard-panel-eyebrow">
+
+                Acesso Rápido
+
+            </span>
+
+            <h2>
+
+                Ações
+
+            </h2>
+
+        </div>
+
     </div>
 
-    <div class="card">
-        <h3>Doações</h3>
-        <div class="numero">0</div>
+    <div class="dashboard-actions">
+
+        <button
+            class="btn btn-primary"
+            data-pagina="beneficiarios.html">
+
+            <i class="fa-solid fa-user-plus"></i>
+
+            Beneficiários
+
+        </button>
+
+        <button
+            id="acaoInstituicoesDashboard"
+            class="btn btn-info"
+            data-pagina="instituicoes.html">
+
+            <i class="fa-solid fa-building"></i>
+
+            Instituições
+
+        </button>
+
+        <button
+            class="btn btn-secondary"
+            data-pagina="relatorios.html">
+
+            <i class="fa-solid fa-chart-pie"></i>
+
+            Relatórios
+
+        </button>
+
     </div>
 
-    <div class="card">
-        <h3>RFIDs Ativos</h3>
-        <div class="numero">0</div>
-    </div>
-
-</div>
+</section>
