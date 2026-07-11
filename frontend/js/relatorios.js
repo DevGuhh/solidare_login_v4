@@ -1,3 +1,17 @@
+// =====================================================
+// MÓDULO DE RELATÓRIOS
+// =====================================================
+
+// Esta função será chamada pelo router sempre que
+// a página relatorios.html for aberta.
+export async function inicializarRelatorios() {
+
+    console.log(
+        "Módulo de Relatórios inicializado."
+    );
+
+}
+
 const API_URL = "http://localhost:3000";
 
 async function carregarRelatorios() {

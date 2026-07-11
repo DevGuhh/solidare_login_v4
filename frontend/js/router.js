@@ -45,11 +45,13 @@ async function carregarPagina(pagina) {
 
         "relatorios.html": async () => {
 
-            await import(
-                "../js/relatorios/relatorios.js"
+            const modulo = await import(
+                "../js/relatorios.js"
             );
 
-        }
+            await modulo.inicializarRelatorios();
+
+        },
 
     };
 

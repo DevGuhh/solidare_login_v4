@@ -10,13 +10,43 @@
             Visão geral do sistema
         </p>
 
-        <h1>
-            Olá,
-            <span id="nomeDashboard">
-                Usuário
-            </span>
-            👋
-        </h1>
+        <div class="dashboard-user">
+
+            <div
+                id="avatarDashboard"
+                class="dashboard-avatar">
+
+                U
+
+            </div>
+
+            <div>
+
+                <h1>
+
+                    <span id="nomeDashboard">
+
+                        Usuário
+
+                    </span>
+
+                    👋
+
+                </h1>
+
+                <p
+                    id="dataDashboard"
+                    class="dashboard-date">
+                </p>
+
+                <p
+                    id="ultimaAtualizacaoDashboard"
+                    class="dashboard-update">
+                </p>
+
+            </div>
+
+        </div>
 
         <p class="dashboard-description">
             Bem-vindo ao painel do Instituto Solidare.
@@ -27,10 +57,14 @@
             class="dashboard-date">
         </p>
 
+        <p
+            id="ultimaAtualizacaoDashboard"
+            class="dashboard-update">
+        </p>
+
     </div>
 
 </section>
-
 
 <!-- ============================
      CARDS
@@ -38,7 +72,11 @@
 
 <section class="dashboard-cards">
 
-    <article class="dashboard-card">
+    <!-- CARD: BENEFICIÁRIOS -->
+
+    <article
+        class="dashboard-card dashboard-link"
+        data-pagina="beneficiarios.html">
 
         <div class="dashboard-card-icon">
             <i class="fa-solid fa-users"></i>
@@ -58,8 +96,10 @@
 
             </strong>
 
-            <span class="dashboard-card-description">
-                Total cadastrados
+            <span
+                id="kpiBeneficiariosDashboard"
+                class="dashboard-card-description dashboard-kpi">
+                Dados atualizados agora
             </span>
 
         </div>
@@ -67,9 +107,12 @@
     </article>
 
 
+    <!-- CARD: INSTITUIÇÕES -->
+
     <article
         id="cardInstituicoesDashboard"
-        class="dashboard-card">
+        class="dashboard-card dashboard-link"
+        data-pagina="instituicoes.html">
 
         <div class="dashboard-card-icon">
             <i class="fa-solid fa-building"></i>
@@ -89,8 +132,10 @@
 
             </strong>
 
-            <span class="dashboard-card-description">
-                Instituições parceiras
+            <span
+                id="kpiInstituicoesDashboard"
+                class="dashboard-card-description dashboard-kpi">
+                Parceiras cadastradas
             </span>
 
         </div>
@@ -98,7 +143,11 @@
     </article>
 
 
-    <article class="dashboard-card">
+    <!-- CARD: BENEFICIÁRIOS ATIVOS -->
+
+    <article
+        class="dashboard-card dashboard-link"
+        data-pagina="beneficiarios.html">
 
         <div class="dashboard-card-icon">
             <i class="fa-solid fa-user-check"></i>
@@ -118,8 +167,10 @@
 
             </strong>
 
-            <span class="dashboard-card-description">
-                Cadastros ativos
+            <span
+                id="kpiAtivosDashboard"
+                class="dashboard-card-description dashboard-kpi">
+                0% do total
             </span>
 
         </div>
@@ -127,7 +178,11 @@
     </article>
 
 
-    <article class="dashboard-card">
+    <!-- CARD: BENEFICIÁRIOS INATIVOS -->
+
+    <article
+        class="dashboard-card dashboard-link"
+        data-pagina="beneficiarios.html">
 
         <div class="dashboard-card-icon">
             <i class="fa-solid fa-user-xmark"></i>
@@ -147,8 +202,10 @@
 
             </strong>
 
-            <span class="dashboard-card-description">
-                Cadastros inativos
+            <span
+                id="kpiInativosDashboard"
+                class="dashboard-card-description dashboard-kpi">
+                0% do total
             </span>
 
         </div>
@@ -156,7 +213,6 @@
     </article>
 
 </section>
-
 
 <!-- ============================
      GRID
@@ -186,18 +242,9 @@
 
         </div>
 
-        <div
-            id="graficoDashboard"
-            class="dashboard-chart-placeholder">
+        <div class="dashboard-chart-container">
 
-            <i class="fa-solid fa-chart-column"></i>
-
-            <p>
-
-                O gráfico será implementado
-                na próxima etapa.
-
-            </p>
+            <canvas id="graficoDashboard"></canvas>
 
         </div>
 
