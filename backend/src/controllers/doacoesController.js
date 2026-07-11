@@ -313,7 +313,6 @@ const detalheDeDoacao = async (req, res) => {
           },
         },
       },
-
     });
 
     if (!doacao) {
@@ -330,7 +329,106 @@ const detalheDeDoacao = async (req, res) => {
   }
 };
 
+const atualizarDoacaoSchema = criarDoacaoSchema.partial();
+
+const atualizarUmaDoacao = async (req, res) => {
+  const id = Number(req.params.id);
+
+  if (!Number.isInteger(id) || id <= 0) {
+    return res.status(400).json({
+      error: "ID Inválido.",
+    });
+  }
+
+  try {
+    const where = {
+      id,
+    };
+
+    if (req.user.role !== "ADMIN") {
+      where.instituicaoId = req.user.instituicaoId;
+    }
+
+    const doacao = await prisma.doacao.findFirst({
+      where,
+    });
+
+    if (!doacao) {
+      return res.status(404).json({
+        error: "Doação não encontrada",
+      });
+    }
+
+    const data = atualizarDoacaoSchema.parse(req.body);
+
+    const update = await prisma.doacao.update({
+      where: { id },
+      data,
+    });
+
+    return res.status(200).json(update);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return res.status(400).json({
+        error: "Payload inválido",
+        issues: error.issues.map((e) => ({
+          path: e.path.join("."),
+          message: e.message,
+        })),
+      });
+    }
+
+    console.error(`PUT /doacoes/${req.params.id} error:`, error);
+
+    return res.status(500).json({
+      error: "Erro interno ao atualizar doação.",
+    });
+  }
+};
+
+const cancelarDoacao = async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) {
+    return res.status(400).json({ error: "ID inválido" });
+  }
+  try {
+    const doacao = await prisma.doacao.findUnique({
+      where: {
+        id,
+      },
+    });
+    if (!doacao || doacao.deletedAt) {
+      return res.status(404).json({
+        error: "Doação não encontrada.",
+      });
+    }
+    await prisma.doacao.updateMany({
+      where: {
+        id,
+        deletedAt: null,
+      },
+      data: {
+        deletedAt: new Date(),
+      },
+    });
+    return res.status(200).json({
+      mensagem: "Doação cancelada com sucesso!",
+    });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2025"
+    ) {
+      return res.status(404).json({ error: "Doação não encontrada." });
+    }
+    console.error(`DELETE /doacoes/${req.params.id} error:`, error);
+    return res.status(500).json({
+      error: "Erro interno ao cancelar doação.",
+    });
+  }
+};
+
 // Exporta a função para que ela possa ser usada em outros arquivos
 // (por exemplo, no arquivo de rotas que liga essa função a uma URL,
 // tipo POST /doacoes).
-export { cadastrarDoacao, listarDoacoes, detalheDeDoacao };
+export { cadastrarDoacao, listarDoacoes, detalheDeDoacao, atualizarUmaDoacao, cancelarDoacao };
