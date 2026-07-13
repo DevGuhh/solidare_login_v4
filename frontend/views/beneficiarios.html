@@ -201,6 +201,93 @@
 
 
     <!-- ==============================================
+        AÇÕES DOS BENEFICIÁRIOS SELECIONADOS
+    =============================================== -->
+
+    <section
+        id="barraSelecaoBeneficiarios"
+        class="beneficiarios-selecao-barra"
+        aria-live="polite"
+        hidden
+    >
+
+        <div class="beneficiarios-selecao-info">
+
+            <div
+                class="beneficiarios-selecao-icone"
+                aria-hidden="true"
+            >
+                <i class="fa-solid fa-check"></i>
+            </div>
+
+            <div>
+
+                <strong id="quantidadeSelecionadosBeneficiarios">
+                    0 beneficiários selecionados
+                </strong>
+
+                <span>
+                    Escolha uma ação para os registros marcados.
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="beneficiarios-selecao-acoes">
+
+            <button
+                type="button"
+                id="btnAtivarSelecionadosBeneficiarios"
+                class="btn-selecao btn-selecao-sucesso"
+                disabled
+            >
+                <i class="fa-solid fa-user-check"></i>
+
+                Ativar
+            </button>
+
+
+            <button
+                type="button"
+                id="btnInativarSelecionadosBeneficiarios"
+                class="btn-selecao btn-selecao-alerta"
+                disabled
+            >
+                <i class="fa-solid fa-user-slash"></i>
+
+                Inativar
+            </button>
+
+
+            <button
+                type="button"
+                id="btnExcluirSelecionadosBeneficiarios"
+                class="btn-selecao btn-selecao-perigo"
+                disabled
+            >
+                <i class="fa-solid fa-trash"></i>
+
+                Excluir
+            </button>
+
+
+            <button
+                type="button"
+                id="btnLimparSelecaoBeneficiarios"
+                class="btn-selecao btn-selecao-neutro"
+            >
+                <i class="fa-solid fa-xmark"></i>
+
+                Limpar seleção
+            </button>
+
+        </div>
+
+    </section>
+
+    <!-- ==============================================
          LISTAGEM
     =============================================== -->
 
@@ -258,33 +345,148 @@
 
                     <tr>
 
-                        <th scope="col">
-                            ID
+                        <th class="coluna-checkbox">
+
+                            <input
+                                type="checkbox"
+                                id="selecionarTodosBeneficiarios"
+                                aria-label="Selecionar todos os beneficiários"
+                            >
+
                         </th>
 
                         <th scope="col">
-                            Nome
+
+                            <button
+                                type="button"
+                                class="beneficiarios-ordenacao"
+                                data-ordenar-por="id"
+                                aria-label="Ordenar por ID"
+                            >
+                                <span>ID</span>
+
+                                <i
+                                    class="fa-solid fa-sort"
+                                    aria-hidden="true"
+                                ></i>
+                            </button>
+
                         </th>
 
-                        <th scope="col">
-                            CPF
-                        </th>
 
                         <th scope="col">
-                            Telefone
+
+                            <button
+                                type="button"
+                                class="beneficiarios-ordenacao"
+                                data-ordenar-por="nomeCompleto"
+                                aria-label="Ordenar por nome"
+                            >
+                                <span>Nome</span>
+
+                                <i
+                                    class="fa-solid fa-sort"
+                                    aria-hidden="true"
+                                ></i>
+                            </button>
+
                         </th>
 
-                        <th scope="col">
-                            Instituição
-                        </th>
 
                         <th scope="col">
-                            Benefício
+
+                            <button
+                                type="button"
+                                class="beneficiarios-ordenacao"
+                                data-ordenar-por="cpf"
+                                aria-label="Ordenar por CPF"
+                            >
+                                <span>CPF</span>
+
+                                <i
+                                    class="fa-solid fa-sort"
+                                    aria-hidden="true"
+                                ></i>
+                            </button>
+
                         </th>
 
+
                         <th scope="col">
-                            Status
+
+                            <button
+                                type="button"
+                                class="beneficiarios-ordenacao"
+                                data-ordenar-por="telefonePrincipal"
+                                aria-label="Ordenar por telefone"
+                            >
+                                <span>Telefone</span>
+
+                                <i
+                                    class="fa-solid fa-sort"
+                                    aria-hidden="true"
+                                ></i>
+                            </button>
+
                         </th>
+
+
+                        <th scope="col">
+
+                            <button
+                                type="button"
+                                class="beneficiarios-ordenacao"
+                                data-ordenar-por="instituicao"
+                                aria-label="Ordenar por instituição"
+                            >
+                                <span>Instituição</span>
+
+                                <i
+                                    class="fa-solid fa-sort"
+                                    aria-hidden="true"
+                                ></i>
+                            </button>
+
+                        </th>
+
+
+                        <th scope="col">
+
+                            <button
+                                type="button"
+                                class="beneficiarios-ordenacao"
+                                data-ordenar-por="tipoBeneficio"
+                                aria-label="Ordenar por benefício"
+                            >
+                                <span>Benefício</span>
+
+                                <i
+                                    class="fa-solid fa-sort"
+                                    aria-hidden="true"
+                                ></i>
+                            </button>
+
+                        </th>
+
+
+                        <th scope="col">
+
+                            <button
+                                type="button"
+                                class="beneficiarios-ordenacao"
+                                data-ordenar-por="ativo"
+                                aria-label="Ordenar por status"
+                            >
+                                <span>Status</span>
+
+                                <i
+                                    class="fa-solid fa-sort"
+                                    aria-hidden="true"
+                                ></i>
+                            </button>
+
+                        </th>
+
 
                         <th
                             scope="col"
@@ -301,7 +503,7 @@
 
                     <tr class="tabela-carregando">
 
-                        <td colspan="8">
+                        <td colspan="9">
 
                             <div class="beneficiarios-loading">
 
@@ -325,6 +527,134 @@
             </table>
 
         </div>
+
+        <!-- ==============================================
+            PAGINAÇÃO
+        =============================================== -->
+
+        <footer class="beneficiarios-paginacao">
+
+            <div class="beneficiarios-paginacao-info">
+
+                <span>
+                    Itens por página:
+                </span>
+
+                <select
+                    id="quantidadePorPaginaBeneficiarios"
+                    aria-label="Quantidade de beneficiários por página"
+                >
+                    <option value="5">
+                        5
+                    </option>
+
+                    <option
+                        value="10"
+                        selected
+                    >
+                        10
+                    </option>
+
+                    <option value="20">
+                        20
+                    </option>
+
+                    <option value="50">
+                        50
+                    </option>
+                </select>
+
+                <span id="intervaloPaginacaoBeneficiarios">
+                    0–0 de 0
+                </span>
+
+            </div>
+
+
+            <nav
+                class="beneficiarios-paginacao-controles"
+                aria-label="Paginação de beneficiários"
+            >
+
+                <button
+                    type="button"
+                    id="btnPrimeiraPaginaBeneficiarios"
+                    class="paginacao-botao"
+                    title="Primeira página"
+                    aria-label="Ir para a primeira página"
+                    disabled
+                >
+                    <i
+                        class="fa-solid fa-angles-left"
+                        aria-hidden="true"
+                    ></i>
+                </button>
+
+
+                <button
+                    type="button"
+                    id="btnPaginaAnteriorBeneficiarios"
+                    class="paginacao-botao"
+                    title="Página anterior"
+                    aria-label="Ir para a página anterior"
+                    disabled
+                >
+                    <i
+                        class="fa-solid fa-chevron-left"
+                        aria-hidden="true"
+                    ></i>
+                </button>
+
+
+                <div
+                    id="numerosPaginacaoBeneficiarios"
+                    class="paginacao-numeros"
+                    aria-label="Páginas disponíveis"
+                >
+
+                    <button
+                        type="button"
+                        class="paginacao-numero ativo"
+                        aria-current="page"
+                    >
+                        1
+                    </button>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    id="btnProximaPaginaBeneficiarios"
+                    class="paginacao-botao"
+                    title="Próxima página"
+                    aria-label="Ir para a próxima página"
+                    disabled
+                >
+                    <i
+                        class="fa-solid fa-chevron-right"
+                        aria-hidden="true"
+                    ></i>
+                </button>
+
+
+                <button
+                    type="button"
+                    id="btnUltimaPaginaBeneficiarios"
+                    class="paginacao-botao"
+                    title="Última página"
+                    aria-label="Ir para a última página"
+                    disabled
+                >
+                    <i
+                        class="fa-solid fa-angles-right"
+                        aria-hidden="true"
+                    ></i>
+                </button>
+
+            </nav>
+
+        </footer>
 
     </section>
 

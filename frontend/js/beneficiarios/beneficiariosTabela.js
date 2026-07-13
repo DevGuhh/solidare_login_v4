@@ -152,11 +152,9 @@ function gerarIniciais(nome) {
 // =====================================================
 
 export function renderizarTabela(
-
     tabela,
-
-    beneficiarios
-
+    beneficiarios,
+    idsSelecionados = new Set()
 ) {
 
     if (!tabela) {
@@ -180,7 +178,7 @@ export function renderizarTabela(
 
             <tr class="beneficiarios-vazio">
 
-                <td colspan="8">
+                <td colspan="9">
 
                     <div class="beneficiarios-empty-state">
 
@@ -273,6 +271,18 @@ export function renderizarTabela(
             return `
 
                 <tr>
+
+                    <td class="coluna-checkbox">
+
+                        <input
+                            type="checkbox"
+                            class="checkboxBeneficiario"
+                            data-id="${beneficiario.id}"
+                            aria-label="Selecionar ${nomeSeguro}"
+                            ${idsSelecionados.has(id) ? "checked" : ""}
+                        >
+
+                    </td>
 
                     <td>
 

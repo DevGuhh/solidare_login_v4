@@ -72,6 +72,37 @@ let listaBeneficiarios = [];
 let filtroStatusAtual =
     "TODOS";
 
+// IDs dos beneficiários selecionados.
+let beneficiariosSelecionados =
+    new Set();
+
+// Página atualmente exibida.
+let paginaAtual =
+    1;
+
+// Quantidade de registros exibidos por página.
+let itensPorPagina =
+    10;
+
+// Campo atualmente utilizado na ordenação.
+let campoOrdenacao =
+    "nomeCompleto";
+
+// Direção da ordenação:
+// asc = crescente
+// desc = decrescente
+let direcaoOrdenacao =
+    "asc";
+
+// Temporizador utilizado para evitar que a pesquisa
+// seja executada a cada tecla digitada.
+let temporizadorPesquisa =
+    null;
+
+// Tempo de espera antes de executar a pesquisa.
+const TEMPO_DEBOUNCE_PESQUISA =
+    300;
+
 let elementos = {};
 
 let campos = {};
@@ -312,6 +343,81 @@ function capturarElementosDaTela() {
         resultadoFiltro:
             document.getElementById(
                 "resultadoFiltroBeneficiarios"
+            ),
+
+        quantidadePorPagina:
+            document.getElementById(
+                "quantidadePorPaginaBeneficiarios"
+            ),
+
+        intervaloPaginacao:
+            document.getElementById(
+                "intervaloPaginacaoBeneficiarios"
+            ),
+
+        numerosPaginacao:
+            document.getElementById(
+                "numerosPaginacaoBeneficiarios"
+            ),
+
+        btnPrimeiraPagina:
+            document.getElementById(
+                "btnPrimeiraPaginaBeneficiarios"
+            ),
+
+        btnPaginaAnterior:
+            document.getElementById(
+                "btnPaginaAnteriorBeneficiarios"
+            ),
+
+        btnProximaPagina:
+            document.getElementById(
+                "btnProximaPaginaBeneficiarios"
+            ),
+
+        btnUltimaPagina:
+            document.getElementById(
+                "btnUltimaPaginaBeneficiarios"
+            ),
+            
+        botoesOrdenacao:
+            document.querySelectorAll(
+                "#conteudo [data-ordenar-por]"
+            ),
+
+        selecionarTodos:
+            document.getElementById(
+                "selecionarTodosBeneficiarios"
+            ),
+
+        barraSelecao:
+            document.getElementById(
+                "barraSelecaoBeneficiarios"
+            ),
+
+        quantidadeSelecionados:
+            document.getElementById(
+                "quantidadeSelecionadosBeneficiarios"
+            ),
+
+        btnLimparSelecao:
+            document.getElementById(
+                "btnLimparSelecaoBeneficiarios"
+            ),
+
+        btnAtivarSelecionados:
+            document.getElementById(
+                "btnAtivarSelecionadosBeneficiarios"
+            ),
+
+        btnInativarSelecionados:
+            document.getElementById(
+                "btnInativarSelecionadosBeneficiarios"
+            ),
+
+        btnExcluirSelecionados:
+            document.getElementById(
+                "btnExcluirSelecionadosBeneficiarios"
             )
 
     };
@@ -428,6 +534,29 @@ function validarElementosObrigatorios() {
         elementos.contadorAtivos,
         elementos.contadorInativos,
         elementos.resultadoFiltro,
+        elementos.quantidadePorPagina,
+        elementos.intervaloPaginacao,
+        elementos.numerosPaginacao,
+        elementos.btnPrimeiraPagina,
+        elementos.btnPaginaAnterior,
+        elementos.btnProximaPagina,
+        elementos.btnUltimaPagina,
+
+        // ===========================
+        // NOVOS ELEMENTOS
+        // ===========================
+
+        elementos.selecionarTodos,
+        elementos.barraSelecao,
+        elementos.quantidadeSelecionados,
+        elementos.btnLimparSelecao,
+        elementos.btnAtivarSelecionados,
+        elementos.btnInativarSelecionados,
+        elementos.btnExcluirSelecionados,
+
+        // ===========================
+        // CAMPOS DO FORMULÁRIO
+        // ===========================
 
         campos.nomeCompleto,
         campos.cpf,
@@ -624,30 +753,1106 @@ function atualizarTextoResultado(
 
 }
 
+// =====================================================
+// CALCULAR TOTAL DE PÁGINAS
+// =====================================================
+
+function calcularTotalPaginas(
+    quantidadeRegistros
+) {
+
+    return Math.max(
+        1,
+        Math.ceil(
+            quantidadeRegistros /
+            itensPorPagina
+        )
+    );
+
+}
+
 
 // =====================================================
-// APLICAR PESQUISA E FILTRO
+// GERAR BOTÕES NUMÉRICOS
 // =====================================================
 
-function aplicarFiltrosBeneficiarios() {
+function renderizarNumerosPaginacao(
+    totalPaginas
+) {
 
-    const resultado =
+    elementos.numerosPaginacao.innerHTML =
+        "";
+
+    /*
+     * Exibe no máximo cinco números.
+     *
+     * Exemplo:
+     * 1 2 3 4 5
+     * 3 4 5 6 7
+     */
+    let inicio =
+        Math.max(
+            1,
+            paginaAtual - 2
+        );
+
+    let fim =
+        Math.min(
+            totalPaginas,
+            inicio + 4
+        );
+
+    inicio =
+        Math.max(
+            1,
+            fim - 4
+        );
+
+
+    for (
+        let numero = inicio;
+        numero <= fim;
+        numero++
+    ) {
+
+        const botao =
+            document.createElement(
+                "button"
+            );
+
+        botao.type =
+            "button";
+
+        botao.className =
+            "paginacao-numero";
+
+        botao.textContent =
+            String(numero);
+
+        botao.dataset.pagina =
+            String(numero);
+
+        botao.setAttribute(
+            "aria-label",
+            `Ir para a página ${numero}`
+        );
+
+
+        if (numero === paginaAtual) {
+
+            botao.classList.add(
+                "ativo"
+            );
+
+            botao.setAttribute(
+                "aria-current",
+                "page"
+            );
+
+        }
+
+
+        elementos.numerosPaginacao
+            .appendChild(botao);
+
+    }
+
+}
+
+
+// =====================================================
+// ATUALIZAR CONTROLES DA PAGINAÇÃO
+// =====================================================
+
+function atualizarPaginacao(
+    quantidadeRegistros
+) {
+
+    const totalPaginas =
+        calcularTotalPaginas(
+            quantidadeRegistros
+        );
+
+    /*
+     * Se a página atual deixar de existir
+     * depois de excluir ou filtrar registros,
+     * voltamos para a última página disponível.
+     */
+    if (paginaAtual > totalPaginas) {
+
+        paginaAtual =
+            totalPaginas;
+
+    }
+
+
+    const inicio =
+        quantidadeRegistros === 0
+            ? 0
+            : (
+                (paginaAtual - 1) *
+                itensPorPagina
+            ) + 1;
+
+    const fim =
+        quantidadeRegistros === 0
+            ? 0
+            : Math.min(
+                paginaAtual *
+                itensPorPagina,
+                quantidadeRegistros
+            );
+
+
+    elementos.intervaloPaginacao.textContent =
+        `${inicio}–${fim} de ${quantidadeRegistros}`;
+
+
+    elementos.btnPrimeiraPagina.disabled =
+        paginaAtual <= 1;
+
+    elementos.btnPaginaAnterior.disabled =
+        paginaAtual <= 1;
+
+    elementos.btnProximaPagina.disabled =
+        paginaAtual >= totalPaginas;
+
+    elementos.btnUltimaPagina.disabled =
+        paginaAtual >= totalPaginas;
+
+
+    renderizarNumerosPaginacao(
+        totalPaginas
+    );
+
+}
+
+
+// =====================================================
+// OBTER REGISTROS DA PÁGINA ATUAL
+// =====================================================
+
+function paginarBeneficiarios(
+    lista
+) {
+
+    const indiceInicial =
+        (paginaAtual - 1) *
+        itensPorPagina;
+
+    const indiceFinal =
+        indiceInicial +
+        itensPorPagina;
+
+    return lista.slice(
+        indiceInicial,
+        indiceFinal
+    );
+
+}
+
+
+// =====================================================
+// TROCAR DE PÁGINA
+// =====================================================
+
+function irParaPagina(
+    novaPagina
+) {
+
+    const resultadoFiltrado =
+        obterBeneficiariosFiltrados();
+
+    const totalPaginas =
+        calcularTotalPaginas(
+            resultadoFiltrado.length
+        );
+
+    const paginaValidada =
+        Math.min(
+            Math.max(
+                Number(novaPagina) || 1,
+                1
+            ),
+            totalPaginas
+        );
+
+
+    if (
+        paginaValidada ===
+        paginaAtual
+    ) {
+        return;
+    }
+
+    paginaAtual =
+        paginaValidada;
+
+    aplicarFiltrosBeneficiarios();
+
+}
+
+
+// =====================================================
+// ALTERAR QUANTIDADE POR PÁGINA
+// =====================================================
+
+function alterarQuantidadePorPagina() {
+
+    itensPorPagina =
+        Number(
+            elementos
+                .quantidadePorPagina
+                .value
+        ) || 10;
+
+    paginaAtual =
+        1;
+
+    aplicarFiltrosBeneficiarios();
+
+}
+
+
+// =====================================================
+// TRATAR CLIQUE NOS NÚMEROS
+// =====================================================
+
+function tratarCliqueNumeroPaginacao(
+    event
+) {
+
+    const botao =
+        event.target.closest(
+            "[data-pagina]"
+        );
+
+    if (!botao) {
+        return;
+    }
+
+    irParaPagina(
+        botao.dataset.pagina
+    );
+
+}
+
+// =====================================================
+// NORMALIZAR VALOR PARA ORDENAÇÃO
+// =====================================================
+
+function normalizarValorOrdenacao(
+    valor
+) {
+
+    return String(valor ?? "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+
+}
+
+
+// =====================================================
+// OBTER VALOR DA COLUNA
+// =====================================================
+
+function obterValorOrdenacao(
+    beneficiario,
+    campo
+) {
+
+    switch (campo) {
+
+        case "id":
+
+            return Number(
+                beneficiario?.id
+            ) || 0;
+
+
+        case "instituicao":
+
+            return normalizarValorOrdenacao(
+                beneficiario
+                    ?.instituicao
+                    ?.nome
+            );
+
+
+        case "ativo":
+
+            /*
+             * Ativos recebem 1.
+             * Inativos recebem 0.
+             */
+            return beneficiarioEstaAtivo(
+                beneficiario
+            )
+                ? 1
+                : 0;
+
+
+        case "nomeCompleto":
+
+        case "cpf":
+
+        case "telefonePrincipal":
+
+        case "tipoBeneficio":
+
+            return normalizarValorOrdenacao(
+                beneficiario?.[campo]
+            );
+
+
+        default:
+
+            return normalizarValorOrdenacao(
+                beneficiario?.[campo]
+            );
+
+    }
+
+}
+
+
+// =====================================================
+// ORDENAR BENEFICIÁRIOS
+// =====================================================
+
+function ordenarBeneficiarios(
+    lista
+) {
+
+    const listaOrdenada =
+        [...lista];
+
+    listaOrdenada.sort(
+        (beneficiarioA, beneficiarioB) => {
+
+            const valorA =
+                obterValorOrdenacao(
+                    beneficiarioA,
+                    campoOrdenacao
+                );
+
+            const valorB =
+                obterValorOrdenacao(
+                    beneficiarioB,
+                    campoOrdenacao
+                );
+
+
+            let comparacao =
+                0;
+
+
+            if (
+                typeof valorA === "number" &&
+                typeof valorB === "number"
+            ) {
+
+                comparacao =
+                    valorA - valorB;
+
+            } else {
+
+                comparacao =
+                    String(valorA)
+                        .localeCompare(
+                            String(valorB),
+                            "pt-BR",
+                            {
+                                numeric: true,
+                                sensitivity: "base"
+                            }
+                        );
+
+            }
+
+
+            return direcaoOrdenacao ===
+                "asc"
+                    ? comparacao
+                    : comparacao * -1;
+
+        }
+    );
+
+    return listaOrdenada;
+
+}
+
+
+// =====================================================
+// ATUALIZAR CABEÇALHO DA ORDENAÇÃO
+// =====================================================
+
+function atualizarBotoesOrdenacao() {
+
+    elementos.botoesOrdenacao.forEach(
+        (botao) => {
+
+            const campo =
+                botao.dataset.ordenarPor;
+
+            const estaAtivo =
+                campo ===
+                campoOrdenacao;
+
+
+            botao.classList.toggle(
+                "ordenacao-ativa",
+                estaAtivo
+            );
+
+
+            botao.removeAttribute(
+                "data-direcao"
+            );
+
+
+            const icone =
+                botao.querySelector("i");
+
+
+            if (!icone) {
+                return;
+            }
+
+
+            icone.classList.remove(
+                "fa-sort",
+                "fa-sort-up",
+                "fa-sort-down"
+            );
+
+
+            if (!estaAtivo) {
+
+                icone.classList.add(
+                    "fa-sort"
+                );
+
+                botao.removeAttribute(
+                    "aria-sort"
+                );
+
+                return;
+
+            }
+
+
+            botao.dataset.direcao =
+                direcaoOrdenacao;
+
+
+            if (
+                direcaoOrdenacao ===
+                "asc"
+            ) {
+
+                icone.classList.add(
+                    "fa-sort-up"
+                );
+
+                botao.setAttribute(
+                    "aria-sort",
+                    "ascending"
+                );
+
+            } else {
+
+                icone.classList.add(
+                    "fa-sort-down"
+                );
+
+                botao.setAttribute(
+                    "aria-sort",
+                    "descending"
+                );
+
+            }
+
+        }
+    );
+
+}
+
+
+// =====================================================
+// SELECIONAR ORDENAÇÃO
+// =====================================================
+
+function selecionarOrdenacao(event) {
+
+    const botao =
+        event.currentTarget;
+
+    const novoCampo =
+        botao.dataset.ordenarPor;
+
+
+    if (!novoCampo) {
+        return;
+    }
+
+
+    /*
+     * Ao clicar novamente na mesma coluna,
+     * alternamos entre crescente e decrescente.
+     */
+    if (
+        novoCampo ===
+        campoOrdenacao
+    ) {
+
+        direcaoOrdenacao =
+            direcaoOrdenacao === "asc"
+                ? "desc"
+                : "asc";
+
+    } else {
+
+        campoOrdenacao =
+            novoCampo;
+
+        direcaoOrdenacao =
+            "asc";
+
+    }
+
+
+    paginaAtual =
+        1;
+
+
+    atualizarBotoesOrdenacao();
+
+    aplicarFiltrosBeneficiarios();
+
+}
+
+// =====================================================
+// OBTER BENEFICIÁRIOS FILTRADOS E ORDENADOS
+// =====================================================
+
+function obterBeneficiariosFiltrados() {
+
+    const listaFiltrada =
         filtrarBeneficiarios(
             listaBeneficiarios,
             elementos.pesquisa.value,
             filtroStatusAtual
         );
 
+    return ordenarBeneficiarios(
+        listaFiltrada
+    );
+
+}
+
+// =====================================================
+// OBTER CHECKBOXES VISÍVEIS
+// =====================================================
+
+function obterCheckboxesVisiveis() {
+
+    return Array.from(
+        elementos.tabela.querySelectorAll(
+            ".checkboxBeneficiario"
+        )
+    );
+
+}
+
+
+// =====================================================
+// ATUALIZAR BARRA DE SELEÇÃO
+// =====================================================
+
+function atualizarBarraSelecao() {
+
+    const quantidade =
+        beneficiariosSelecionados.size;
+
+    elementos.barraSelecao.hidden =
+        quantidade === 0;
+
+    const texto =
+        quantidade === 1
+            ? "beneficiário selecionado"
+            : "beneficiários selecionados";
+
+    elementos.quantidadeSelecionados.textContent =
+        `${quantidade} ${texto}`;
+
+
+    const possuiSelecionados =
+        quantidade > 0;
+
+    elementos.btnAtivarSelecionados.disabled =
+        !possuiSelecionados;
+
+    elementos.btnInativarSelecionados.disabled =
+        !possuiSelecionados;
+
+    elementos.btnExcluirSelecionados.disabled =
+        !possuiSelecionados;
+
+}
+
+
+// =====================================================
+// ATUALIZAR CHECKBOX PRINCIPAL
+// =====================================================
+
+function atualizarCheckboxSelecionarTodos() {
+
+    const checkboxes =
+        obterCheckboxesVisiveis();
+
+    if (checkboxes.length === 0) {
+
+        elementos.selecionarTodos.checked =
+            false;
+
+        elementos.selecionarTodos.indeterminate =
+            false;
+
+        return;
+
+    }
+
+    const quantidadeMarcados =
+        checkboxes.filter(
+            (checkbox) => checkbox.checked
+        ).length;
+
+    elementos.selecionarTodos.checked =
+        quantidadeMarcados ===
+        checkboxes.length;
+
+    elementos.selecionarTodos.indeterminate =
+        quantidadeMarcados > 0 &&
+        quantidadeMarcados <
+        checkboxes.length;
+
+}
+
+
+// =====================================================
+// ALTERAR SELEÇÃO DE UMA LINHA
+// =====================================================
+
+function alterarSelecaoBeneficiario(
+    checkbox
+) {
+
+    const id =
+        Number(
+            checkbox.dataset.id
+        );
+
+    if (!id) {
+        return;
+    }
+
+    if (checkbox.checked) {
+
+        beneficiariosSelecionados.add(
+            id
+        );
+
+    } else {
+
+        beneficiariosSelecionados.delete(
+            id
+        );
+
+    }
+
+    atualizarCheckboxSelecionarTodos();
+
+    atualizarBarraSelecao();
+
+}
+
+
+// =====================================================
+// SELECIONAR TODOS OS VISÍVEIS
+// =====================================================
+
+function selecionarTodosVisiveis() {
+
+    const checkboxes =
+        obterCheckboxesVisiveis();
+
+    const deveSelecionar =
+        elementos.selecionarTodos.checked;
+
+    checkboxes.forEach(
+        (checkbox) => {
+
+            const id =
+                Number(
+                    checkbox.dataset.id
+                );
+
+            checkbox.checked =
+                deveSelecionar;
+
+            if (deveSelecionar) {
+
+                beneficiariosSelecionados.add(
+                    id
+                );
+
+            } else {
+
+                beneficiariosSelecionados.delete(
+                    id
+                );
+
+            }
+
+        }
+    );
+
+    elementos.selecionarTodos.indeterminate =
+        false;
+
+    atualizarBarraSelecao();
+
+}
+
+
+// =====================================================
+// LIMPAR SELEÇÃO
+// =====================================================
+
+function limparSelecaoBeneficiarios() {
+
+    beneficiariosSelecionados.clear();
+
+    obterCheckboxesVisiveis().forEach(
+        (checkbox) => {
+
+            checkbox.checked =
+                false;
+
+        }
+    );
+
+    elementos.selecionarTodos.checked =
+        false;
+
+    elementos.selecionarTodos.indeterminate =
+        false;
+
+    atualizarBarraSelecao();
+
+    aplicarFiltrosBeneficiarios();
+
+}
+
+// =====================================================
+// ALTERAR STATUS DOS SELECIONADOS
+// =====================================================
+
+async function alterarStatusSelecionados(
+    ativo
+) {
+
+    if (
+        beneficiariosSelecionados.size === 0
+    ) {
+        return;
+    }
+
+    const confirmou =
+        await confirmarAcao(
+
+            ativo
+                ? "Deseja ativar todos os beneficiários selecionados?"
+                : "Deseja inativar todos os beneficiários selecionados?"
+
+        );
+
+    if (!confirmou) {
+        return;
+    }
+
+    mostrarLoading();
+
+    try {
+
+        for (const id of beneficiariosSelecionados) {
+
+            const resposta =
+                await alterarStatusBeneficiarioAPI(
+                    id,
+                    ativo
+                );
+
+            if (!resposta.ok) {
+
+                const erro =
+                    await lerRespostaJson(
+                        resposta
+                    );
+
+                throw new Error(
+                    erro.error ||
+                    erro.mensagem ||
+                    "Erro ao alterar o status."
+                );
+
+            }
+
+        }
+
+        mostrarSucesso(
+
+            ativo
+                ? "Beneficiários ativados com sucesso!"
+                : "Beneficiários inativados com sucesso!"
+
+        );
+
+        beneficiariosSelecionados.clear();
+
+        await carregarBeneficiarios();
+
+    } catch (erro) {
+
+        console.error(erro);
+
+        mostrarErro(
+            erro.message
+        );
+
+    } finally {
+
+        esconderLoading();
+
+    }
+
+}
+
+// =====================================================
+// EXCLUIR BENEFICIÁRIOS SELECIONADOS
+// =====================================================
+
+async function excluirSelecionados() {
+
+    const quantidade =
+        beneficiariosSelecionados.size;
+
+    if (quantidade === 0) {
+        return;
+    }
+
+    const textoRegistro =
+        quantidade === 1
+            ? "beneficiário selecionado"
+            : "beneficiários selecionados";
+
+    const confirmou =
+        await confirmarAcao(
+            `Deseja realmente excluir ${quantidade} ${textoRegistro}?`
+        );
+
+    if (!confirmou) {
+        return;
+    }
+
+    mostrarLoading();
+
+    try {
+
+        const ids =
+            Array.from(
+                beneficiariosSelecionados
+            );
+
+        let quantidadeExcluida =
+            0;
+
+        const erros =
+            [];
+
+        for (const id of ids) {
+
+            try {
+
+                const resposta =
+                    await excluirBeneficiarioAPI(
+                        id
+                    );
+
+                const resultado =
+                    await lerRespostaJson(
+                        resposta
+                    );
+
+                if (!resposta.ok) {
+
+                    throw new Error(
+                        resultado.error ||
+                        resultado.erro ||
+                        resultado.mensagem ||
+                        `Não foi possível excluir o beneficiário #${id}.`
+                    );
+
+                }
+
+                quantidadeExcluida++;
+
+            } catch (erro) {
+
+                console.error(
+                    `Erro ao excluir beneficiário #${id}:`,
+                    erro
+                );
+
+                erros.push({
+                    id,
+                    mensagem:
+                        erro.message
+                });
+
+            }
+
+        }
+
+        /*
+         * Remove da seleção somente os registros
+         * que foram excluídos com sucesso.
+         */
+        if (quantidadeExcluida > 0) {
+
+            const idsComErro =
+                new Set(
+                    erros.map(
+                        (item) => item.id
+                    )
+                );
+
+            beneficiariosSelecionados =
+                new Set(
+                    ids.filter(
+                        (id) =>
+                            idsComErro.has(id)
+                    )
+                );
+
+            await carregarBeneficiarios();
+
+        }
+
+        if (erros.length === 0) {
+
+            const mensagemSucesso =
+                quantidadeExcluida === 1
+                    ? "Beneficiário excluído com sucesso!"
+                    : `${quantidadeExcluida} beneficiários excluídos com sucesso!`;
+
+            mostrarSucesso(
+                mensagemSucesso
+            );
+
+            beneficiariosSelecionados.clear();
+
+            aplicarFiltrosBeneficiarios();
+
+            return;
+
+        }
+
+        if (quantidadeExcluida > 0) {
+
+            mostrarErro(
+                `${quantidadeExcluida} registro(s) foram excluídos, mas ${erros.length} não puderam ser removidos.`
+            );
+
+            return;
+
+        }
+
+        mostrarErro(
+            "Nenhum dos beneficiários selecionados pôde ser excluído."
+        );
+
+    } catch (erro) {
+
+        console.error(
+            "Erro ao excluir beneficiários selecionados:",
+            erro
+        );
+
+        mostrarErro(
+            erro.message ||
+            "Não foi possível excluir os beneficiários selecionados."
+        );
+
+    } finally {
+
+        esconderLoading();
+
+    }
+
+}
+
+
+// =====================================================
+// APLICAR PESQUISA, FILTRO E PAGINAÇÃO
+// =====================================================
+
+function aplicarFiltrosBeneficiarios() {
+
+    const resultadoFiltrado =
+        obterBeneficiariosFiltrados();
+
+    const totalPaginas =
+        calcularTotalPaginas(
+            resultadoFiltrado.length
+        );
+
+    if (paginaAtual > totalPaginas) {
+
+        paginaAtual =
+            totalPaginas;
+
+    }
+
+    const resultadoPaginado =
+        paginarBeneficiarios(
+            resultadoFiltrado
+        );
+
+
     renderizarTabela(
         elementos.tabela,
-        resultado
+        resultadoPaginado,
+        beneficiariosSelecionados
     );
 
     atualizarTextoResultado(
-        resultado.length
+        resultadoFiltrado.length
     );
 
     atualizarBotaoLimparPesquisa();
+
+    atualizarPaginacao(
+        resultadoFiltrado.length
+    );
+
+    atualizarCheckboxSelecionarTodos();
+
+    atualizarBarraSelecao();
 
 }
 
@@ -1306,6 +2511,8 @@ async function excluirBeneficiario(id) {
 
         await carregarBeneficiarios();
 
+        beneficiariosSelecionados.clear();
+
     } catch (erro) {
 
         console.error(
@@ -1380,6 +2587,8 @@ async function alterarStatusBeneficiario(
         );
 
         await carregarBeneficiarios();
+
+        beneficiariosSelecionados.clear();
 
     } catch (erro) {
 
@@ -1469,14 +2678,51 @@ async function preencherEnderecoPorCEP() {
 
 }
 
+// =====================================================
+// CANCELAR PESQUISA PENDENTE
+// =====================================================
+
+function cancelarPesquisaPendente() {
+
+    if (!temporizadorPesquisa) {
+        return;
+    }
+
+    clearTimeout(
+        temporizadorPesquisa
+    );
+
+    temporizadorPesquisa =
+        null;
+
+}
+
 
 // =====================================================
-// PESQUISA
+// PESQUISAR BENEFICIÁRIO COM DEBOUNCE
 // =====================================================
 
 function pesquisarBeneficiario() {
 
-    aplicarFiltrosBeneficiarios();
+    cancelarPesquisaPendente();
+
+    atualizarBotaoLimparPesquisa();
+
+    temporizadorPesquisa =
+        setTimeout(
+            () => {
+
+                paginaAtual =
+                    1;
+
+                aplicarFiltrosBeneficiarios();
+
+                temporizadorPesquisa =
+                    null;
+
+            },
+            TEMPO_DEBOUNCE_PESQUISA
+        );
 
 }
 
@@ -1487,8 +2733,13 @@ function pesquisarBeneficiario() {
 
 function limparPesquisaBeneficiario() {
 
+    cancelarPesquisaPendente();
+
     elementos.pesquisa.value =
         "";
+
+    paginaAtual =
+        1;
 
     elementos.pesquisa.focus();
 
@@ -1521,6 +2772,9 @@ function selecionarFiltroStatus(event) {
     filtroStatusAtual =
         novoStatus;
 
+    paginaAtual =
+        1;
+
     atualizarBotoesFiltro();
 
     aplicarFiltrosBeneficiarios();
@@ -1534,6 +2788,21 @@ function selecionarFiltroStatus(event) {
 
 function tratarCliqueDaTabela(event) {
 
+    const checkboxBeneficiario =
+        event.target.closest(
+            ".checkboxBeneficiario"
+        );
+
+    if (checkboxBeneficiario) {
+
+        alterarSelecaoBeneficiario(
+            checkboxBeneficiario
+        );
+
+        return;
+
+    }
+    
     const botaoEditar =
         event.target.closest(
             ".btnEditar"
@@ -1687,6 +2956,27 @@ function configurarEventos() {
         opcoes
     );
 
+    elementos.pesquisa.addEventListener(
+        "keydown",
+        (event) => {
+
+            if (event.key !== "Enter") {
+                return;
+            }
+
+            event.preventDefault();
+
+            cancelarPesquisaPendente();
+
+            paginaAtual =
+                1;
+
+            aplicarFiltrosBeneficiarios();
+
+        },
+        opcoes
+    );
+
 
     elementos.btnLimparPesquisa.addEventListener(
         "click",
@@ -1707,6 +2997,74 @@ function configurarEventos() {
         }
     );
 
+    elementos.quantidadePorPagina.addEventListener(
+        "change",
+        alterarQuantidadePorPagina,
+        opcoes
+    );
+
+
+    elementos.btnPrimeiraPagina.addEventListener(
+        "click",
+        () => {
+
+            irParaPagina(1);
+
+        },
+        opcoes
+    );
+
+
+    elementos.btnPaginaAnterior.addEventListener(
+        "click",
+        () => {
+
+            irParaPagina(
+                paginaAtual - 1
+            );
+
+        },
+        opcoes
+    );
+
+
+    elementos.btnProximaPagina.addEventListener(
+        "click",
+        () => {
+
+            irParaPagina(
+                paginaAtual + 1
+            );
+
+        },
+        opcoes
+    );
+
+
+    elementos.btnUltimaPagina.addEventListener(
+        "click",
+        () => {
+
+            const resultadoFiltrado =
+                obterBeneficiariosFiltrados();
+
+            irParaPagina(
+                calcularTotalPaginas(
+                    resultadoFiltrado.length
+                )
+            );
+
+        },
+        opcoes
+    );
+
+
+    elementos.numerosPaginacao.addEventListener(
+        "click",
+        tratarCliqueNumeroPaginacao,
+        opcoes
+    );
+
 
     elementos.tabela.addEventListener(
         "click",
@@ -1725,6 +3083,49 @@ function configurarEventos() {
     document.addEventListener(
         "keydown",
         tratarTeclaEscape,
+        opcoes
+    );
+
+    elementos.botoesOrdenacao.forEach(
+        (botao) => {
+
+            botao.addEventListener(
+                "click",
+                selecionarOrdenacao,
+                opcoes
+            );
+
+        }
+    );
+
+    elementos.selecionarTodos.addEventListener(
+        "change",
+        selecionarTodosVisiveis,
+        opcoes
+    );
+
+
+    elementos.btnLimparSelecao.addEventListener(
+        "click",
+        limparSelecaoBeneficiarios,
+        opcoes
+    );
+
+    elementos.btnAtivarSelecionados.addEventListener(
+        "click",
+        () => alterarStatusSelecionados(true),
+        opcoes
+    );
+
+    elementos.btnInativarSelecionados.addEventListener(
+        "click",
+        () => alterarStatusSelecionados(false),
+        opcoes
+    );
+
+    elementos.btnExcluirSelecionados.addEventListener(
+        "click",
+        excluirSelecionados,
         opcoes
     );
 
@@ -1764,6 +3165,8 @@ export async function inicializarBeneficiarios() {
 
     try {
 
+        cancelarPesquisaPendente();
+
         usuarioLogado =
             null;
 
@@ -1776,16 +3179,37 @@ export async function inicializarBeneficiarios() {
         filtroStatusAtual =
             "TODOS";
 
+        paginaAtual =
+            1;
+
+        itensPorPagina =
+            10;
+
+        campoOrdenacao =
+            "nomeCompleto";
+
+        direcaoOrdenacao =
+            "asc";
+
+        beneficiariosSelecionados =
+            new Set();
 
         capturarElementosDaTela();
 
+        elementos.quantidadePorPagina.value =
+            String(itensPorPagina);
+
         validarElementosObrigatorios();
+
+        atualizarBarraSelecao();
 
         configurarEventos();
 
         configurarMascaras();
 
         atualizarBotoesFiltro();
+
+        atualizarBotoesOrdenacao();
 
         atualizarBotaoLimparPesquisa();
 
