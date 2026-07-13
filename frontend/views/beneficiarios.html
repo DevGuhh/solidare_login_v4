@@ -1,376 +1,982 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beneficiários</title>
-    <link rel="stylesheet" href="../css/admin.css">
-</head>
-<body>
-    <h1>Beneficiários</h1>
+<!-- ==================================================
+     BENEFICIÁRIOS
+================================================== -->
 
-<div class="toolbar">
+<section class="beneficiarios-page">
 
-    <div class="toolbar-left">
+    <!-- ==============================================
+         CABEÇALHO DA TELA
+    =============================================== -->
 
-        <div class="search-box">
+    <header class="beneficiarios-header">
 
-            <i class="fa-solid fa-magnifying-glass"></i>
+        <div class="beneficiarios-header-texto">
 
-            <input
-                type="text"
-                id="pesquisaBeneficiario"
-                placeholder="Pesquisar por nome, CPF ou benefício..."
-            >
+            <span class="beneficiarios-eyebrow">
+                Gestão de pessoas
+            </span>
+
+            <h1>
+                Beneficiários
+            </h1>
+
+            <p>
+                Consulte, cadastre e gerencie os beneficiários
+                atendidos pelo Instituto Solidare.
+            </p>
 
         </div>
 
-    </div>
-
-    <div class="toolbar-right">
-
-        <button
-            id="btnAtualizarBeneficiarios"
-            class="btn btn-info">
-
-            <i class="fa-solid fa-rotate"></i>
-
-            Atualizar
-
-        </button>
-
-        <button
-            id="btnNovoBeneficiario"
-            class="btn btn-primary">
-
-            <i class="fa-solid fa-plus"></i>
-
-            Novo Beneficiário
-
-        </button>
-
-    </div>
-
-</div>
-
-<br><br>
-
-<table border="1" width="100%" cellspacing="0" cellpadding="10">
-
-    <thead>
-
-        <tr>
-
-            <th>ID</th>
-            <th>Nome</th>
-            <th>CPF</th>
-            <th>Telefone</th>
-            <th>Instituição</th>
-            <th>Benefício</th>
-            <th>Ativo</th>
-            <th>Ações</th>
-
-        </tr>
-
-    </thead>
-
-    <tbody id="tabelaBeneficiarios">
-
-    </tbody>
-
-</table>
-
-<!-- ===========================
-     MODAL
-=========================== -->
-
-<div
-    id="modalBeneficiario"
-    class="modal">
-
-    <div class="modal-content">
-
-        <h2 id="tituloModalBeneficiario">
-            Novo Beneficiário
-        </h2>
-
-        <form id="formBeneficiario">
-
-            <!-- ========================= -->
-            <!-- DADOS PESSOAIS -->
-            <!-- ========================= -->
-
-            <h3 class="section-title">
-                Dados Pessoais
-            </h3>
-
-            <div
-                class="form-group full"
-                id="grupoInstituicao"
-                style="display:none;">
-
-                <label for="instituicaoId">
-                    Instituição
-                </label>
-
-                <select id="instituicaoId">
-
-                    <option value="">
-                        Selecione uma instituição
-                    </option>
-
-                </select>
-
-            </div>
-
-            <div class="form-grid">
-
-                <div class="form-group full">
-
-                    <label for="nomeCompleto">
-                        Nome Completo
-                        <span class="required">*</span>
-                    </label>
-
-                    <input
-                        type="text"
-                        id="nomeCompleto"
-                        required>
-
-                </div>
-
-                <div class="form-group">
-
-                    <label for="cpf">
-                        CPF
-                    </label>
-
-                    <input
-                        type="text"
-                        id="cpf"
-                        required>
-
-                </div>
-
-                <div class="form-group">
-
-                    <label for="dataNascimento">
-                        Data de Nascimento
-                    </label>
-
-                    <input
-                        type="date"
-                        id="dataNascimento"
-                        required>
-
-                </div>
-
-            </div>
-
-            <!-- ========================= -->
-            <!-- ENDEREÇO -->
-            <!-- ========================= -->
-
-            <h3 class="section-title">
-                Endereço
-            </h3>
-
-            <div class="form-grid">
-
-                <div class="form-group">
-
-                    <label>CEP</label>
-
-                    <input
-                        type="text"
-                        id="cep">
-
-                </div>
-
-                <div class="form-group">
-
-                    <label>Cidade</label>
-
-                    <input
-                        type="text"
-                        id="cidade"
-                        required>
-
-                </div>
-
-                <div class="form-group full">
-
-                    <label>Logradouro</label>
-
-                    <input
-                        type="text"
-                        id="logradouro"
-                        required>
-
-                </div>
-
-                <div class="form-group">
-
-                    <label>Número</label>
-
-                    <input
-                        type="text"
-                        id="numero"
-                        required>
-
-                </div>
-
-                <div class="form-group">
-
-                    <label>Complemento</label>
-
-                    <input
-                        type="text"
-                        id="complemento">
-
-                </div>
-
-                <div class="form-group">
-
-                    <label>Região</label>
-
-                    <input
-                        type="text"
-                        id="regiao"
-                        required>
-
-                </div>
-
-                <div class="form-group">
-
-                    <label>UF</label>
-
-                    <input
-                        type="text"
-                        maxlength="2"
-                        id="uf"
-                        required>
-
-                </div>
-
-            </div>
-
-            <!-- ========================= -->
-            <!-- CONTATO -->
-            <!-- ========================= -->
-
-            <h3 class="section-title">
-                Contato
-            </h3>
-
-            <div class="form-grid">
-
-                <div class="form-group">
-
-                    <label>Telefone Principal</label>
-
-                    <input
-                        type="text"
-                        id="telefonePrincipal"
-                        required>
-
-                </div>
-
-                <div class="form-group">
-
-                    <label>Telefone Secundário</label>
-
-                    <input
-                        type="text"
-                        id="telefoneSecundario">
-
-                </div>
-
-                <div class="form-group full">
-
-                    <label>Email</label>
-
-                    <input
-                        type="email"
-                        id="email">
-
-                </div>
-
-            </div>
-
-            <!-- ========================= -->
-            <!-- BENEFÍCIO -->
-            <!-- ========================= -->
-
-            <h3 class="section-title">
-                Benefício
-            </h3>
-
-            <div class="form-grid">
-
-                <div class="form-group">
-
-                    <label>Tipo de Benefício</label>
-
-                    <select id="tipoBeneficio">
-
-                        <option value="CESTA">CESTA</option>
-                        <option value="GRANEL">GRANEL</option>
-                        <option value="AMBOS">AMBOS</option>
-
-                    </select>
-
-                </div>
-
-            </div>
-
-            <!-- ========================= -->
-            <!-- SITUAÇÃO -->
-            <!-- ========================= -->
-
-            <h3 class="section-title">
-                Situação Socioeconômica
-            </h3>
-
-            <div class="form-group">
-
-                <textarea
-                    id="situacaoSocioeconomica"
-                    rows="4"></textarea>
-
-            </div>
-
-            <!-- ========================= -->
-            <!-- OBSERVAÇÕES -->
-            <!-- ========================= -->
-
-            <h3 class="section-title">
-                Observações
-            </h3>
-
-            <div class="form-group">
-
-                <textarea
-                    id="observacoes"
-                    rows="4"></textarea>
-
-            </div>
-
-            <div class="form-actions">
-
-                <button type="submit">
-                    💾 Salvar
-                </button>
+        <div class="beneficiarios-header-acoes">
+
+            <button
+                id="btnAtualizarBeneficiarios"
+                class="btn btn-info"
+                type="button"
+            >
+                <i
+                    class="fa-solid fa-rotate"
+                    aria-hidden="true"
+                ></i>
+
+                Atualizar
+            </button>
+
+            <button
+                id="btnNovoBeneficiario"
+                class="btn btn-primary"
+                type="button"
+            >
+                <i
+                    class="fa-solid fa-plus"
+                    aria-hidden="true"
+                ></i>
+
+                Novo beneficiário
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <!-- ==============================================
+         PESQUISA E FILTROS
+    =============================================== -->
+
+    <section
+        class="beneficiarios-toolbar"
+        aria-label="Ferramentas da listagem"
+    >
+
+        <div class="beneficiarios-toolbar-principal">
+
+            <div class="beneficiarios-search">
+
+                <i
+                    class="fa-solid fa-magnifying-glass"
+                    aria-hidden="true"
+                ></i>
+
+                <input
+                    type="search"
+                    id="pesquisaBeneficiario"
+                    placeholder="Pesquisar por nome, CPF, instituição ou benefício..."
+                    autocomplete="off"
+                    aria-label="Pesquisar beneficiário"
+                >
 
                 <button
                     type="button"
-                    id="btnFecharModal">
-
-                    Cancelar
-
+                    id="btnLimparPesquisaBeneficiario"
+                    class="beneficiarios-search-clear"
+                    aria-label="Limpar pesquisa"
+                    title="Limpar pesquisa"
+                    hidden
+                >
+                    <i
+                        class="fa-solid fa-xmark"
+                        aria-hidden="true"
+                    ></i>
                 </button>
 
             </div>
+
+
+            <div
+                class="beneficiarios-filtros"
+                role="group"
+                aria-label="Filtrar beneficiários por status"
+            >
+
+                <button
+                    type="button"
+                    class="beneficiarios-filtro ativo"
+                    data-filtro-status="TODOS"
+                    aria-pressed="true"
+                >
+                    <span>
+                        Todos
+                    </span>
+
+                    <strong id="contadorTodosBeneficiarios">
+                        0
+                    </strong>
+                </button>
+
+
+                <button
+                    type="button"
+                    class="beneficiarios-filtro"
+                    data-filtro-status="ATIVOS"
+                    aria-pressed="false"
+                >
+                    <span
+                        class="filtro-status-indicador ativo"
+                        aria-hidden="true"
+                    ></span>
+
+                    <span>
+                        Ativos
+                    </span>
+
+                    <strong id="contadorAtivosBeneficiarios">
+                        0
+                    </strong>
+                </button>
+
+
+                <button
+                    type="button"
+                    class="beneficiarios-filtro"
+                    data-filtro-status="INATIVOS"
+                    aria-pressed="false"
+                >
+                    <span
+                        class="filtro-status-indicador inativo"
+                        aria-hidden="true"
+                    ></span>
+
+                    <span>
+                        Inativos
+                    </span>
+
+                    <strong id="contadorInativosBeneficiarios">
+                        0
+                    </strong>
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div class="beneficiarios-toolbar-rodape">
+
+            <div class="beneficiarios-toolbar-info">
+
+                <i
+                    class="fa-solid fa-circle-info"
+                    aria-hidden="true"
+                ></i>
+
+                <span>
+                    Utilize a pesquisa e os filtros para localizar rapidamente um cadastro.
+                </span>
+
+            </div>
+
+
+            <div
+                id="resultadoFiltroBeneficiarios"
+                class="beneficiarios-resultado"
+                aria-live="polite"
+            >
+                Exibindo 0 beneficiários
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==============================================
+         LISTAGEM
+    =============================================== -->
+
+    <section class="beneficiarios-listagem">
+
+        <div class="beneficiarios-listagem-header">
+
+            <div>
+
+                <span class="beneficiarios-listagem-eyebrow">
+                    Registros
+                </span>
+
+                <h2>
+                    Beneficiários cadastrados
+                </h2>
+
+            </div>
+
+
+            <div class="beneficiarios-listagem-legenda">
+
+                <span class="legenda-status">
+
+                    <span
+                        class="legenda-indicador ativo"
+                        aria-hidden="true"
+                    ></span>
+
+                    Ativo
+
+                </span>
+
+                <span class="legenda-status">
+
+                    <span
+                        class="legenda-indicador inativo"
+                        aria-hidden="true"
+                    ></span>
+
+                    Inativo
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="beneficiarios-table-wrapper">
+
+            <table class="beneficiarios-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th scope="col">
+                            ID
+                        </th>
+
+                        <th scope="col">
+                            Nome
+                        </th>
+
+                        <th scope="col">
+                            CPF
+                        </th>
+
+                        <th scope="col">
+                            Telefone
+                        </th>
+
+                        <th scope="col">
+                            Instituição
+                        </th>
+
+                        <th scope="col">
+                            Benefício
+                        </th>
+
+                        <th scope="col">
+                            Status
+                        </th>
+
+                        <th
+                            scope="col"
+                            class="coluna-acoes"
+                        >
+                            Ações
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="tabelaBeneficiarios">
+
+                    <tr class="tabela-carregando">
+
+                        <td colspan="8">
+
+                            <div class="beneficiarios-loading">
+
+                                <i
+                                    class="fa-solid fa-spinner fa-spin"
+                                    aria-hidden="true"
+                                ></i>
+
+                                <span>
+                                    Carregando beneficiários...
+                                </span>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+</section>
+
+
+<!-- ==================================================
+     MODAL DO BENEFICIÁRIO
+================================================== -->
+
+<div
+    id="modalBeneficiario"
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="tituloModalBeneficiario"
+    aria-hidden="true"
+>
+
+    <div class="modal-content modal-beneficiario-content">
+
+        <!-- ==========================================
+             CABEÇALHO DO MODAL
+        =========================================== -->
+
+        <header class="modal-beneficiario-header">
+
+            <div class="modal-beneficiario-titulo">
+
+                <div
+                    class="modal-beneficiario-icone"
+                    aria-hidden="true"
+                >
+                    <i class="fa-solid fa-user-plus"></i>
+                </div>
+
+                <div>
+
+                    <span class="modal-beneficiario-eyebrow">
+                        Cadastro
+                    </span>
+
+                    <h2 id="tituloModalBeneficiario">
+                        Novo beneficiário
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <button
+                type="button"
+                id="btnFecharModal"
+                class="modal-beneficiario-fechar"
+                aria-label="Fechar formulário"
+                title="Fechar"
+            >
+                <i
+                    class="fa-solid fa-xmark"
+                    aria-hidden="true"
+                ></i>
+            </button>
+
+        </header>
+
+
+        <!-- ==========================================
+             FORMULÁRIO
+        =========================================== -->
+
+        <form
+            id="formBeneficiario"
+            class="form-beneficiario"
+        >
+
+            <div class="modal-beneficiario-body">
+
+                <!-- ==================================
+                     DADOS PESSOAIS
+                =================================== -->
+
+                <section class="form-section">
+
+                    <div class="form-section-header">
+
+                        <div
+                            class="form-section-icon"
+                            aria-hidden="true"
+                        >
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+
+                        <div>
+
+                            <h3>
+                                Dados pessoais
+                            </h3>
+
+                            <p>
+                                Informe os dados de identificação do beneficiário.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        class="form-group full"
+                        id="grupoInstituicao"
+                        style="display: none;"
+                    >
+
+                        <label for="instituicaoId">
+
+                            Instituição
+
+                            <span class="required">
+                                *
+                            </span>
+
+                        </label>
+
+                        <select id="instituicaoId">
+
+                            <option value="">
+                                Selecione uma instituição
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-grid">
+
+                        <div class="form-group full">
+
+                            <label for="nomeCompleto">
+
+                                Nome completo
+
+                                <span class="required">
+                                    *
+                                </span>
+
+                            </label>
+
+                            <input
+                                type="text"
+                                id="nomeCompleto"
+                                placeholder="Digite o nome completo"
+                                maxlength="150"
+                                autocomplete="name"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="cpf">
+
+                                CPF
+
+                                <span class="required">
+                                    *
+                                </span>
+
+                            </label>
+
+                            <input
+                                type="text"
+                                id="cpf"
+                                placeholder="000.000.000-00"
+                                inputmode="numeric"
+                                autocomplete="off"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="dataNascimento">
+
+                                Data de nascimento
+
+                                <span class="required">
+                                    *
+                                </span>
+
+                            </label>
+
+                            <input
+                                type="date"
+                                id="dataNascimento"
+                                required
+                            >
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- ==================================
+                     ENDEREÇO
+                =================================== -->
+
+                <section class="form-section">
+
+                    <div class="form-section-header">
+
+                        <div
+                            class="form-section-icon"
+                            aria-hidden="true"
+                        >
+                            <i class="fa-solid fa-location-dot"></i>
+                        </div>
+
+                        <div>
+
+                            <h3>
+                                Endereço
+                            </h3>
+
+                            <p>
+                                Informe o endereço residencial do beneficiário.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+
+                            <label for="cep">
+                                CEP
+                            </label>
+
+                            <input
+                                type="text"
+                                id="cep"
+                                placeholder="00000-000"
+                                inputmode="numeric"
+                                autocomplete="postal-code"
+                            >
+
+                            <small class="form-help">
+                                O endereço será preenchido automaticamente.
+                            </small>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="cidade">
+
+                                Cidade
+
+                                <span class="required">
+                                    *
+                                </span>
+
+                            </label>
+
+                            <input
+                                type="text"
+                                id="cidade"
+                                placeholder="Digite a cidade"
+                                autocomplete="address-level2"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="form-group full">
+
+                            <label for="logradouro">
+
+                                Logradouro
+
+                                <span class="required">
+                                    *
+                                </span>
+
+                            </label>
+
+                            <input
+                                type="text"
+                                id="logradouro"
+                                placeholder="Rua, avenida ou estrada"
+                                autocomplete="street-address"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="numero">
+
+                                Número
+
+                                <span class="required">
+                                    *
+                                </span>
+
+                            </label>
+
+                            <input
+                                type="text"
+                                id="numero"
+                                placeholder="Ex.: 125"
+                                maxlength="10"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="complemento">
+                                Complemento
+                            </label>
+
+                            <input
+                                type="text"
+                                id="complemento"
+                                placeholder="Casa, apartamento, bloco..."
+                                maxlength="100"
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="regiao">
+
+                                Região
+
+                                <span class="required">
+                                    *
+                                </span>
+
+                            </label>
+
+                            <input
+                                type="text"
+                                id="regiao"
+                                placeholder="Bairro ou região"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="uf">
+
+                                UF
+
+                                <span class="required">
+                                    *
+                                </span>
+
+                            </label>
+
+                            <input
+                                type="text"
+                                id="uf"
+                                placeholder="SP"
+                                maxlength="2"
+                                autocomplete="address-level1"
+                                required
+                            >
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- ==================================
+                     CONTATO
+                =================================== -->
+
+                <section class="form-section">
+
+                    <div class="form-section-header">
+
+                        <div
+                            class="form-section-icon"
+                            aria-hidden="true"
+                        >
+                            <i class="fa-solid fa-address-book"></i>
+                        </div>
+
+                        <div>
+
+                            <h3>
+                                Contato
+                            </h3>
+
+                            <p>
+                                Informe os principais canais de contato.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+
+                            <label for="telefonePrincipal">
+
+                                Telefone principal
+
+                                <span class="required">
+                                    *
+                                </span>
+
+                            </label>
+
+                            <input
+                                type="text"
+                                id="telefonePrincipal"
+                                placeholder="(00) 00000-0000"
+                                inputmode="tel"
+                                autocomplete="tel"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="telefoneSecundario">
+                                Telefone secundário
+                            </label>
+
+                            <input
+                                type="text"
+                                id="telefoneSecundario"
+                                placeholder="(00) 00000-0000"
+                                inputmode="tel"
+                            >
+
+                        </div>
+
+
+                        <div class="form-group full">
+
+                            <label for="email">
+                                E-mail
+                            </label>
+
+                            <input
+                                type="email"
+                                id="email"
+                                placeholder="exemplo@email.com"
+                                autocomplete="email"
+                            >
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- ==================================
+                     BENEFÍCIO
+                =================================== -->
+
+                <section class="form-section">
+
+                    <div class="form-section-header">
+
+                        <div
+                            class="form-section-icon"
+                            aria-hidden="true"
+                        >
+                            <i class="fa-solid fa-hand-holding-heart"></i>
+                        </div>
+
+                        <div>
+
+                            <h3>
+                                Benefício
+                            </h3>
+
+                            <p>
+                                Selecione o tipo de benefício recebido.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+
+                            <label for="tipoBeneficio">
+                                Tipo de benefício
+                            </label>
+
+                            <select id="tipoBeneficio">
+
+                                <option value="CESTA">
+                                    Cesta
+                                </option>
+
+                                <option value="GRANEL">
+                                    Granel
+                                </option>
+
+                                <option value="AMBOS">
+                                    Ambos
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- ==================================
+                     INFORMAÇÕES COMPLEMENTARES
+                =================================== -->
+
+                <section class="form-section">
+
+                    <div class="form-section-header">
+
+                        <div
+                            class="form-section-icon"
+                            aria-hidden="true"
+                        >
+                            <i class="fa-solid fa-file-lines"></i>
+                        </div>
+
+                        <div>
+
+                            <h3>
+                                Informações complementares
+                            </h3>
+
+                            <p>
+                                Adicione informações relevantes sobre o atendimento.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="situacaoSocioeconomica">
+                            Situação socioeconômica
+                        </label>
+
+                        <textarea
+                            id="situacaoSocioeconomica"
+                            rows="4"
+                            maxlength="500"
+                            placeholder="Descreva brevemente a situação socioeconômica..."
+                        ></textarea>
+
+                        <small class="form-help">
+                            Máximo de 500 caracteres.
+                        </small>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="observacoes">
+                            Observações
+                        </label>
+
+                        <textarea
+                            id="observacoes"
+                            rows="4"
+                            maxlength="500"
+                            placeholder="Inclua observações adicionais..."
+                        ></textarea>
+
+                        <small class="form-help">
+                            Máximo de 500 caracteres.
+                        </small>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+
+            <!-- ======================================
+                 AÇÕES DO MODAL
+            ======================================= -->
+
+            <footer class="modal-beneficiario-actions">
+
+                <button
+                    type="button"
+                    id="btnCancelarBeneficiario"
+                    class="btn btn-secondary"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    <i
+                        class="fa-solid fa-floppy-disk"
+                        aria-hidden="true"
+                    ></i>
+
+                    Salvar beneficiário
+                </button>
+
+            </footer>
 
         </form>
 
@@ -378,7 +984,8 @@
 
 </div>
 
-<script type="module" src="../js/beneficiarios/beneficiarios.js"></script>
 
-</body>
-</html>
+<script
+    type="module"
+    src="../js/beneficiarios/beneficiarios.js"
+></script>

@@ -3,265 +3,344 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
     <title>Instituto Solidare - Dashboard</title>
 
+    <!-- Bibliotecas -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- Biblioteca para gerar arquivos PDF -->
     <script
         src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/3.0.2/jspdf.umd.min.js">
     </script>
 
-    <!-- Plugin para gerar tabelas no PDF -->
     <script
         src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/5.0.8/jspdf.plugin.autotable.min.js">
     </script>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    >
 
-    <link rel="stylesheet" href="../css/admin.css">
+    <!-- CSS do sistema -->
+    <link
+        rel="stylesheet"
+        href="../css/admin.css"
+    >
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link
+        rel="stylesheet"
+        href="../css/dashboard.css"
+    >
 
-    <style>
-        *{
-            margin:0;
-            padding:0;
-            box-sizing:border-box;
-        }
+    <link
+        rel="stylesheet"
+        href="../css/beneficiarios.css"
+    >
 
-        body{
-            font-family:Arial, Helvetica, sans-serif;
-            background:#f5f5f5;
-        }
+    <link
+        rel="stylesheet"
+        href="../css/components/modal.css"
+    >
 
-        .container{
-            display:flex;
-            min-height:100vh;
-        }
+    <link
+        rel="stylesheet"
+        href="../css/components/toast.css"
+    >
 
-        /* MENU */
-
-        aside{
-            width:260px;
-            background:#850013;
-            color:white;
-            display:flex;
-            flex-direction:column;
-        }
-
-        .logo{
-            padding:30px;
-            text-align:center;
-            border-bottom:1px solid rgba(255,255,255,.2);
-        }
-
-        .logo h2{
-            margin-top:10px;
-        }
-
-        nav{
-            margin-top:30px;
-        }
-
-        nav a{
-            display:block;
-            color:white;
-            text-decoration:none;
-            padding:16px 25px;
-            transition:.3s;
-        }
-
-        nav a:hover{
-            background:#a3001d;
-        }
-
-        nav i{
-            width:25px;
-        }
-
-        /* CONTEÚDO */
-
-        .content{
-            flex:1;
-            display:flex;
-            flex-direction:column;
-        }
-
-        header{
-            height:70px;
-            background:white;
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            padding:0 30px;
-            box-shadow:0 2px 10px rgba(0,0,0,.08);
-        }
-
-        .usuario{
-            display:flex;
-            align-items:center;
-            gap:15px;
-        }
-
-        #nomeUsuario{
-            font-weight:bold;
-        }
-
-        #logout{
-            background:#850013;
-            color:white;
-            border:none;
-            padding:10px 18px;
-            border-radius:6px;
-            cursor:pointer;
-        }
-
-        #logout:hover{
-            background:#a3001d;
-        }
-
-        main{
-            padding:30px;
-        }
-
-        h1{
-            margin-bottom:25px;
-        }
-
-        .cards{
-            display:grid;
-            grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-            gap:20px;
-        }
-
-        .card{
-            background:white;
-            border-radius:10px;
-            padding:25px;
-            box-shadow:0 3px 12px rgba(0,0,0,.08);
-        }
-
-        .card h3{
-            color:#555;
-            margin-bottom:10px;
-        }
-
-        .numero{
-            font-size:34px;
-            color:#850013;
-            font-weight:bold;
-        }
-    </style>
+    <link
+        rel="stylesheet"
+        href="../css/components/loading.css"
+    >
 
 </head>
 
+
 <body>
 
-<div class="container">
+    <div class="container">
 
-    <aside>
+        <!-- MENU LATERAL -->
 
-        <div class="logo">
+        <aside>
 
-            <i class="fa-solid fa-heart fa-3x"></i>
+            <div class="logo">
 
-            <h2>Solidare</h2>
+                <i class="fa-solid fa-heart fa-3x"></i>
+
+                <h2>Solidare</h2>
+
+            </div>
+
+
+            <nav id="menuPrincipal">
+
+                <a
+                    href="#"
+                    class="menu-link ativo"
+                    data-pagina="home.html"
+                    data-tooltip="Dashboard"
+                    title="Dashboard"
+                >
+                    <i class="fa-solid fa-chart-line"></i>
+
+                    <span>Dashboard</span>
+                </a>
+
+
+                <a
+                    href="#"
+                    class="menu-link"
+                    data-pagina="beneficiarios.html"
+                    data-tooltip="Beneficiários"
+                    title="Beneficiários"
+                >
+                    <i class="fa-solid fa-users"></i>
+
+                    <span>Beneficiários</span>
+                </a>
+
+
+                <a
+                    href="#"
+                    class="menu-link"
+                    data-pagina="instituicoes.html"
+                    data-tooltip="Instituições"
+                    title="Instituições"
+                >
+                    <i class="fa-solid fa-building"></i>
+
+                    <span>Instituições</span>
+                </a>
+
+
+                <a
+                    href="#"
+                    class="menu-link"
+                    data-pagina="rfid.html"
+                    data-tooltip="RFID"
+                    title="RFID"
+                >
+                    <i class="fa-solid fa-id-card"></i>
+
+                    <span>RFID</span>
+                </a>
+
+
+                <a
+                    href="#"
+                    class="menu-link"
+                    data-pagina="doacoes.html"
+                    data-tooltip="Doações"
+                    title="Doações"
+                >
+                    <i class="fa-solid fa-hand-holding-heart"></i>
+
+                    <span>Doações</span>
+                </a>
+
+
+                <a
+                    href="#"
+                    class="menu-link"
+                    data-pagina="relatorios.html"
+                    data-tooltip="Relatórios"
+                    title="Relatórios"
+                >
+                    <i class="fa-solid fa-file-lines"></i>
+
+                    <span>Relatórios</span>
+                </a>
+
+            </nav>
+
+            <div class="sidebar-footer">
+
+                <div class="sidebar-status">
+
+                    <span
+                        class="sidebar-status-indicador"
+                        aria-hidden="true"
+                    ></span>
+
+                    <div class="sidebar-status-textos">
+
+                        <strong>Sistema online</strong>
+
+                        <span>Todos os serviços ativos</span>
+
+                    </div>
+
+                </div>
+
+                <div class="sidebar-versao">
+
+                    <i
+                        class="fa-solid fa-code-branch"
+                        aria-hidden="true"
+                    ></i>
+
+                    <span>Versão 1.0.0</span>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+
+        <!-- ÁREA PRINCIPAL -->
+
+        <div class="content">
+
+            <header class="topbar">
+
+                <div class="topbar-lado-esquerdo">
+
+                    <button
+                        id="btnAlternarMenu"
+                        class="botao-alternar-menu"
+                        type="button"
+                        aria-label="Recolher menu lateral"
+                        aria-expanded="true"
+                        title="Recolher menu"
+                    >
+                        <i
+                            class="fa-solid fa-bars"
+                            aria-hidden="true"
+                        ></i>
+                    </button>
+
+
+                    <div class="topbar-header">
+
+                        <nav
+                            class="breadcrumb"
+                            aria-label="Navegação estrutural"
+                        >
+                            <button
+                                id="breadcrumbInicio"
+                                class="breadcrumb-inicio"
+                                type="button"
+                                title="Voltar ao Dashboard"
+                            >
+                                <i
+                                    class="fa-solid fa-house"
+                                    aria-hidden="true"
+                                ></i>
+
+                                Início
+                            </button>
+
+
+                            <i
+                                class="fa-solid fa-chevron-right breadcrumb-separador"
+                                aria-hidden="true"
+                            ></i>
+
+
+                            <span
+                                id="breadcrumbPagina"
+                                class="breadcrumb-atual"
+                            >
+                                Dashboard
+                            </span>
+
+                        </nav>
+
+
+                        <h2
+                            id="tituloPagina"
+                            class="topbar-titulo"
+                        >
+                            Dashboard
+                        </h2>
+
+
+                        <p
+                            id="descricaoPagina"
+                            class="topbar-descricao"
+                        >
+                            Visão geral do sistema.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="usuario">
+
+                    <div class="usuario-avatar">
+
+                        <i class="fa-solid fa-user"></i>
+
+                    </div>
+
+
+                    <div class="usuario-info">
+
+                        <strong id="nomeUsuario">
+                            Carregando...
+                        </strong>
+
+                        <span id="perfilUsuario">
+                            Usuário
+                        </span>
+
+                        <small id="emailUsuario">
+                            ...
+                        </small>
+
+                    </div>
+
+
+                    <button
+                        id="logout"
+                        type="button"
+                    >
+                        <i class="fa-solid fa-right-from-bracket"></i>
+
+                        Sair
+                    </button>
+
+                </div>
+
+            </header>
+
+
+            <main id="conteudo">
+
+                <div class="carregando-pagina">
+
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+
+                    &nbsp; Carregando painel...
+
+                </div>
+
+            </main>
 
         </div>
 
-        <nav>
-
-            <a href="#" onclick="carregarPagina('home.html')">
-                <i class="fa-solid fa-chart-line"></i>
-                Dashboard
-            </a>
-
-            <a href="#" onclick="carregarPagina('beneficiarios.html')">
-                <i class="fa-solid fa-users"></i>
-                Beneficiários
-            </a>
-
-            <a href="#" onclick="carregarPagina('instituicoes.html')">
-                <i class="fa-solid fa-building"></i>
-                Instituições
-            </a>
-
-            <a href="#" onclick="carregarPagina('rfid.html')">
-                <i class="fa-solid fa-id-card"></i>
-                RFID
-            </a>
-
-            <a href="#" onclick="carregarPagina('doacoes.html')">
-                <i class="fa-solid fa-hand-holding-heart"></i>
-                Doações
-            </a>
-
-            <a href="#" onclick="carregarPagina('relatorios.html')">
-                <i class="fa-solid fa-file-lines"></i>
-                Relatórios
-            </a>
-
-        </nav>
-
-    </aside>
-
-    <div class="content">
-
-        <header>
-
-            <h2>Painel Administrativo</h2>
-
-            <div class="usuario">
-
-                <span id="nomeUsuario">Carregando...</span>
-
-                <button id="logout">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                    Sair
-                </button>
-
-            </div>
-
-        </header>
-
-        <main id="conteudo">
-
-            <h1>Dashboard</h1>
-
-            <div class="cards">
-
-                <div class="card">
-                    <h3>Beneficiários</h3>
-                    <div class="numero">0</div>
-                </div>
-
-                <div class="card">
-                    <h3>Instituições</h3>
-                    <div class="numero">0</div>
-                </div>
-
-                <div class="card">
-                    <h3>Doações</h3>
-                    <div class="numero">0</div>
-                </div>
-
-                <div class="card">
-                    <h3>RFIDs Ativos</h3>
-                    <div class="numero">0</div>
-                </div>
-
-            </div>
-
-        </main>
-
     </div>
 
-</div>
 
-<script src="../js/router.js"></script>
-<script type="module" src="../js/dashboard.js"></script>
+    <script
+        type="module"
+        src="../js/router.js"
+    ></script>
+
+    <script
+        type="module"
+        src="../js/dashboard.js"
+    ></script>
 
 </body>
+
 </html>

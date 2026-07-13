@@ -2,7 +2,9 @@
 // IMPORTAÇÕES
 // =====================================================
 
-import { buscarCEP } from "../utils/cep.js";
+import {
+    buscarCEP
+} from "../utils/cep.js";
 
 import {
     aplicarMascaraCPF,
@@ -45,7 +47,7 @@ import {
 } from "../utils/loading.js";
 
 import {
-    confirmarAcao 
+    confirmarAcao
 } from "../utils/confirm.js";
 
 
@@ -53,34 +55,170 @@ import {
 // CONFIGURAÇÕES
 // =====================================================
 
-const API_URL = "http://localhost:3000";
+const API_URL =
+    "http://localhost:3000";
 
 
 // =====================================================
-// ESTADO DO MÓDULO
+// ESTADO DA TELA
 // =====================================================
 
-// Guarda os dados do usuário autenticado.
 let usuarioLogado = null;
 
-// Guarda o ID do beneficiário em edição.
-// Quando for null, significa que o formulário está cadastrando.
-let beneficiarioEditando = null;
+let beneficiarioEditandoId = null;
 
-// Guarda a lista completa recebida da API.
-// Essa lista também é utilizada na pesquisa.
 let listaBeneficiarios = [];
 
-// Referências dos elementos HTML da página.
+let filtroStatusAtual =
+    "TODOS";
+
 let elementos = {};
 
-// Referências dos campos do formulário.
 let campos = {};
 
-// Controla os eventos registrados.
-// Ao voltar para a tela, os eventos antigos são removidos
-// antes de registrar os novos.
 let controladorEventos = null;
+
+
+// =====================================================
+// OBTER TOKEN
+// =====================================================
+
+function obterToken() {
+
+    return (
+        localStorage.getItem("token") ||
+        sessionStorage.getItem("token")
+    );
+
+}
+
+
+// =====================================================
+// OBTER HEADERS
+// =====================================================
+
+function obterHeaders() {
+
+    const token =
+        obterToken();
+
+    return {
+        Authorization:
+            `Bearer ${token || ""}`
+    };
+
+}
+
+
+// =====================================================
+// LER JSON COM SEGURANÇA
+// =====================================================
+
+async function lerRespostaJson(resposta) {
+
+    const texto =
+        await resposta.text();
+
+    if (!texto) {
+        return {};
+    }
+
+    try {
+
+        return JSON.parse(texto);
+
+    } catch (erro) {
+
+        console.error(
+            "Resposta inválida recebida do servidor:",
+            texto
+        );
+
+        throw new Error(
+            "O servidor retornou uma resposta inválida."
+        );
+
+    }
+
+}
+
+
+// =====================================================
+// NORMALIZAR LISTA RECEBIDA DA API
+// =====================================================
+
+function normalizarListaBeneficiarios(dados) {
+
+    if (Array.isArray(dados)) {
+        return dados;
+    }
+
+    if (
+        Array.isArray(
+            dados?.beneficiarios
+        )
+    ) {
+        return dados.beneficiarios;
+    }
+
+    if (
+        Array.isArray(
+            dados?.data
+        )
+    ) {
+        return dados.data;
+    }
+
+    if (
+        Array.isArray(
+            dados?.data?.beneficiarios
+        )
+    ) {
+        return dados.data.beneficiarios;
+    }
+
+    console.warn(
+        "Formato inesperado da lista de beneficiários:",
+        dados
+    );
+
+    return [];
+
+}
+
+
+// =====================================================
+// VERIFICAR STATUS
+// =====================================================
+
+function beneficiarioEstaAtivo(
+    beneficiario
+) {
+
+    return (
+        beneficiario?.ativo === true ||
+        beneficiario?.ativo === 1 ||
+        beneficiario?.ativo === "true" ||
+        beneficiario?.ativo === "1"
+    );
+
+}
+
+
+// =====================================================
+// ESCAPAR HTML
+// =====================================================
+
+function escaparHtml(valor) {
+
+    return String(valor ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+}
 
 
 // =====================================================
@@ -89,119 +227,178 @@ let controladorEventos = null;
 
 function capturarElementosDaTela() {
 
-    // A aplicação é uma SPA.
-    // Sempre que voltamos para Beneficiários,
-    // o HTML é criado novamente pelo router.
-    //
-    // Por isso, precisamos capturar novamente
-    // todos os elementos da página.
-
     elementos = {
-        tabela: document.getElementById(
-            "tabelaBeneficiarios"
-        ),
 
-        modal: document.getElementById(
-            "modalBeneficiario"
-        ),
+        tabela:
+            document.getElementById(
+                "tabelaBeneficiarios"
+            ),
 
-        formulario: document.getElementById(
-            "formBeneficiario"
-        ),
+        modal:
+            document.getElementById(
+                "modalBeneficiario"
+            ),
 
-        tituloModal: document.getElementById(
-            "tituloModalBeneficiario"
-        ),
+        formulario:
+            document.getElementById(
+                "formBeneficiario"
+            ),
 
-        grupoInstituicao: document.getElementById(
-            "grupoInstituicao"
-        ),
+        tituloModal:
+            document.getElementById(
+                "tituloModalBeneficiario"
+            ),
 
-        selectInstituicao: document.getElementById(
-            "instituicaoId"
-        ),
+        grupoInstituicao:
+            document.getElementById(
+                "grupoInstituicao"
+            ),
 
-        btnNovo: document.getElementById(
-            "btnNovoBeneficiario"
-        ),
+        selectInstituicao:
+            document.getElementById(
+                "instituicaoId"
+            ),
 
-        btnAtualizar: document.getElementById(
-            "btnAtualizarBeneficiarios"
-        ),
+        btnNovo:
+            document.getElementById(
+                "btnNovoBeneficiario"
+            ),
 
-        btnFecharModal: document.getElementById(
-            "btnFecharModal"
-        ),
+        btnAtualizar:
+            document.getElementById(
+                "btnAtualizarBeneficiarios"
+            ),
 
-        pesquisa: document.getElementById(
-            "pesquisaBeneficiario"
-        )
+        btnFecharModal:
+            document.getElementById(
+                "btnFecharModal"
+            ),
+
+        btnCancelar:
+            document.getElementById(
+                "btnCancelarBeneficiario"
+            ),
+
+        pesquisa:
+            document.getElementById(
+                "pesquisaBeneficiario"
+            ),
+
+        btnLimparPesquisa:
+            document.getElementById(
+                "btnLimparPesquisaBeneficiario"
+            ),
+
+        filtrosStatus:
+            document.querySelectorAll(
+                "#conteudo [data-filtro-status]"
+            ),
+
+        contadorTodos:
+            document.getElementById(
+                "contadorTodosBeneficiarios"
+            ),
+
+        contadorAtivos:
+            document.getElementById(
+                "contadorAtivosBeneficiarios"
+            ),
+
+        contadorInativos:
+            document.getElementById(
+                "contadorInativosBeneficiarios"
+            ),
+
+        resultadoFiltro:
+            document.getElementById(
+                "resultadoFiltroBeneficiarios"
+            )
+
     };
 
+
     campos = {
-        nomeCompleto: document.getElementById(
-            "nomeCompleto"
-        ),
 
-        cpf: document.getElementById(
-            "cpf"
-        ),
+        nomeCompleto:
+            document.getElementById(
+                "nomeCompleto"
+            ),
 
-        dataNascimento: document.getElementById(
-            "dataNascimento"
-        ),
+        cpf:
+            document.getElementById(
+                "cpf"
+            ),
 
-        cep: document.getElementById(
-            "cep"
-        ),
+        dataNascimento:
+            document.getElementById(
+                "dataNascimento"
+            ),
 
-        logradouro: document.getElementById(
-            "logradouro"
-        ),
+        cep:
+            document.getElementById(
+                "cep"
+            ),
 
-        numero: document.getElementById(
-            "numero"
-        ),
+        logradouro:
+            document.getElementById(
+                "logradouro"
+            ),
 
-        complemento: document.getElementById(
-            "complemento"
-        ),
+        numero:
+            document.getElementById(
+                "numero"
+            ),
 
-        regiao: document.getElementById(
-            "regiao"
-        ),
+        complemento:
+            document.getElementById(
+                "complemento"
+            ),
 
-        cidade: document.getElementById(
-            "cidade"
-        ),
+        regiao:
+            document.getElementById(
+                "regiao"
+            ),
 
-        uf: document.getElementById(
-            "uf"
-        ),
+        cidade:
+            document.getElementById(
+                "cidade"
+            ),
 
-        telefonePrincipal: document.getElementById(
-            "telefonePrincipal"
-        ),
+        uf:
+            document.getElementById(
+                "uf"
+            ),
 
-        telefoneSecundario: document.getElementById(
-            "telefoneSecundario"
-        ),
+        telefonePrincipal:
+            document.getElementById(
+                "telefonePrincipal"
+            ),
 
-        email: document.getElementById(
-            "email"
-        ),
+        telefoneSecundario:
+            document.getElementById(
+                "telefoneSecundario"
+            ),
 
-        tipoBeneficio: document.getElementById(
-            "tipoBeneficio"
-        ),
+        email:
+            document.getElementById(
+                "email"
+            ),
 
-        situacaoSocioeconomica: document.getElementById(
-            "situacaoSocioeconomica"
-        ),
+        tipoBeneficio:
+            document.getElementById(
+                "tipoBeneficio"
+            ),
 
-        observacoes: document.getElementById(
-            "observacoes"
-        )
+        situacaoSocioeconomica:
+            document.getElementById(
+                "situacaoSocioeconomica"
+            ),
+
+        observacoes:
+            document.getElementById(
+                "observacoes"
+            )
+
     };
 
 }
@@ -214,6 +411,7 @@ function capturarElementosDaTela() {
 function validarElementosObrigatorios() {
 
     const elementosObrigatorios = [
+
         elementos.tabela,
         elementos.modal,
         elementos.formulario,
@@ -223,6 +421,13 @@ function validarElementosObrigatorios() {
         elementos.btnNovo,
         elementos.btnAtualizar,
         elementos.btnFecharModal,
+        elementos.btnCancelar,
+        elementos.pesquisa,
+        elementos.btnLimparPesquisa,
+        elementos.contadorTodos,
+        elementos.contadorAtivos,
+        elementos.contadorInativos,
+        elementos.resultadoFiltro,
 
         campos.nomeCompleto,
         campos.cpf,
@@ -230,22 +435,28 @@ function validarElementosObrigatorios() {
         campos.cep,
         campos.logradouro,
         campos.numero,
+        campos.complemento,
         campos.regiao,
         campos.cidade,
         campos.uf,
         campos.telefonePrincipal,
-        campos.tipoBeneficio
+        campos.telefoneSecundario,
+        campos.email,
+        campos.tipoBeneficio,
+        campos.situacaoSocioeconomica,
+        campos.observacoes
+
     ];
 
-    const algumElementoAusente =
-        elementosObrigatorios.some(
+    const ausentes =
+        elementosObrigatorios.filter(
             (elemento) => !elemento
         );
 
-    if (algumElementoAusente) {
+    if (ausentes.length > 0) {
 
         throw new Error(
-            "A página de Beneficiários não possui todos os elementos HTML obrigatórios."
+            "A página de Beneficiários não possui todos os elementos HTML necessários."
         );
 
     }
@@ -254,47 +465,189 @@ function validarElementosObrigatorios() {
 
 
 // =====================================================
-// CARREGAR USUÁRIO LOGADO
+// CARREGAR USUÁRIO AUTENTICADO
 // =====================================================
 
 async function carregarUsuarioLogado() {
 
-    const token = localStorage.getItem("token");
+    const token =
+        obterToken();
 
-    try {
+    if (!token) {
 
-        const resposta = await fetch(
+        throw new Error(
+            "Token de autenticação não encontrado."
+        );
+
+    }
+
+    const resposta =
+        await fetch(
             `${API_URL}/auth/me`,
             {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
+                method: "GET",
+                headers:
+                    obterHeaders(),
+                cache:
+                    "no-store"
             }
         );
 
-        const dados = await resposta.json();
+    const dados =
+        await lerRespostaJson(
+            resposta
+        );
 
-        if (!resposta.ok) {
+    if (!resposta.ok) {
 
-            throw new Error(
-                dados.error ||
-                "Não foi possível identificar o usuário autenticado."
+        throw new Error(
+            dados.error ||
+            dados.erro ||
+            dados.mensagem ||
+            "Não foi possível identificar o usuário autenticado."
+        );
+
+    }
+
+    usuarioLogado =
+        dados.usuario ||
+        dados.data?.usuario ||
+        null;
+
+    if (!usuarioLogado) {
+
+        throw new Error(
+            "O servidor não retornou os dados do usuário."
+        );
+
+    }
+
+    return usuarioLogado;
+
+}
+
+
+// =====================================================
+// ATUALIZAR CONTADORES
+// =====================================================
+
+function atualizarContadoresFiltros() {
+
+    const total =
+        listaBeneficiarios.length;
+
+    const totalAtivos =
+        listaBeneficiarios.filter(
+            beneficiarioEstaAtivo
+        ).length;
+
+    const totalInativos =
+        total - totalAtivos;
+
+
+    elementos.contadorTodos.textContent =
+        String(total);
+
+    elementos.contadorAtivos.textContent =
+        String(totalAtivos);
+
+    elementos.contadorInativos.textContent =
+        String(totalInativos);
+
+}
+
+
+// =====================================================
+// ATUALIZAR FILTRO VISUAL
+// =====================================================
+
+function atualizarBotoesFiltro() {
+
+    elementos.filtrosStatus.forEach(
+        (botao) => {
+
+            const status =
+                botao.dataset.filtroStatus;
+
+            const selecionado =
+                status ===
+                filtroStatusAtual;
+
+            botao.classList.toggle(
+                "ativo",
+                selecionado
+            );
+
+            botao.setAttribute(
+                "aria-pressed",
+                String(selecionado)
             );
 
         }
+    );
 
-        usuarioLogado = dados.usuario;
+}
 
-    } catch (erro) {
 
-        console.error(
-            "Erro ao carregar usuário logado:",
-            erro
+// =====================================================
+// ATUALIZAR BOTÃO DE LIMPAR
+// =====================================================
+
+function atualizarBotaoLimparPesquisa() {
+
+    const possuiPesquisa =
+        elementos.pesquisa.value
+            .trim()
+            .length > 0;
+
+    elementos.btnLimparPesquisa.hidden =
+        !possuiPesquisa;
+
+}
+
+
+// =====================================================
+// ATUALIZAR RESULTADO
+// =====================================================
+
+function atualizarTextoResultado(
+    quantidade
+) {
+
+    const texto =
+        quantidade === 1
+            ? "beneficiário"
+            : "beneficiários";
+
+    elementos.resultadoFiltro.textContent =
+        `Exibindo ${quantidade} ${texto}`;
+
+}
+
+
+// =====================================================
+// APLICAR PESQUISA E FILTRO
+// =====================================================
+
+function aplicarFiltrosBeneficiarios() {
+
+    const resultado =
+        filtrarBeneficiarios(
+            listaBeneficiarios,
+            elementos.pesquisa.value,
+            filtroStatusAtual
         );
 
-        throw erro;
+    renderizarTabela(
+        elementos.tabela,
+        resultado
+    );
 
-    }
+    atualizarTextoResultado(
+        resultado.length
+    );
+
+    atualizarBotaoLimparPesquisa();
 
 }
 
@@ -309,27 +662,35 @@ async function carregarBeneficiarios() {
 
     try {
 
-        const resposta = await listarBeneficiarios();
+        const resposta =
+            await listarBeneficiarios();
 
-        const dados = await resposta.json();
+        const dados =
+            await lerRespostaJson(
+                resposta
+            );
 
         if (!resposta.ok) {
 
-            mostrarErro(
+            throw new Error(
                 dados.error ||
+                dados.erro ||
+                dados.mensagem ||
                 "Erro ao carregar beneficiários."
             );
 
-            return;
-
         }
 
-        listaBeneficiarios = dados;
+        listaBeneficiarios =
+            normalizarListaBeneficiarios(
+                dados
+            );
 
-        renderizarTabela(
-            elementos.tabela,
-            listaBeneficiarios
-        );
+        atualizarContadoresFiltros();
+
+        atualizarBotoesFiltro();
+
+        aplicarFiltrosBeneficiarios();
 
     } catch (erro) {
 
@@ -338,14 +699,19 @@ async function carregarBeneficiarios() {
             erro
         );
 
+        listaBeneficiarios = [];
+
+        atualizarContadoresFiltros();
+
+        aplicarFiltrosBeneficiarios();
+
         mostrarErro(
+            erro.message ||
             "Não foi possível carregar os beneficiários."
         );
 
     } finally {
 
-        // O finally sempre executa:
-        // tanto em caso de sucesso quanto de erro.
         esconderLoading();
 
     }
@@ -359,32 +725,48 @@ async function carregarBeneficiarios() {
 
 async function carregarInstituicoesSelect() {
 
-    const token = localStorage.getItem("token");
-
     try {
 
-        const resposta = await fetch(
-            `${API_URL}/instituicoes`,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`
+        const resposta =
+            await fetch(
+                `${API_URL}/instituicoes`,
+                {
+                    method: "GET",
+                    headers:
+                        obterHeaders(),
+                    cache:
+                        "no-store"
                 }
-            }
-        );
+            );
 
-        const instituicoes =
-            await resposta.json();
+        const dados =
+            await lerRespostaJson(
+                resposta
+            );
 
         if (!resposta.ok) {
 
-            alert(
-                instituicoes.error ||
+            throw new Error(
+                dados.error ||
+                dados.erro ||
+                dados.mensagem ||
                 "Erro ao carregar instituições."
             );
 
-            return;
-
         }
+
+        const instituicoes =
+            Array.isArray(dados)
+                ? dados
+                : Array.isArray(
+                    dados?.instituicoes
+                )
+                    ? dados.instituicoes
+                    : Array.isArray(
+                        dados?.data
+                    )
+                        ? dados.data
+                        : [];
 
         elementos.selectInstituicao.innerHTML = `
             <option value="">
@@ -395,18 +777,21 @@ async function carregarInstituicoesSelect() {
         instituicoes.forEach(
             (instituicao) => {
 
-                elementos.selectInstituicao
+                elementos
+                    .selectInstituicao
                     .insertAdjacentHTML(
                         "beforeend",
                         `
-                            <option value="${instituicao.id}">
-                                ${instituicao.nome}
+                            <option value="${Number(instituicao.id)}">
+                                ${escaparHtml(instituicao.nome)}
                             </option>
                         `
                     );
 
             }
         );
+
+        return true;
 
     } catch (erro) {
 
@@ -415,9 +800,12 @@ async function carregarInstituicoesSelect() {
             erro
         );
 
-        alert(
+        mostrarErro(
+            erro.message ||
             "Não foi possível carregar as instituições."
         );
+
+        return false;
 
     }
 
@@ -425,38 +813,71 @@ async function carregarInstituicoesSelect() {
 
 
 // =====================================================
-// ABRIR MODAL PARA NOVO BENEFICIÁRIO
+// PREPARAR MODAL PARA CADASTRO
 // =====================================================
 
 async function abrirModalNovoBeneficiario() {
 
-    beneficiarioEditando = null;
+    beneficiarioEditandoId =
+        null;
 
     alterarTitulo(
         elementos.tituloModal,
-        "Novo Beneficiário"
+        "Novo beneficiário"
     );
 
     limparFormulario(
         elementos.formulario
     );
 
-    if (usuarioLogado.role === "ADMIN") {
+    if (
+        usuarioLogado.role ===
+        "ADMIN"
+    ) {
 
         elementos.grupoInstituicao
-            .style.display = "flex";
+            .style.display =
+                "flex";
 
-        await carregarInstituicoesSelect();
+        elementos.selectInstituicao
+            .required =
+                true;
+
+        const carregou =
+            await carregarInstituicoesSelect();
+
+        if (!carregou) {
+            return;
+        }
 
     } else {
 
         elementos.grupoInstituicao
-            .style.display = "none";
+            .style.display =
+                "none";
+
+        elementos.selectInstituicao
+            .required =
+                false;
 
     }
 
     abrirModal(
         elementos.modal
+    );
+
+    elementos.modal.setAttribute(
+        "aria-hidden",
+        "false"
+    );
+
+    setTimeout(
+        () => {
+
+            campos.nomeCompleto.focus();
+
+        },
+        50
     );
 
 }
@@ -472,11 +893,17 @@ function fecharModalBeneficiario() {
         elementos.modal
     );
 
+    elementos.modal.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
     limparFormulario(
         elementos.formulario
     );
 
-    beneficiarioEditando = null;
+    beneficiarioEditandoId =
+        null;
 
 }
 
@@ -488,35 +915,46 @@ function fecharModalBeneficiario() {
 function montarDadosFormulario() {
 
     const dados = {
+
         nomeCompleto:
-            campos.nomeCompleto.value.trim(),
+            campos.nomeCompleto.value
+                .trim(),
 
         cpf:
-            campos.cpf.value.replace(/\D/g, ""),
+            campos.cpf.value
+                .replace(/\D/g, ""),
 
         dataNascimento:
             campos.dataNascimento.value,
 
         logradouro:
-            campos.logradouro.value.trim(),
+            campos.logradouro.value
+                .trim(),
 
         numero:
-            campos.numero.value.trim(),
+            campos.numero.value
+                .trim(),
 
         complemento:
-            campos.complemento.value.trim(),
+            campos.complemento.value
+                .trim(),
 
         cep:
-            campos.cep.value.replace(/\D/g, ""),
+            campos.cep.value
+                .replace(/\D/g, ""),
 
         regiao:
-            campos.regiao.value.trim(),
+            campos.regiao.value
+                .trim(),
 
         cidade:
-            campos.cidade.value.trim(),
+            campos.cidade.value
+                .trim(),
 
         uf:
-            campos.uf.value.trim().toUpperCase(),
+            campos.uf.value
+                .trim()
+                .toUpperCase(),
 
         telefonePrincipal:
             campos.telefonePrincipal.value
@@ -527,25 +965,42 @@ function montarDadosFormulario() {
                 .replace(/\D/g, ""),
 
         email:
-            campos.email.value.trim(),
+            campos.email.value
+                .trim(),
 
         tipoBeneficio:
             campos.tipoBeneficio.value,
 
         situacaoSocioeconomica:
-            campos.situacaoSocioeconomica
-                .value
+            campos.situacaoSocioeconomica.value
                 .trim(),
 
         observacoes:
-            campos.observacoes.value.trim()
+            campos.observacoes.value
+                .trim()
+
     };
 
-    if (usuarioLogado.role === "ADMIN") {
+    if (
+        usuarioLogado.role ===
+        "ADMIN"
+    ) {
 
-        dados.instituicaoId = Number(
-            elementos.selectInstituicao.value
-        );
+        const instituicaoId =
+            Number(
+                elementos.selectInstituicao.value
+            );
+
+        if (!instituicaoId) {
+
+            throw new Error(
+                "Selecione uma instituição."
+            );
+
+        }
+
+        dados.instituicaoId =
+            instituicaoId;
 
     }
 
@@ -562,48 +1017,62 @@ async function salvarBeneficiario(event) {
 
     event.preventDefault();
 
-    const dados =
-        montarDadosFormulario();
+    let dados;
 
     try {
 
-        let resposta;
+        dados =
+            montarDadosFormulario();
 
-        if (beneficiarioEditando !== null) {
+    } catch (erro) {
 
-            resposta =
-                await editarBeneficiarioAPI(
-                    beneficiarioEditando,
+        mostrarErro(
+            erro.message
+        );
+
+        return;
+
+    }
+
+    mostrarLoading();
+
+    try {
+
+        const editando =
+            beneficiarioEditandoId !==
+            null;
+
+        const resposta =
+            editando
+                ? await editarBeneficiarioAPI(
+                    beneficiarioEditandoId,
+                    dados
+                )
+                : await cadastrarBeneficiarioAPI(
                     dados
                 );
-
-        } else {
-
-            resposta =
-                await cadastrarBeneficiarioAPI(
-                    dados
-                );
-
-        }
 
         const resultado =
-            await resposta.json();
+            await lerRespostaJson(
+                resposta
+            );
 
         if (!resposta.ok) {
 
-            const mensagem =
+            throw new Error(
                 resultado.issues?.[0]?.message ||
                 resultado.error ||
-                "Erro ao salvar beneficiário.";
-
-            mostrarErro(mensagem);
-
-            return;
+                resultado.erro ||
+                resultado.mensagem ||
+                "Erro ao salvar beneficiário."
+            );
 
         }
 
         mostrarSucesso(
-            "Beneficiário salvo com sucesso!"
+            editando
+                ? "Beneficiário atualizado com sucesso!"
+                : "Beneficiário cadastrado com sucesso!"
         );
 
         fecharModalBeneficiario();
@@ -618,8 +1087,13 @@ async function salvarBeneficiario(event) {
         );
 
         mostrarErro(
-            "Erro ao salvar beneficiário."
+            erro.message ||
+            "Não foi possível salvar o beneficiário."
         );
+
+    } finally {
+
+        esconderLoading();
 
     }
 
@@ -627,10 +1101,12 @@ async function salvarBeneficiario(event) {
 
 
 // =====================================================
-// EDITAR BENEFICIÁRIO
+// PREENCHER FORMULÁRIO PARA EDIÇÃO
 // =====================================================
 
 async function editarBeneficiario(id) {
+
+    mostrarLoading();
 
     try {
 
@@ -638,28 +1114,30 @@ async function editarBeneficiario(id) {
             await buscarBeneficiario(id);
 
         const beneficiario =
-            await resposta.json();
+            await lerRespostaJson(
+                resposta
+            );
 
         if (!resposta.ok) {
 
-            alert(
+            throw new Error(
                 beneficiario.error ||
+                beneficiario.erro ||
+                beneficiario.mensagem ||
                 "Erro ao buscar beneficiário."
             );
 
-            return;
-
         }
 
-        beneficiarioEditando =
+        beneficiarioEditandoId =
             Number(id);
 
         alterarTitulo(
             elementos.tituloModal,
-            "Editar Beneficiário"
+            "Editar beneficiário"
         );
 
-        // Dados pessoais
+
         campos.nomeCompleto.value =
             beneficiario.nomeCompleto ?? "";
 
@@ -668,13 +1146,10 @@ async function editarBeneficiario(id) {
 
         campos.dataNascimento.value =
             beneficiario.dataNascimento
-                ? beneficiario.dataNascimento.substring(
-                    0,
-                    10
-                )
+                ? beneficiario.dataNascimento
+                    .substring(0, 10)
                 : "";
 
-        // Endereço
         campos.cep.value =
             beneficiario.cep ?? "";
 
@@ -696,7 +1171,6 @@ async function editarBeneficiario(id) {
         campos.uf.value =
             beneficiario.uf ?? "";
 
-        // Contato
         campos.telefonePrincipal.value =
             beneficiario.telefonePrincipal ?? "";
 
@@ -706,33 +1180,53 @@ async function editarBeneficiario(id) {
         campos.email.value =
             beneficiario.email ?? "";
 
-        // Benefício
         campos.tipoBeneficio.value =
-            beneficiario.tipoBeneficio ?? "CESTA";
+            beneficiario.tipoBeneficio ??
+            "CESTA";
 
         campos.situacaoSocioeconomica.value =
-            beneficiario.situacaoSocioeconomica ?? "";
+            beneficiario.situacaoSocioeconomica ??
+            "";
 
         campos.observacoes.value =
             beneficiario.observacoes ?? "";
 
-        // Instituição
-        if (usuarioLogado.role === "ADMIN") {
+
+        if (
+            usuarioLogado.role ===
+            "ADMIN"
+        ) {
 
             elementos.grupoInstituicao
-                .style.display = "flex";
+                .style.display =
+                    "flex";
 
-            await carregarInstituicoesSelect();
+            elementos.selectInstituicao
+                .required =
+                    true;
+
+            const carregou =
+                await carregarInstituicoesSelect();
+
+            if (!carregou) {
+                return;
+            }
 
             elementos.selectInstituicao.value =
                 String(
-                    beneficiario.instituicaoId
+                    beneficiario.instituicaoId ??
+                    ""
                 );
 
         } else {
 
             elementos.grupoInstituicao
-                .style.display = "none";
+                .style.display =
+                    "none";
+
+            elementos.selectInstituicao
+                .required =
+                    false;
 
         }
 
@@ -740,16 +1234,26 @@ async function editarBeneficiario(id) {
             elementos.modal
         );
 
+        elementos.modal.setAttribute(
+            "aria-hidden",
+            "false"
+        );
+
     } catch (erro) {
 
         console.error(
-            "Erro ao carregar beneficiário:",
+            "Erro ao editar beneficiário:",
             erro
         );
 
-        alert(
-            "Erro ao carregar o beneficiário."
+        mostrarErro(
+            erro.message ||
+            "Não foi possível carregar o beneficiário."
         );
+
+    } finally {
+
+        esconderLoading();
 
     }
 
@@ -762,34 +1266,41 @@ async function editarBeneficiario(id) {
 
 async function excluirBeneficiario(id) {
 
-    const confirmou = await confirmarAcao(
-        "Deseja realmente excluir este beneficiário?"
-    );
+    const confirmou =
+        await confirmarAcao(
+            "Deseja realmente excluir este beneficiário?"
+        );
 
     if (!confirmou) {
         return;
     }
 
+    mostrarLoading();
+
     try {
 
         const resposta =
-            await excluirBeneficiarioAPI(id);
+            await excluirBeneficiarioAPI(
+                id
+            );
+
+        const resultado =
+            await lerRespostaJson(
+                resposta
+            );
 
         if (!resposta.ok) {
 
-            const erro =
-                await resposta.json();
-
-            alert(
-                erro.error ||
+            throw new Error(
+                resultado.error ||
+                resultado.erro ||
+                resultado.mensagem ||
                 "Erro ao excluir beneficiário."
             );
 
-            return;
-
         }
 
-        alert(
+        mostrarSucesso(
             "Beneficiário excluído com sucesso!"
         );
 
@@ -802,9 +1313,14 @@ async function excluirBeneficiario(id) {
             erro
         );
 
-        alert(
-            "Erro ao excluir beneficiário."
+        mostrarErro(
+            erro.message ||
+            "Não foi possível excluir o beneficiário."
         );
+
+    } finally {
+
+        esconderLoading();
 
     }
 
@@ -820,13 +1336,18 @@ async function alterarStatusBeneficiario(
 ) {
 
     const id =
-        botao.dataset.id;
+        Number(
+            botao.dataset.id
+        );
 
     const ativoAtual =
-        botao.dataset.ativo === "true";
+        botao.dataset.ativo ===
+        "true";
 
     const novoStatus =
         !ativoAtual;
+
+    mostrarLoading();
 
     try {
 
@@ -837,22 +1358,25 @@ async function alterarStatusBeneficiario(
             );
 
         const resultado =
-            await resposta.json();
+            await lerRespostaJson(
+                resposta
+            );
 
         if (!resposta.ok) {
 
-            alert(
+            throw new Error(
                 resultado.error ||
                 resultado.erro ||
+                resultado.mensagem ||
                 "Erro ao atualizar status."
             );
 
-            return;
-
         }
 
-        alert(
-            "Status atualizado com sucesso!"
+        mostrarSucesso(
+            novoStatus
+                ? "Beneficiário ativado com sucesso!"
+                : "Beneficiário inativado com sucesso!"
         );
 
         await carregarBeneficiarios();
@@ -860,13 +1384,18 @@ async function alterarStatusBeneficiario(
     } catch (erro) {
 
         console.error(
-            "Erro ao atualizar status:",
+            "Erro ao alterar status:",
             erro
         );
 
-        alert(
-            "Erro ao atualizar status."
+        mostrarErro(
+            erro.message ||
+            "Não foi possível atualizar o status."
         );
+
+    } finally {
+
+        esconderLoading();
 
     }
 
@@ -874,16 +1403,34 @@ async function alterarStatusBeneficiario(
 
 
 // =====================================================
-// PREENCHER ENDEREÇO PELO CEP
+// CONSULTAR CEP
 // =====================================================
 
 async function preencherEnderecoPorCEP() {
+
+    const cep =
+        campos.cep.value
+            .replace(/\D/g, "");
+
+    if (!cep) {
+        return;
+    }
+
+    if (cep.length !== 8) {
+
+        mostrarErro(
+            "Informe um CEP válido com 8 números."
+        );
+
+        return;
+
+    }
 
     try {
 
         const endereco =
             await buscarCEP(
-                campos.cep.value
+                cep
             );
 
         if (!endereco) {
@@ -899,11 +1446,23 @@ async function preencherEnderecoPorCEP() {
         campos.uf.value =
             endereco.uf ?? "";
 
+        if (
+            endereco.bairro &&
+            !campos.regiao.value
+        ) {
+
+            campos.regiao.value =
+                endereco.bairro;
+
+        }
+
+        campos.numero.focus();
+
     } catch (erro) {
 
-        alert(
+        mostrarErro(
             erro.message ||
-            "Erro ao consultar o CEP."
+            "Não foi possível consultar o CEP."
         );
 
     }
@@ -912,25 +1471,59 @@ async function preencherEnderecoPorCEP() {
 
 
 // =====================================================
-// PESQUISAR BENEFICIÁRIO
+// PESQUISA
 // =====================================================
 
 function pesquisarBeneficiario() {
 
-    if (!elementos.pesquisa) {
+    aplicarFiltrosBeneficiarios();
+
+}
+
+
+// =====================================================
+// LIMPAR PESQUISA
+// =====================================================
+
+function limparPesquisaBeneficiario() {
+
+    elementos.pesquisa.value =
+        "";
+
+    elementos.pesquisa.focus();
+
+    aplicarFiltrosBeneficiarios();
+
+}
+
+
+// =====================================================
+// SELECIONAR FILTRO
+// =====================================================
+
+function selecionarFiltroStatus(event) {
+
+    const novoStatus =
+        event.currentTarget
+            .dataset
+            .filtroStatus;
+
+    if (
+        ![
+            "TODOS",
+            "ATIVOS",
+            "INATIVOS"
+        ].includes(novoStatus)
+    ) {
         return;
     }
 
-    const resultado =
-        filtrarBeneficiarios(
-            listaBeneficiarios,
-            elementos.pesquisa.value
-        );
+    filtroStatusAtual =
+        novoStatus;
 
-    renderizarTabela(
-        elementos.tabela,
-        resultado
-    );
+    atualizarBotoesFiltro();
+
+    aplicarFiltrosBeneficiarios();
 
 }
 
@@ -956,6 +1549,7 @@ function tratarCliqueDaTabela(event) {
 
     }
 
+
     const botaoExcluir =
         event.target.closest(
             ".btnExcluir"
@@ -970,6 +1564,7 @@ function tratarCliqueDaTabela(event) {
         return;
 
     }
+
 
     const botaoStatus =
         event.target.closest(
@@ -988,13 +1583,47 @@ function tratarCliqueDaTabela(event) {
 
 
 // =====================================================
+// FECHAR MODAL AO CLICAR NO FUNDO
+// =====================================================
+
+function tratarCliqueForaModal(event) {
+
+    if (
+        event.target ===
+        elementos.modal
+    ) {
+
+        fecharModalBeneficiario();
+
+    }
+
+}
+
+
+// =====================================================
+// FECHAR COM ESC
+// =====================================================
+
+function tratarTeclaEscape(event) {
+
+    if (
+        event.key === "Escape" &&
+        elementos.modal
+    ) {
+
+        fecharModalBeneficiario();
+
+    }
+
+}
+
+
+// =====================================================
 // CONFIGURAR EVENTOS
 // =====================================================
 
 function configurarEventos() {
 
-    // Cancela os eventos criados em uma
-    // inicialização anterior do módulo.
     if (controladorEventos) {
 
         controladorEventos.abort();
@@ -1004,56 +1633,99 @@ function configurarEventos() {
     controladorEventos =
         new AbortController();
 
-    const opcoesEvento = {
-        signal: controladorEventos.signal
+    const opcoes = {
+        signal:
+            controladorEventos.signal
     };
+
 
     elementos.btnAtualizar.addEventListener(
         "click",
         carregarBeneficiarios,
-        opcoesEvento
+        opcoes
     );
+
 
     elementos.btnNovo.addEventListener(
         "click",
         abrirModalNovoBeneficiario,
-        opcoesEvento
+        opcoes
     );
+
 
     elementos.btnFecharModal.addEventListener(
         "click",
         fecharModalBeneficiario,
-        opcoesEvento
+        opcoes
     );
+
+
+    elementos.btnCancelar.addEventListener(
+        "click",
+        fecharModalBeneficiario,
+        opcoes
+    );
+
 
     elementos.formulario.addEventListener(
         "submit",
         salvarBeneficiario,
-        opcoesEvento
+        opcoes
     );
+
 
     campos.cep.addEventListener(
         "blur",
         preencherEnderecoPorCEP,
-        opcoesEvento
+        opcoes
     );
 
-    if (elementos.pesquisa) {
 
-        elementos.pesquisa.addEventListener(
-            "input",
-            pesquisarBeneficiario,
-            opcoesEvento
-        );
+    elementos.pesquisa.addEventListener(
+        "input",
+        pesquisarBeneficiario,
+        opcoes
+    );
 
-    }
 
-    // Os botões Editar, Excluir e Status
-    // estão dentro da tabela.
+    elementos.btnLimparPesquisa.addEventListener(
+        "click",
+        limparPesquisaBeneficiario,
+        opcoes
+    );
+
+
+    elementos.filtrosStatus.forEach(
+        (botao) => {
+
+            botao.addEventListener(
+                "click",
+                selecionarFiltroStatus,
+                opcoes
+            );
+
+        }
+    );
+
+
     elementos.tabela.addEventListener(
         "click",
         tratarCliqueDaTabela,
-        opcoesEvento
+        opcoes
+    );
+
+
+    elementos.modal.addEventListener(
+        "click",
+        tratarCliqueForaModal,
+        opcoes
+    );
+
+
+    document.addEventListener(
+        "keydown",
+        tratarTeclaEscape,
+        opcoes
     );
 
 }
@@ -1085,31 +1757,47 @@ function configurarMascaras() {
 
 
 // =====================================================
-// INICIALIZAR BENEFICIÁRIOS
+// INICIALIZAR TELA
 // =====================================================
 
 export async function inicializarBeneficiarios() {
 
     try {
 
-        // Reinicia o estado ao entrar novamente
-        // na tela pelo router.
-        beneficiarioEditando = null;
-        listaBeneficiarios = [];
+        usuarioLogado =
+            null;
 
-        // Captura os elementos criados pelo HTML
-        // que acabou de ser inserido pela SPA.
+        beneficiarioEditandoId =
+            null;
+
+        listaBeneficiarios =
+            [];
+
+        filtroStatusAtual =
+            "TODOS";
+
+
         capturarElementosDaTela();
 
         validarElementosObrigatorios();
-
-        await carregarUsuarioLogado();
 
         configurarEventos();
 
         configurarMascaras();
 
+        atualizarBotoesFiltro();
+
+        atualizarBotaoLimparPesquisa();
+
+        atualizarContadoresFiltros();
+
+        atualizarTextoResultado(0);
+
+
+        await carregarUsuarioLogado();
+
         await carregarBeneficiarios();
+
 
     } catch (erro) {
 
@@ -1118,7 +1806,8 @@ export async function inicializarBeneficiarios() {
             erro
         );
 
-        alert(
+        mostrarErro(
+            erro.message ||
             "Não foi possível inicializar a tela de Beneficiários."
         );
 

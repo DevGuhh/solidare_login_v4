@@ -1416,3 +1416,11 @@ textarea{
     font-size:14px;
     font-weight:600;
 }
+
+/* =====================================================
+   ELEMENTOS OCULTOS PELO JAVASCRIPT
+===================================================== */
+
+[hidden] {
+    display: none !important;
+}

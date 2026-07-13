@@ -1,120 +1,229 @@
-const API_URL = "http://localhost:3000";
+// =====================================================
+// API DE BENEFICIÁRIOS
+// =====================================================
+
+const API_URL =
+    "http://localhost:3000";
+
+
+// =====================================================
+// OBTER TOKEN DE AUTENTICAÇÃO
+// =====================================================
+
+function obterToken() {
+
+    /*
+     * Quando "Lembrar meu acesso" está marcado,
+     * o token fica no localStorage.
+     *
+     * Caso contrário, fica no sessionStorage.
+     */
+    return (
+        localStorage.getItem("token") ||
+        sessionStorage.getItem("token")
+    );
+
+}
+
+
+// =====================================================
+// OBTER HEADERS
+// =====================================================
 
 function obterHeaders() {
 
-    const token = localStorage.getItem("token");
+    const token =
+        obterToken();
+
+    if (!token) {
+
+        console.warn(
+            "Token de autenticação não encontrado."
+        );
+
+    }
 
     return {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
+
+        Authorization:
+            `Bearer ${token || ""}`
     };
 
 }
 
-// ===========================================
-// LISTAR
-// ===========================================
+
+// =====================================================
+// VERIFICAR ID
+// =====================================================
+
+function validarId(id) {
+
+    const idNumerico =
+        Number(id);
+
+    if (
+        !Number.isInteger(idNumerico) ||
+        idNumerico <= 0
+    ) {
+
+        throw new Error(
+            "ID do beneficiário inválido."
+        );
+
+    }
+
+    return idNumerico;
+
+}
+
+
+// =====================================================
+// LISTAR BENEFICIÁRIOS
+// =====================================================
 
 export async function listarBeneficiarios() {
 
-    const resposta = await fetch(`${API_URL}/beneficiarios`, {
-        headers: obterHeaders()
-    });
+    return await fetch(
+        `${API_URL}/beneficiarios`,
+        {
+            method: "GET",
 
-    return resposta;
+            headers:
+                obterHeaders(),
+
+            cache:
+                "no-store"
+        }
+    );
 
 }
 
-// ===========================================
-// BUSCAR POR ID
-// ===========================================
+
+// =====================================================
+// BUSCAR BENEFICIÁRIO POR ID
+// =====================================================
 
 export async function buscarBeneficiario(id) {
 
-    const resposta = await fetch(`${API_URL}/beneficiarios/${id}`, {
-        headers: obterHeaders()
-    });
+    const idValidado =
+        validarId(id);
 
-    return resposta;
+    return await fetch(
+        `${API_URL}/beneficiarios/${idValidado}`,
+        {
+            method: "GET",
 
-}
+            headers:
+                obterHeaders(),
 
-// ===========================================
-// CADASTRAR
-// ===========================================
-
-export async function cadastrarBeneficiarioAPI(dados) {
-
-    const resposta = await fetch(`${API_URL}/beneficiarios`, {
-
-        method: "POST",
-
-        headers: obterHeaders(),
-
-        body: JSON.stringify(dados)
-
-    });
-
-    return resposta;
+            cache:
+                "no-store"
+        }
+    );
 
 }
 
-// ===========================================
-// EDITAR
-// ===========================================
 
-export async function editarBeneficiarioAPI(id, dados) {
+// =====================================================
+// CADASTRAR BENEFICIÁRIO
+// =====================================================
 
-    const resposta = await fetch(`${API_URL}/beneficiarios/${id}`, {
+export async function cadastrarBeneficiarioAPI(
+    dados
+) {
 
-        method: "PUT",
+    return await fetch(
+        `${API_URL}/beneficiarios`,
+        {
+            method: "POST",
 
-        headers: obterHeaders(),
+            headers:
+                obterHeaders(),
 
-        body: JSON.stringify(dados)
-
-    });
-
-    return resposta;
+            body:
+                JSON.stringify(dados)
+        }
+    );
 
 }
 
-// ===========================================
-// EXCLUIR
-// ===========================================
+
+// =====================================================
+// EDITAR BENEFICIÁRIO
+// =====================================================
+
+export async function editarBeneficiarioAPI(
+    id,
+    dados
+) {
+
+    const idValidado =
+        validarId(id);
+
+    return await fetch(
+        `${API_URL}/beneficiarios/${idValidado}`,
+        {
+            method: "PUT",
+
+            headers:
+                obterHeaders(),
+
+            body:
+                JSON.stringify(dados)
+        }
+    );
+
+}
+
+
+// =====================================================
+// EXCLUIR BENEFICIÁRIO
+// =====================================================
 
 export async function excluirBeneficiarioAPI(id) {
 
-    const resposta = await fetch(`${API_URL}/beneficiarios/${id}`, {
+    const idValidado =
+        validarId(id);
 
-        method: "DELETE",
+    return await fetch(
+        `${API_URL}/beneficiarios/${idValidado}`,
+        {
+            method: "DELETE",
 
-        headers: obterHeaders()
-
-    });
-
-    return resposta;
+            headers:
+                obterHeaders()
+        }
+    );
 
 }
 
-// ===========================================
-// STATUS
-// ===========================================
 
-export async function alterarStatusBeneficiarioAPI(id, ativo) {
+// =====================================================
+// ALTERAR STATUS DO BENEFICIÁRIO
+// =====================================================
 
-    const resposta = await fetch(`${API_URL}/beneficiarios/${id}`, {
+export async function alterarStatusBeneficiarioAPI(
+    id,
+    ativo
+) {
 
-        method: "PATCH",
+    const idValidado =
+        validarId(id);
 
-        headers: obterHeaders(),
+    return await fetch(
+        `${API_URL}/beneficiarios/${idValidado}`,
+        {
+            method: "PATCH",
 
-        body: JSON.stringify({
-            ativo
-        })
+            headers:
+                obterHeaders(),
 
-    });
-
-    return resposta;
+            body:
+                JSON.stringify({
+                    ativo: Boolean(ativo)
+                })
+        }
+    );
 
 }

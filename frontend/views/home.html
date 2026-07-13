@@ -1,85 +1,141 @@
 <!-- ==================================================
-     DASHBOARD
+     CABEÇALHO DO DASHBOARD
 ================================================== -->
 
 <section class="dashboard-header">
 
-    <div>
+    <div class="dashboard-header-conteudo">
 
-        <p class="dashboard-subtitle">
-            Visão geral do sistema
-        </p>
+        <div class="dashboard-header-texto">
 
-        <div class="dashboard-user">
+            <span class="dashboard-header-eyebrow">
+                Instituto Solidare
+            </span>
 
-            <div
-                id="avatarDashboard"
-                class="dashboard-avatar">
+            <p class="dashboard-subtitle">
+                Visão geral do sistema
+            </p>
 
-                U
+            <div class="dashboard-user">
 
-            </div>
+                <div
+                    id="avatarDashboard"
+                    class="dashboard-avatar"
+                    aria-hidden="true"
+                >
+                    U
+                </div>
 
-            <div>
+                <div class="dashboard-user-info">
 
-                <h1>
+                    <h1 class="dashboard-welcome">
 
-                    <span id="nomeDashboard">
+                        Olá,
 
-                        Usuário
+                        <span id="nomeDashboard">
+                            Usuário
+                        </span>
 
-                    </span>
+                        <span
+                            class="dashboard-wave"
+                            aria-hidden="true"
+                        >
+                            👋
+                        </span>
 
-                    👋
+                    </h1>
 
-                </h1>
+                    <p class="dashboard-description">
+                        Bem-vindo ao painel de gestão do Instituto Solidare.
+                    </p>
 
-                <p
-                    id="dataDashboard"
-                    class="dashboard-date">
-                </p>
-
-                <p
-                    id="ultimaAtualizacaoDashboard"
-                    class="dashboard-update">
-                </p>
+                </div>
 
             </div>
 
         </div>
 
-        <p class="dashboard-description">
-            Bem-vindo ao painel do Instituto Solidare.
-        </p>
 
-        <p
-            id="dataDashboard"
-            class="dashboard-date">
-        </p>
+        <div class="dashboard-header-meta">
 
-        <p
-            id="ultimaAtualizacaoDashboard"
-            class="dashboard-update">
-        </p>
+            <div class="dashboard-meta-item">
+
+                <i
+                    class="fa-regular fa-calendar"
+                    aria-hidden="true"
+                ></i>
+
+                <div>
+
+                    <span>Data atual</span>
+
+                    <strong id="dataDashboard">
+                        Carregando...
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="dashboard-meta-item">
+
+                <i
+                    class="fa-solid fa-rotate"
+                    aria-hidden="true"
+                ></i>
+
+                <div>
+
+                    <span>Última atualização</span>
+
+                    <strong id="ultimaAtualizacaoDashboard">
+                        Agora
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
 
     </div>
 
 </section>
 
-<!-- ============================
-     CARDS
-============================ -->
 
-<section class="dashboard-cards">
+<!-- ==================================================
+     INDICADORES PRINCIPAIS
+================================================== -->
 
-    <!-- CARD: BENEFICIÁRIOS -->
+<section
+    class="dashboard-cards"
+    aria-label="Indicadores principais"
+>
+
+    <!-- BENEFICIÁRIOS -->
 
     <article
-        class="dashboard-card dashboard-link"
-        data-pagina="beneficiarios.html">
+        class="dashboard-card dashboard-link dashboard-card-beneficiarios"
+        data-pagina="beneficiarios.html"
+        tabindex="0"
+        role="button"
+        aria-label="Abrir página de beneficiários"
+    >
 
-        <div class="dashboard-card-icon">
-            <i class="fa-solid fa-users"></i>
+        <div class="dashboard-card-topo">
+
+            <div class="dashboard-card-icon">
+                <i
+                    class="fa-solid fa-users"
+                    aria-hidden="true"
+                ></i>
+            </div>
+
+            <span class="dashboard-card-status">
+                Total
+            </span>
+
         </div>
 
         <div class="dashboard-card-content">
@@ -90,32 +146,58 @@
 
             <strong
                 id="totalBeneficiariosDashboard"
-                class="dashboard-card-number">
-
+                class="dashboard-card-number"
+            >
                 0
-
             </strong>
 
             <span
                 id="kpiBeneficiariosDashboard"
-                class="dashboard-card-description dashboard-kpi">
+                class="dashboard-card-description dashboard-kpi"
+            >
                 Dados atualizados agora
             </span>
+
+        </div>
+
+        <div class="dashboard-card-footer">
+
+            <span>Ver beneficiários</span>
+
+            <i
+                class="fa-solid fa-arrow-right"
+                aria-hidden="true"
+            ></i>
 
         </div>
 
     </article>
 
 
-    <!-- CARD: INSTITUIÇÕES -->
+    <!-- INSTITUIÇÕES -->
 
     <article
         id="cardInstituicoesDashboard"
-        class="dashboard-card dashboard-link"
-        data-pagina="instituicoes.html">
+        class="dashboard-card dashboard-link dashboard-card-instituicoes"
+        data-pagina="instituicoes.html"
+        tabindex="0"
+        role="button"
+        aria-label="Abrir página de instituições"
+    >
 
-        <div class="dashboard-card-icon">
-            <i class="fa-solid fa-building"></i>
+        <div class="dashboard-card-topo">
+
+            <div class="dashboard-card-icon">
+                <i
+                    class="fa-solid fa-building"
+                    aria-hidden="true"
+                ></i>
+            </div>
+
+            <span class="dashboard-card-status">
+                Parceiras
+            </span>
+
         </div>
 
         <div class="dashboard-card-content">
@@ -126,87 +208,150 @@
 
             <strong
                 id="totalInstituicoesDashboard"
-                class="dashboard-card-number">
-
+                class="dashboard-card-number"
+            >
                 0
-
             </strong>
 
             <span
                 id="kpiInstituicoesDashboard"
-                class="dashboard-card-description dashboard-kpi">
+                class="dashboard-card-description dashboard-kpi"
+            >
                 Parceiras cadastradas
             </span>
 
         </div>
 
+        <div class="dashboard-card-footer">
+
+            <span>Ver instituições</span>
+
+            <i
+                class="fa-solid fa-arrow-right"
+                aria-hidden="true"
+            ></i>
+
+        </div>
+
     </article>
 
 
-    <!-- CARD: BENEFICIÁRIOS ATIVOS -->
+    <!-- BENEFICIÁRIOS ATIVOS -->
 
     <article
-        class="dashboard-card dashboard-link"
-        data-pagina="beneficiarios.html">
+        class="dashboard-card dashboard-link dashboard-card-ativos"
+        data-pagina="beneficiarios.html"
+        tabindex="0"
+        role="button"
+        aria-label="Abrir beneficiários ativos"
+    >
 
-        <div class="dashboard-card-icon">
-            <i class="fa-solid fa-user-check"></i>
+        <div class="dashboard-card-topo">
+
+            <div class="dashboard-card-icon">
+                <i
+                    class="fa-solid fa-user-check"
+                    aria-hidden="true"
+                ></i>
+            </div>
+
+            <span class="dashboard-card-status dashboard-card-status-sucesso">
+                Ativos
+            </span>
+
         </div>
 
         <div class="dashboard-card-content">
 
             <span class="dashboard-card-label">
-                Beneficiários Ativos
+                Beneficiários ativos
             </span>
 
             <strong
                 id="beneficiariosAtivosDashboard"
-                class="dashboard-card-number">
-
+                class="dashboard-card-number"
+            >
                 0
-
             </strong>
 
             <span
                 id="kpiAtivosDashboard"
-                class="dashboard-card-description dashboard-kpi">
+                class="dashboard-card-description dashboard-kpi"
+            >
                 0% do total
             </span>
+
+        </div>
+
+        <div class="dashboard-card-footer">
+
+            <span>Consultar ativos</span>
+
+            <i
+                class="fa-solid fa-arrow-right"
+                aria-hidden="true"
+            ></i>
 
         </div>
 
     </article>
 
 
-    <!-- CARD: BENEFICIÁRIOS INATIVOS -->
+    <!-- BENEFICIÁRIOS INATIVOS -->
 
     <article
-        class="dashboard-card dashboard-link"
-        data-pagina="beneficiarios.html">
+        class="dashboard-card dashboard-link dashboard-card-inativos"
+        data-pagina="beneficiarios.html"
+        tabindex="0"
+        role="button"
+        aria-label="Abrir beneficiários inativos"
+    >
 
-        <div class="dashboard-card-icon">
-            <i class="fa-solid fa-user-xmark"></i>
+        <div class="dashboard-card-topo">
+
+            <div class="dashboard-card-icon">
+                <i
+                    class="fa-solid fa-user-xmark"
+                    aria-hidden="true"
+                ></i>
+            </div>
+
+            <span class="dashboard-card-status dashboard-card-status-alerta">
+                Inativos
+            </span>
+
         </div>
 
         <div class="dashboard-card-content">
 
             <span class="dashboard-card-label">
-                Beneficiários Inativos
+                Beneficiários inativos
             </span>
 
             <strong
                 id="beneficiariosInativosDashboard"
-                class="dashboard-card-number">
-
+                class="dashboard-card-number"
+            >
                 0
-
             </strong>
 
             <span
                 id="kpiInativosDashboard"
-                class="dashboard-card-description dashboard-kpi">
+                class="dashboard-card-description dashboard-kpi"
+            >
                 0% do total
             </span>
+
+        </div>
+
+        <div class="dashboard-card-footer">
+
+            <span>Consultar inativos</span>
+
+            <i
+                class="fa-solid fa-arrow-right"
+                aria-hidden="true"
+            ></i>
 
         </div>
 
@@ -214,73 +359,109 @@
 
 </section>
 
-<!-- ============================
-     GRID
-============================ -->
+
+<!-- ==================================================
+     GRÁFICO E ÚLTIMOS CADASTROS
+================================================== -->
 
 <section class="dashboard-grid">
 
-    <article class="dashboard-panel">
+    <!-- GRÁFICO -->
+
+    <article class="dashboard-panel dashboard-chart-panel">
 
         <div class="dashboard-panel-header">
 
             <div>
 
                 <span class="dashboard-panel-eyebrow">
-
                     Indicadores
-
                 </span>
 
                 <h2>
-
-                    Gráfico
-
+                    Visão geral dos beneficiários
                 </h2>
 
+                <p class="dashboard-panel-description">
+                    Comparativo entre beneficiários ativos e inativos.
+                </p>
+
+            </div>
+
+            <div
+                class="dashboard-panel-icon"
+                aria-hidden="true"
+            >
+                <i class="fa-solid fa-chart-column"></i>
             </div>
 
         </div>
 
         <div class="dashboard-chart-container">
 
-            <canvas id="graficoDashboard"></canvas>
+            <canvas
+                id="graficoDashboard"
+                aria-label="Gráfico de indicadores dos beneficiários"
+            ></canvas>
 
         </div>
 
     </article>
 
 
-    <article class="dashboard-panel">
+    <!-- ÚLTIMOS BENEFICIÁRIOS -->
+
+    <article class="dashboard-panel dashboard-recent-panel">
 
         <div class="dashboard-panel-header">
 
             <div>
 
                 <span class="dashboard-panel-eyebrow">
-
-                    Últimos Cadastros
-
+                    Cadastros recentes
                 </span>
 
                 <h2>
-
-                    Beneficiários
-
+                    Últimos beneficiários
                 </h2>
 
+                <p class="dashboard-panel-description">
+                    Registros adicionados mais recentemente.
+                </p>
+
             </div>
+
+            <button
+                type="button"
+                class="dashboard-panel-action"
+                data-pagina="beneficiarios.html"
+                title="Ver todos os beneficiários"
+            >
+                Ver todos
+
+                <i
+                    class="fa-solid fa-arrow-right"
+                    aria-hidden="true"
+                ></i>
+            </button>
 
         </div>
 
         <div
-            id="ultimosBeneficiariosDashboard">
+            id="ultimosBeneficiariosDashboard"
+            class="dashboard-recent-list"
+        >
 
-            <p class="dashboard-empty">
+            <div class="dashboard-list-loading">
 
-                Carregando...
+                <i
+                    class="fa-solid fa-spinner fa-spin"
+                    aria-hidden="true"
+                ></i>
 
-            </p>
+                <span>Carregando beneficiários...</span>
+
+            </div>
 
         </div>
 
@@ -289,28 +470,35 @@
 </section>
 
 
-<!-- ============================
+<!-- ==================================================
      AÇÕES RÁPIDAS
-============================ -->
+================================================== -->
 
-<section class="dashboard-panel">
+<section class="dashboard-panel dashboard-actions-panel">
 
     <div class="dashboard-panel-header">
 
         <div>
 
             <span class="dashboard-panel-eyebrow">
-
-                Acesso Rápido
-
+                Acesso rápido
             </span>
 
             <h2>
-
-                Ações
-
+                Ações frequentes
             </h2>
 
+            <p class="dashboard-panel-description">
+                Acesse rapidamente as principais áreas do sistema.
+            </p>
+
+        </div>
+
+        <div
+            class="dashboard-panel-icon"
+            aria-hidden="true"
+        >
+            <i class="fa-solid fa-bolt"></i>
         </div>
 
     </div>
@@ -318,33 +506,101 @@
     <div class="dashboard-actions">
 
         <button
-            class="btn btn-primary"
-            data-pagina="beneficiarios.html">
+            type="button"
+            class="dashboard-action dashboard-action-primary"
+            data-pagina="beneficiarios.html"
+        >
 
-            <i class="fa-solid fa-user-plus"></i>
+            <span class="dashboard-action-icon">
+                <i
+                    class="fa-solid fa-user-plus"
+                    aria-hidden="true"
+                ></i>
+            </span>
 
-            Beneficiários
+            <span class="dashboard-action-content">
+
+                <strong>
+                    Beneficiários
+                </strong>
+
+                <small>
+                    Consultar e gerenciar cadastros
+                </small>
+
+            </span>
+
+            <i
+                class="fa-solid fa-chevron-right dashboard-action-arrow"
+                aria-hidden="true"
+            ></i>
 
         </button>
 
+
         <button
+            type="button"
             id="acaoInstituicoesDashboard"
-            class="btn btn-info"
-            data-pagina="instituicoes.html">
+            class="dashboard-action dashboard-action-info"
+            data-pagina="instituicoes.html"
+        >
 
-            <i class="fa-solid fa-building"></i>
+            <span class="dashboard-action-icon">
+                <i
+                    class="fa-solid fa-building"
+                    aria-hidden="true"
+                ></i>
+            </span>
 
-            Instituições
+            <span class="dashboard-action-content">
+
+                <strong>
+                    Instituições
+                </strong>
+
+                <small>
+                    Gerenciar instituições parceiras
+                </small>
+
+            </span>
+
+            <i
+                class="fa-solid fa-chevron-right dashboard-action-arrow"
+                aria-hidden="true"
+            ></i>
 
         </button>
 
+
         <button
-            class="btn btn-secondary"
-            data-pagina="relatorios.html">
+            type="button"
+            class="dashboard-action dashboard-action-secondary"
+            data-pagina="relatorios.html"
+        >
 
-            <i class="fa-solid fa-chart-pie"></i>
+            <span class="dashboard-action-icon">
+                <i
+                    class="fa-solid fa-chart-pie"
+                    aria-hidden="true"
+                ></i>
+            </span>
 
-            Relatórios
+            <span class="dashboard-action-content">
+
+                <strong>
+                    Relatórios
+                </strong>
+
+                <small>
+                    Consultar indicadores e análises
+                </small>
+
+            </span>
+
+            <i
+                class="fa-solid fa-chevron-right dashboard-action-arrow"
+                aria-hidden="true"
+            ></i>
 
         </button>
 

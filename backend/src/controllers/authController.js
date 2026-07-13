@@ -2,160 +2,441 @@ import { prisma } from "../config/db.js";
 import bcrypt from "bcrypt";
 import { generateToken } from "../utils/generateToken.js";
 
+
+// ======================================================
+// CADASTRAR USUÁRIO
+// ======================================================
+
 const register = async (req, res) => {
-  // Pega os dados enviados pelo cliente no corpo da requisição.
-  const { nome, email, senhaHash } = req.body;
 
-  // Procura no banco de dados um usuário com o mesmo e-mail.
-  // findUnique() retorna:
-  // - O usuário, se encontrar.
-  // - null, se não existir.
-  const userExists = await prisma.usuario.findUnique({
-    where: { email: email },
-  });
+    try {
 
-  // Se já existir um usuário com esse e-mail,
-  // interrompe a execução e retorna um erro.
-  if (userExists) {
-    return (
-      res
-        // Código HTTP 400 = Requisição inválida.
-        // Neste caso, porque o e-mail já está cadastrado.
-        .status(400)
-        // Envia uma resposta em formato JSON informando o erro.
-        .json({ error: "Email já em uso" })
-    );
-  }
+        /*
+         * O nome correto recebido do frontend deve ser "senha".
+         *
+         * Mantemos também "senhaHash" temporariamente para garantir
+         * compatibilidade com formulários antigos do projeto.
+         */
+        const {
+            nome,
+            email,
+            senha,
+            senhaHash,
+            role,
+            instituicaoId
+        } = req.body;
 
-  // Gera um "salt" (sal) para fortalecer a criptografia da senha.
-  // O salt é um valor aleatório adicionado à senha antes de criptografá-la.
-  // Isso faz com que duas pessoas com a mesma senha tenham hashes diferentes, aumentando a segurança contra ataques.
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(senhaHash, salt);
+        const senhaRecebida = senha || senhaHash;
 
-  // Cria um novo usuário no banco de dados.
-  // create() insere um novo registro na tabela "usuario".
-  // Os dados enviados estão dentro da propriedade "data".
-  const usuario = await prisma.usuario.create({
-    data: {
-      nome,
-      email,
-      // Salva a senha criptografada (hash),
-      // nunca a senha original.
-      senhaHash: hashedPassword,
-    },
-  });
+        // Remove espaços e padroniza o e-mail em letras minúsculas
+        const emailNormalizado = email
+            ? email.trim().toLowerCase()
+            : "";
 
-  // Gera um Token JWT para o usuário que acabou de fazer login.
-  // usuario.id -> ID do usuário encontrado no banco de dados.
-  // Esse ID será colocado dentro do token para identificar
-  // quem é o usuário nas próximas requisições.
-  const token = generateToken(usuario.id, res, usuario.role);
+        // ==================================================
+        // VALIDAÇÃO DOS CAMPOS
+        // ==================================================
 
-  // Retorna uma resposta indicando que o cadastro foi realizado com sucesso.
-  res.status(201).json({
-    // Código HTTP 201 = Recurso criado com sucesso.
-    status: "sucesso",
-    // Dados que serão enviados para o cliente.
-    data: {
-      usuario: {
-        id: usuario.id,
-        nome: nome,
-        email: email,
-        role: usuario.role,
-        // A senha NÃO é enviada na resposta por segurança.
-      },
-      token,
-    },
-  });
+        if (!nome || !emailNormalizado || !senhaRecebida) {
+
+            return res.status(400).json({
+                error: "Nome, e-mail e senha são obrigatórios."
+            });
+
+        }
+
+        if (senhaRecebida.length < 6) {
+
+            return res.status(400).json({
+                error: "A senha deve possuir pelo menos 6 caracteres."
+            });
+
+        }
+
+        // ==================================================
+        // VERIFICA SE O E-MAIL JÁ EXISTE
+        // ==================================================
+
+        const userExists = await prisma.usuario.findUnique({
+
+            where: {
+                email: emailNormalizado
+            }
+
+        });
+
+        if (userExists) {
+
+            return res.status(409).json({
+                error: "Este e-mail já está cadastrado."
+            });
+
+        }
+
+        // ==================================================
+        // CRIPTOGRAFA A SENHA
+        // ==================================================
+
+        const salt = await bcrypt.genSalt(10);
+
+        const hashedPassword = await bcrypt.hash(
+            senhaRecebida,
+            salt
+        );
+
+        // ==================================================
+        // MONTA OS DADOS DO NOVO USUÁRIO
+        // ==================================================
+
+        const dadosNovoUsuario = {
+
+            nome: nome.trim(),
+
+            email: emailNormalizado,
+
+            senhaHash: hashedPassword
+
+        };
+
+        /*
+         * Role e instituição só são adicionados quando forem enviados.
+         * Caso não sejam enviados, o Prisma utilizará os valores padrão
+         * definidos no schema.
+         */
+        if (role) {
+            dadosNovoUsuario.role = role;
+        }
+
+        if (
+            instituicaoId !== undefined &&
+            instituicaoId !== null &&
+            instituicaoId !== ""
+        ) {
+
+            dadosNovoUsuario.instituicaoId =
+                Number(instituicaoId);
+
+        }
+
+        // ==================================================
+        // CRIA O USUÁRIO
+        // ==================================================
+
+        const usuario = await prisma.usuario.create({
+
+            data: dadosNovoUsuario
+
+        });
+
+        // ==================================================
+        // GERA O TOKEN JWT
+        // ==================================================
+
+        const token = generateToken(
+            usuario.id,
+            res,
+            usuario.role
+        );
+
+        // ==================================================
+        // RESPOSTA
+        // ==================================================
+
+        return res.status(201).json({
+
+            status: "sucesso",
+
+            mensagem: "Usuário cadastrado com sucesso.",
+
+            /*
+             * Token no nível principal para funcionar com o login.js.
+             */
+            token,
+
+            data: {
+
+                usuario: {
+
+                    id: usuario.id,
+
+                    nome: usuario.nome,
+
+                    email: usuario.email,
+
+                    role: usuario.role,
+
+                    ativo: usuario.ativo,
+
+                    instituicaoId: usuario.instituicaoId
+
+                },
+
+                /*
+                 * Mantido também dentro de data para compatibilidade
+                 * com partes antigas do frontend.
+                 */
+                token
+
+            }
+
+        });
+
+    } catch (erro) {
+
+        console.error(
+            "Erro ao cadastrar usuário:",
+            erro
+        );
+
+        return res.status(500).json({
+            error: "Erro interno ao cadastrar usuário."
+        });
+
+    }
+
 };
+
+
+// ======================================================
+// REALIZAR LOGIN
+// ======================================================
 
 const login = async (req, res) => {
-  const { email, senhaHash } = req.body;
 
-  const usuario = await prisma.usuario.findUnique({
-    where: { email: email },
-  });
+    try {
 
-  if (!usuario) {
-    return (
-      res
-        // Código HTTP 400 = Requisição inválida.
-        // Neste caso, porque o e-mail já está cadastrado.
-        .status(400)
-        // Envia uma resposta em formato JSON informando o erro.
-        .json({ error: "Senha ou email inválido" })
-    );
-  }
+        /*
+         * O frontend atual envia:
+         *
+         * {
+         *     email: "...",
+         *     senha: "..."
+         * }
+         *
+         * senhaHash é mantido apenas como compatibilidade temporária.
+         */
+        const {
+            email,
+            senha,
+            senhaHash
+        } = req.body;
 
-  // Compara a senha digitada pelo usuário com a senha criptografada armazenada no banco de dados.
+        const senhaRecebida = senha || senhaHash;
 
-  // senhaHash -> senha digitada pelo usuário no login.
-  // usuario.senhaHash -> hash da senha salvo no banco.
-  const isPasswordValid = await bcrypt.compare(senhaHash, usuario.senhaHash);
+        const emailNormalizado = email
+            ? email.trim().toLowerCase()
+            : "";
 
-  // Se a senha estiver incorreta, interrompe a execução e retorna uma mensagem de erro.
-  if (!isPasswordValid) {
-    return (
-      res
-        // Código HTTP 400 = Requisição inválida.
-        // Neste caso, porque o e-mail ou a senha estão incorretos.
-        .status(400)
-        // Envia uma resposta em formato JSON informando o erro.
-        .json({ error: "Senha ou email inválido" })
-    );
-  }
+        // ==================================================
+        // VALIDAÇÃO DOS CAMPOS
+        // ==================================================
 
-  // Gera um Token JWT para o usuário que acabou de fazer login.
-  // usuario.id -> ID do usuário encontrado no banco de dados.
-  // Esse ID será colocado dentro do token para identificar
-  // quem é o usuário nas próximas requisições.
-  const token = generateToken(usuario.id, res, usuario.role);
+        if (!emailNormalizado || !senhaRecebida) {
 
-  // Se chegou até aqui, significa que:
-  // ✔ O usuário existe.
-  // ✔ A senha está correta.
-  // Então retorna os dados do usuário.
-  res.status(201).json({
-    // Código HTTP 201 = Recurso criado com sucesso.
-    status: "sucesso",
-    // Dados que serão enviados para o cliente.
-    data: {
-      usuario: {
-        id: usuario.id,
-        email: email,
-        role: usuario.role,
-        // A senha NÃO é enviada na resposta por segurança.
-      },
-      token,
-    },
-  });
+            return res.status(400).json({
+                error: "E-mail e senha são obrigatórios."
+            });
+
+        }
+
+        // ==================================================
+        // BUSCA O USUÁRIO
+        // ==================================================
+
+        const usuario = await prisma.usuario.findUnique({
+
+            where: {
+                email: emailNormalizado
+            }
+
+        });
+
+        /*
+         * Usamos a mesma mensagem para usuário inexistente
+         * ou senha incorreta. Isso evita revelar quais e-mails
+         * estão cadastrados no sistema.
+         */
+        if (!usuario) {
+
+            return res.status(401).json({
+                error: "E-mail ou senha inválidos."
+            });
+
+        }
+
+        // ==================================================
+        // VERIFICA SE O USUÁRIO ESTÁ ATIVO
+        // ==================================================
+
+        if (!usuario.ativo) {
+
+            return res.status(403).json({
+                error: "Este usuário está inativo. Procure um administrador."
+            });
+
+        }
+
+        // ==================================================
+        // CONFERE SE EXISTE SENHA NO BANCO
+        // ==================================================
+
+        if (!usuario.senhaHash) {
+
+            console.error(
+                `Usuário de ID ${usuario.id} está sem senhaHash no banco.`
+            );
+
+            return res.status(500).json({
+                error: "O usuário está sem uma senha configurada."
+            });
+
+        }
+
+        // ==================================================
+        // COMPARA A SENHA DIGITADA COM O HASH
+        // ==================================================
+
+        const isPasswordValid = await bcrypt.compare(
+
+            senhaRecebida,
+
+            usuario.senhaHash
+
+        );
+
+        if (!isPasswordValid) {
+
+            return res.status(401).json({
+                error: "E-mail ou senha inválidos."
+            });
+
+        }
+
+        // ==================================================
+        // GERA O TOKEN JWT
+        // ==================================================
+
+        const token = generateToken(
+            usuario.id,
+            res,
+            usuario.role
+        );
+
+        // ==================================================
+        // RETORNA O LOGIN
+        // ==================================================
+
+        return res.status(200).json({
+
+            status: "sucesso",
+
+            mensagem: "Login realizado com sucesso.",
+
+            /*
+             * Seu login.js verifica dados.token.
+             * Por isso o token precisa estar neste nível.
+             */
+            token,
+
+            data: {
+
+                usuario: {
+
+                    id: usuario.id,
+
+                    nome: usuario.nome,
+
+                    email: usuario.email,
+
+                    role: usuario.role,
+
+                    ativo: usuario.ativo,
+
+                    instituicaoId: usuario.instituicaoId
+
+                },
+
+                /*
+                 * Também deixamos dentro de data para manter
+                 * compatibilidade com códigos antigos.
+                 */
+                token
+
+            }
+
+        });
+
+    } catch (erro) {
+
+        console.error(
+            "Erro ao realizar login:",
+            erro
+        );
+
+        /*
+         * Como respondemos sempre com JSON, o frontend não receberá
+         * mais uma página HTML de erro e não exibirá:
+         *
+         * Unexpected token '<'
+         */
+        return res.status(500).json({
+            error: "Erro interno ao realizar login."
+        });
+
+    }
+
 };
 
-// Função responsável por realizar o logout do usuário.
+
+// ======================================================
+// REALIZAR LOGOUT
+// ======================================================
+
 const logout = async (req, res) => {
-  // Substitui o cookie "jwt" por um valor vazio
-  // e define uma data de expiração no passado.
-  // Como a data já expirou, o navegador remove
-  // esse cookie automaticamente.
-  res.cookie("jwt", "", {
-    // Impede que o JavaScript do navegador
-    // tenha acesso ao cookie.
-    httpOnly: true,
-    // Define a data de expiração como
-    // 01/01/1970 (início do tempo no JavaScript).
-    // Como essa data já passou, o cookie é apagado.
-    expires: new Date(0),
-  });
 
-  // Retorna uma resposta informando
-  // que o logout foi realizado com sucesso.
-  res.status(200).json({
-    // Código HTTP 200 = Requisição realizada com sucesso.
-    status: "sucesso",
-    // Mensagem enviada ao cliente.
-    messagem: "Desconectado com sucesso",
-  });
+    try {
+
+        // Apaga o cookie JWT, caso ele esteja sendo utilizado
+        res.cookie("jwt", "", {
+
+            httpOnly: true,
+
+            expires: new Date(0),
+
+            sameSite: "lax"
+
+        });
+
+        return res.status(200).json({
+
+            status: "sucesso",
+
+            mensagem: "Desconectado com sucesso."
+
+        });
+
+    } catch (erro) {
+
+        console.error(
+            "Erro ao realizar logout:",
+            erro
+        );
+
+        return res.status(500).json({
+            error: "Erro interno ao realizar logout."
+        });
+
+    }
+
 };
 
-export { register, login, logout };
+
+// ======================================================
+// EXPORTA OS CONTROLLERS
+// ======================================================
+
+export {
+    register,
+    login,
+    logout
+};

@@ -1,102 +1,289 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Login</title>
+    <meta charset="UTF-8">
 
-<link rel="stylesheet" href="css/login.css">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-<link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <meta
+        name="description"
+        content="Acesso ao sistema de gestão do Instituto Solidare"
+    >
+
+    <title>Login | Instituto Solidare</title>
+
+    <!-- CSS da tela de login -->
+    <link
+        rel="stylesheet"
+        href="css/login.css"
+    >
+
+    <!-- Font Awesome -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    >
 
 </head>
+
 <body>
 
-<div class="container">
+    <main class="login-page">
 
-    <!-- LADO ESQUERDO -->
-    <div class="left-side">
-        <img src="img/fundo.png" alt="Instituto Solidare">
-    </div>
+        <!-- Imagem completa aprovada -->
+        <div
+            class="login-background"
+            aria-hidden="true"
+        ></div>
 
-    <!-- LADO DIREITO -->
-    <div class="right-side">
 
-        <div class="login-box">
+        <!-- Área do formulário verdadeiro -->
+        <section
+            class="login-form-area"
+            aria-label="Acesso ao sistema"
+        >
 
-            <div class="logo">
-                <i class="fa-solid fa-user"></i>
-            </div>
+            <div class="login-card">
 
-            <h2>Bem-vindo(a)!</h2>
-            <p>Faça login para acessar o sistema</p>
+                <!-- Cabeçalho -->
 
-            <form id="loginForm">
+                <header class="login-header">
 
-                <label>E-mail ou CPF</label>
-
-                <div class="input-group">
-                    <i class="fa-regular fa-user"></i>
-                    <input
-                        type="email"
-                        id="email"
-                        placeholder="Digite seu e-mail">
-                </div>
-
-                <label>Senha</label>
-
-                <div class="input-group">
-                    <i class="fa-solid fa-lock"></i>
-
-                    <input
-                        type="password"
-                        id="senha"
-                        placeholder="Digite sua senha">
-
-                    <i class="fa-regular fa-eye eye"
-                    onclick="mostrarSenha()"></i>
-                </div>
-
-                <div class="options">
-
-                    <div>
-                        <input type="checkbox">
-                        Lembrar meu acesso
+                    <div
+                        class="login-logo"
+                        aria-hidden="true"
+                    >
+                        <i class="fa-solid fa-hand-holding-heart"></i>
                     </div>
 
-                    <a href="#">Esqueci minha senha</a>
+                    <span class="login-system-name">
+                        Instituto Solidare
+                    </span>
 
-                </div>
+                    <h1>Bem-vindo(a)!</h1>
 
-                <button type="submit">
-                    <i class="fa-solid fa-lock"></i>
-                    Entrar no Sistema
-                </button>
+                    <p>
+                        Acesse sua conta para continuar.
+                    </p>
 
-                <div class="divider">
-                    <span>ou</span>
-                </div>
+                </header>
 
-                <button type="button" class="google">
-                    <i class="fa-brands fa-google"></i>
-                    Entrar com Google
-                </button>
 
-            </form>
+                <!-- Mensagem geral -->
 
-            <div class="footer">
-                Ambiente seguro e criptografado
+                <div
+                    id="mensagemLogin"
+                    class="login-message"
+                    role="alert"
+                    aria-live="polite"
+                    hidden
+                ></div>
+
+
+                <!-- Formulário -->
+
+                <form
+                    id="loginForm"
+                    class="login-form"
+                    novalidate
+                >
+
+                    <!-- E-mail -->
+
+                    <div class="form-group">
+
+                        <label for="email">
+                            E-mail
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i
+                                class="fa-regular fa-envelope input-icon"
+                                aria-hidden="true"
+                            ></i>
+
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                placeholder="exemplo@email.com"
+                                autocomplete="email"
+                                inputmode="email"
+                                maxlength="150"
+                                required
+                                autofocus
+                            >
+
+                        </div>
+
+                        <small
+                            id="erroEmail"
+                            class="field-error"
+                            aria-live="polite"
+                        ></small>
+
+                    </div>
+
+
+                    <!-- Senha -->
+
+                    <div class="form-group">
+
+                        <label for="senha">
+                            Senha
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i
+                                class="fa-solid fa-lock input-icon"
+                                aria-hidden="true"
+                            ></i>
+
+                            <input
+                                type="password"
+                                id="senha"
+                                name="senha"
+                                placeholder="Digite sua senha"
+                                autocomplete="current-password"
+                                minlength="6"
+                                required
+                            >
+
+                            <button
+                                type="button"
+                                id="btnMostrarSenha"
+                                class="password-toggle"
+                                aria-label="Mostrar senha"
+                                title="Mostrar senha"
+                            >
+
+                                <i
+                                    id="iconeMostrarSenha"
+                                    class="fa-regular fa-eye"
+                                    aria-hidden="true"
+                                ></i>
+
+                            </button>
+
+                        </div>
+
+                        <small
+                            id="erroSenha"
+                            class="field-error"
+                            aria-live="polite"
+                        ></small>
+
+                    </div>
+
+
+                    <!-- Lembrar acesso -->
+
+                    <div class="login-options">
+
+                        <label
+                            for="lembrarAcesso"
+                            class="remember-option"
+                        >
+
+                            <input
+                                type="checkbox"
+                                id="lembrarAcesso"
+                                name="lembrarAcesso"
+                            >
+
+                            <span
+                                class="custom-checkbox"
+                                aria-hidden="true"
+                            >
+                                <i class="fa-solid fa-check"></i>
+                            </span>
+
+                            <span>
+                                Lembrar meu acesso
+                            </span>
+
+                        </label>
+
+                    </div>
+
+
+                    <!-- Botão -->
+
+                    <button
+                        type="submit"
+                        id="btnEntrar"
+                        class="login-button"
+                    >
+
+                        <span
+                            id="conteudoBotao"
+                            class="button-content"
+                        >
+                            <i class="fa-solid fa-right-to-bracket"></i>
+
+                            Entrar no sistema
+                        </span>
+
+                        <span
+                            id="carregamentoBotao"
+                            class="button-loading"
+                            hidden
+                        >
+                            <i class="fa-solid fa-spinner fa-spin"></i>
+
+                            Entrando...
+                        </span>
+
+                    </button>
+
+                </form>
+
+
+                <!-- Rodapé -->
+
+                <footer class="login-footer">
+
+                    <div class="security-info">
+
+                        <i
+                            class="fa-solid fa-shield-halved"
+                            aria-hidden="true"
+                        ></i>
+
+                        <span>
+                            Ambiente seguro e protegido
+                        </span>
+
+                    </div>
+
+                    <p>
+                        © 2026 Instituto Solidare.
+                        Todos os direitos reservados.
+                    </p>
+
+                </footer>
+
             </div>
 
-        </div>
+        </section>
 
-    </div>
+    </main>
 
-</div>
 
-<script src="js/script.js"></script>
+    <!-- JavaScript existente -->
+
+    <script
+        type="module"
+        src="js/login.js"
+    ></script>
 
 </body>
+
 </html>
