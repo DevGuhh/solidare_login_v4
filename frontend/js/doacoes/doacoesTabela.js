@@ -1,4 +1,194 @@
 // =====================================================
+// ESCAPAR HTML
+// =====================================================
+
+function escaparHtml(valor) {
+
+    return String(valor ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+}
+
+
+// =====================================================
+// FORMATAR DATA
+// =====================================================
+
+function formatarData(
+    valor
+) {
+
+    if (!valor) {
+        return "-";
+    }
+
+    const data =
+        new Date(valor);
+
+    if (
+        Number.isNaN(
+            data.getTime()
+        )
+    ) {
+        return "-";
+    }
+
+    return data.toLocaleDateString(
+        "pt-BR",
+        {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric"
+        }
+    );
+
+}
+
+
+// =====================================================
+// OBTER CLASSE DO TIPO
+// =====================================================
+
+function obterClasseTipo(
+    tipo
+) {
+
+    switch (tipo) {
+
+        case "CESTA":
+
+            return "badge-doacao-cesta";
+
+
+        case "GRANEL":
+
+            return "badge-doacao-granel";
+
+
+        case "AMBOS":
+
+            return "badge-doacao-ambos";
+
+
+        default:
+
+            return "badge-doacao-neutro";
+
+    }
+
+}
+
+
+// =====================================================
+// OBTER TEXTO DO TIPO
+// =====================================================
+
+function obterTextoTipo(
+    tipo
+) {
+
+    switch (tipo) {
+
+        case "CESTA":
+
+            return "Cesta";
+
+
+        case "GRANEL":
+
+            return "Granel";
+
+
+        case "AMBOS":
+
+            return "Ambos";
+
+
+        default:
+
+            return tipo || "-";
+
+    }
+
+}
+
+
+// =====================================================
+// RENDERIZAR BADGE DO TIPO
+// =====================================================
+
+function renderizarBadgeTipo(
+    tipo
+) {
+
+    const classe =
+        obterClasseTipo(
+            tipo
+        );
+
+    const texto =
+        escaparHtml(
+            obterTextoTipo(
+                tipo
+            )
+        );
+
+    return `
+        <span class="badge-doacao ${classe}">
+            ${texto}
+        </span>
+    `;
+
+}
+
+
+// =====================================================
+// RENDERIZAR ESTADO VAZIO
+// =====================================================
+
+function renderizarEstadoVazio(
+    tabela
+) {
+
+    tabela.innerHTML = `
+
+        <tr class="doacoes-linha-vazia">
+
+            <td colspan="8">
+
+                <div class="doacoes-empty">
+
+                    <div
+                        class="doacoes-empty-icon"
+                        aria-hidden="true"
+                    >
+                        <i class="fa-solid fa-hand-holding-heart"></i>
+                    </div>
+
+                    <strong>
+                        Nenhuma doação encontrada
+                    </strong>
+
+                    <span>
+                        Cadastre uma nova doação ou altere os filtros da pesquisa.
+                    </span>
+
+                </div>
+
+            </td>
+
+        </tr>
+
+    `;
+
+}
+
+
+// =====================================================
 // RENDERIZAR TABELA DE DOAÇÕES
 // =====================================================
 
@@ -10,190 +200,266 @@ export function renderizarTabelaDoacoes(
 
 ) {
 
-    tabela.innerHTML = "";
+    if (!tabela) {
 
-    if (!Array.isArray(doacoes) || doacoes.length === 0) {
-
-        tabela.innerHTML = `
-
-            <tr>
-
-                <td colspan="8" style="text-align:center;">
-
-                    Nenhuma doação cadastrada.
-
-                </td>
-
-            </tr>
-
-        `;
+        console.error(
+            "A tabela de doações não foi encontrada."
+        );
 
         return;
 
     }
 
 
-    doacoes.forEach((doacao) => {
-
-        tabela.innerHTML += `
-
-            <tr>
-
-                <td>
-
-                    ${doacao.codigo}
-
-                </td>
-
-                <td>
-
-                    ${doacao.beneficiario?.nomeCompleto ?? "-"}
-
-                </td>
-
-                <td>
-
-                    ${doacao.instituicao?.nome ?? "-"}
-
-                </td>
-
-                <td>
-
-                    ${renderizarBadgeTipo(doacao.tipo)}
-
-                </td>
-
-                <td>
-
-                    ${doacao.quantidade}
-
-                </td>
-
-                <td>
-
-                    ${formatarData(doacao.dataDoacao)}
-
-                </td>
-
-                <td>
-
-                    ${doacao.usuario?.nome ?? "-"}
-
-                </td>
-
-                <td>
-
-                    <button
-
-                        class="btn btn-info btnEditarDoacao"
-
-                        data-id="${doacao.id}"
-
-                    >
-
-                        ✏️
-
-                    </button>
+    tabela.innerHTML =
+        "";
 
 
-                    <button
+    if (
+        !Array.isArray(doacoes) ||
+        doacoes.length === 0
+    ) {
 
-                        class="btn btn-danger btnExcluirDoacao"
+        renderizarEstadoVazio(
+            tabela
+        );
 
-                        data-id="${doacao.id}"
-
-                    >
-
-                        🗑️
-
-                    </button>
-
-                </td>
-
-            </tr>
-
-        `;
-
-    });
-
-}
-
-
-
-// =====================================================
-// BADGE DO TIPO
-// =====================================================
-
-function renderizarBadgeTipo(tipo) {
-
-    switch (tipo) {
-
-        case "CESTA":
-
-            return `
-                <span class="badge badge-warning">
-                    CESTA
-                </span>
-            `;
-
-        case "GRANEL":
-
-            return `
-                <span class="badge badge-info">
-                    GRANEL
-                </span>
-            `;
-
-        case "AMBOS":
-
-            return `
-                <span class="badge badge-primary">
-                    AMBOS
-                </span>
-            `;
-
-        default:
-
-            return `
-                <span class="badge">
-                    ${tipo ?? "-"}
-                </span>
-            `;
+        return;
 
     }
 
-}
+
+    const linhas =
+        doacoes.map(
+            (doacao) => {
+
+                const id =
+                    Number(
+                        doacao?.id
+                    ) || 0;
 
 
+                const codigo =
+                    escaparHtml(
+                        doacao?.codigo ||
+                        "-"
+                    );
 
-// =====================================================
-// FORMATAR DATA
-// =====================================================
 
-function formatarData(data) {
+                const beneficiario =
+                    escaparHtml(
+                        doacao
+                            ?.beneficiario
+                            ?.nomeCompleto ||
+                        "-"
+                    );
 
-    if (!data) {
 
-        return "-";
+                const instituicao =
+                    escaparHtml(
+                        doacao
+                            ?.instituicao
+                            ?.nome ||
+                        "-"
+                    );
 
-    }
 
-    return new Date(data)
+                const quantidade =
+                    Number(
+                        doacao?.quantidade
+                    ) || 0;
 
-        .toLocaleDateString(
 
-            "pt-BR",
+                const data =
+                    formatarData(
+                        doacao?.dataDoacao
+                    );
 
-            {
 
-                day: "2-digit",
+                return `
 
-                month: "2-digit",
+                    <tr data-id-doacao="${id}">
 
-                year: "numeric"
+                        <!-- ID -->
+
+                        <td>
+
+                            <span class="doacao-id">
+                                #${id}
+                            </span>
+
+                        </td>
+
+
+                        <!-- CÓDIGO -->
+
+                        <td>
+
+                            <strong class="doacao-codigo">
+                                ${codigo}
+                            </strong>
+
+                        </td>
+
+
+                        <!-- BENEFICIÁRIO -->
+
+                        <td>
+
+                            <div class="doacao-pessoa">
+
+                                <div
+                                    class="doacao-pessoa-avatar"
+                                    aria-hidden="true"
+                                >
+                                    <i class="fa-solid fa-user"></i>
+                                </div>
+
+                                <div class="doacao-pessoa-dados">
+
+                                    <strong>
+                                        ${beneficiario}
+                                    </strong>
+
+                                    <span>
+                                        Beneficiário
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- INSTITUIÇÃO -->
+
+                        <td>
+
+                            <div class="doacao-instituicao">
+
+                                <i
+                                    class="fa-solid fa-building"
+                                    aria-hidden="true"
+                                ></i>
+
+                                <span>
+                                    ${instituicao}
+                                </span>
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- TIPO -->
+
+                        <td>
+
+                            ${renderizarBadgeTipo(
+                                doacao?.tipo
+                            )}
+
+                        </td>
+
+
+                        <!-- QUANTIDADE -->
+
+                        <td>
+
+                            <span class="doacao-quantidade">
+
+                                <i
+                                    class="fa-solid fa-box"
+                                    aria-hidden="true"
+                                ></i>
+
+                                ${quantidade}
+
+                            </span>
+
+                        </td>
+
+
+                        <!-- DATA -->
+
+                        <td>
+
+                            <span class="doacao-data">
+
+                                <i
+                                    class="fa-regular fa-calendar"
+                                    aria-hidden="true"
+                                ></i>
+
+                                ${data}
+
+                            </span>
+
+                        </td>
+
+
+                        <!-- AÇÕES -->
+
+                        <td class="coluna-acoes">
+
+                            <div class="doacoes-acoes-tabela">
+
+                                <button
+                                    type="button"
+                                    class="btn-acao-tabela btnVisualizarDoacao"
+                                    data-id="${id}"
+                                    title="Visualizar doação"
+                                    aria-label="Visualizar a doação ${codigo}"
+                                >
+                                    <i
+                                        class="fa-solid fa-eye"
+                                        aria-hidden="true"
+                                    ></i>
+                                </button>
+
+
+                                <button
+                                    type="button"
+                                    class="btn-acao-tabela btnEditarDoacao"
+                                    data-id="${id}"
+                                    title="Editar doação"
+                                    aria-label="Editar a doação ${codigo}"
+                                >
+                                    <i
+                                        class="fa-solid fa-pen"
+                                        aria-hidden="true"
+                                    ></i>
+                                </button>
+
+
+                                <button
+                                    type="button"
+                                    class="btn-acao-tabela btnExcluirDoacao"
+                                    data-id="${id}"
+                                    title="Cancelar doação"
+                                    aria-label="Cancelar a doação ${codigo}"
+                                >
+                                    <i
+                                        class="fa-solid fa-trash"
+                                        aria-hidden="true"
+                                    ></i>
+                                </button>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                `;
 
             }
+        )
+            .join("");
 
-        );
+
+    tabela.innerHTML =
+        linhas;
 
 }

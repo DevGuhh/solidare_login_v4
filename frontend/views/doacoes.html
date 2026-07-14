@@ -619,7 +619,7 @@
 
 
 <!-- ==================================================
-     MODAL DA DOAÇÃO
+     MODAL DE CADASTRO E EDIÇÃO
 ================================================== -->
 
 <div
@@ -719,6 +719,7 @@
 
                     </div>
 
+
                     <div
                         id="grupoInstituicaoDoacao"
                         class="form-group full"
@@ -744,10 +745,12 @@
                         </select>
 
                         <small class="form-help">
-                            Selecione uma instituição para carregar os beneficiários vinculados.
+                            Selecione uma instituição para carregar os
+                            beneficiários vinculados.
                         </small>
 
                     </div>
+
 
                     <div class="form-group full">
 
@@ -957,6 +960,325 @@
             </footer>
 
         </form>
+
+    </div>
+
+</div>
+
+
+<!-- ==================================================
+     MODAL DE DETALHES DA DOAÇÃO
+================================================== -->
+
+<div
+    id="modalDetalhesDoacao"
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="tituloModalDetalhesDoacao"
+    aria-hidden="true"
+>
+
+    <div class="modal-content modal-doacao-content modal-detalhes-doacao-content">
+
+        <!-- ==========================================
+             CABEÇALHO
+        =========================================== -->
+
+        <header class="modal-doacao-header">
+
+            <div class="modal-doacao-titulo">
+
+                <div
+                    class="modal-doacao-icone"
+                    aria-hidden="true"
+                >
+                    <i class="fa-solid fa-eye"></i>
+                </div>
+
+                <div>
+
+                    <span class="modal-doacao-eyebrow">
+                        Consulta
+                    </span>
+
+                    <h2 id="tituloModalDetalhesDoacao">
+                        Detalhes da doação
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <button
+                type="button"
+                id="btnFecharDetalhesDoacao"
+                class="modal-doacao-fechar"
+                aria-label="Fechar detalhes da doação"
+                title="Fechar"
+            >
+                <i
+                    class="fa-solid fa-xmark"
+                    aria-hidden="true"
+                ></i>
+            </button>
+
+        </header>
+
+
+        <!-- ==========================================
+             CONTEÚDO
+        =========================================== -->
+
+        <div class="modal-doacao-body">
+
+            <section class="detalhes-doacao-resumo">
+
+                <div class="detalhes-doacao-codigo">
+
+                    <span>
+                        Código da doação
+                    </span>
+
+                    <strong id="detalheDoacaoCodigo">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div
+                    id="detalheDoacaoTipoBadge"
+                    class="detalhes-doacao-tipo"
+                >
+                    -
+                </div>
+
+            </section>
+
+
+            <section class="form-section">
+
+                <div class="form-section-header">
+
+                    <div
+                        class="form-section-icon"
+                        aria-hidden="true"
+                    >
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            Atendimento
+                        </h3>
+
+                        <p>
+                            Informações do beneficiário e da instituição.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="detalhes-doacao-grid">
+
+                    <article class="detalhe-doacao-item">
+
+                        <span class="detalhe-doacao-label">
+                            Beneficiário
+                        </span>
+
+                        <strong id="detalheDoacaoBeneficiario">
+                            -
+                        </strong>
+
+                    </article>
+
+
+                    <article class="detalhe-doacao-item">
+
+                        <span class="detalhe-doacao-label">
+                            Instituição
+                        </span>
+
+                        <strong id="detalheDoacaoInstituicao">
+                            -
+                        </strong>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+
+            <section class="form-section">
+
+                <div class="form-section-header">
+
+                    <div
+                        class="form-section-icon"
+                        aria-hidden="true"
+                    >
+                        <i class="fa-solid fa-box-open"></i>
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            Dados da entrega
+                        </h3>
+
+                        <p>
+                            Informações registradas no momento da doação.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="detalhes-doacao-grid">
+
+                    <article class="detalhe-doacao-item">
+
+                        <span class="detalhe-doacao-label">
+                            Tipo
+                        </span>
+
+                        <strong id="detalheDoacaoTipo">
+                            -
+                        </strong>
+
+                    </article>
+
+
+                    <article class="detalhe-doacao-item">
+
+                        <span class="detalhe-doacao-label">
+                            Quantidade
+                        </span>
+
+                        <strong id="detalheDoacaoQuantidade">
+                            -
+                        </strong>
+
+                    </article>
+
+
+                    <article class="detalhe-doacao-item">
+
+                        <span class="detalhe-doacao-label">
+                            Data da doação
+                        </span>
+
+                        <strong id="detalheDoacaoData">
+                            -
+                        </strong>
+
+                    </article>
+
+
+                    <article class="detalhe-doacao-item">
+
+                        <span class="detalhe-doacao-label">
+                            Registrado por
+                        </span>
+
+                        <strong id="detalheDoacaoUsuario">
+                            -
+                        </strong>
+
+                    </article>
+
+
+                    <article class="detalhe-doacao-item">
+
+                        <span class="detalhe-doacao-label">
+                            Comprovante
+                        </span>
+
+                        <strong id="detalheDoacaoComprovante">
+                            -
+                        </strong>
+
+                    </article>
+
+
+                    <article class="detalhe-doacao-item">
+
+                        <span class="detalhe-doacao-label">
+                            Identificador
+                        </span>
+
+                        <strong id="detalheDoacaoId">
+                            -
+                        </strong>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+
+            <section class="form-section">
+
+                <div class="form-section-header">
+
+                    <div
+                        class="form-section-icon"
+                        aria-hidden="true"
+                    >
+                        <i class="fa-solid fa-file-lines"></i>
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            Observações
+                        </h3>
+
+                        <p>
+                            Informações complementares da doação.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="detalheDoacaoObservacoes"
+                    class="detalhes-doacao-observacoes"
+                >
+                    Nenhuma observação informada.
+                </div>
+
+            </section>
+
+        </div>
+
+
+        <!-- ==========================================
+             AÇÕES
+        =========================================== -->
+
+        <footer class="modal-doacao-actions">
+
+            <button
+                type="button"
+                id="btnFecharDetalhesDoacaoRodape"
+                class="btn btn-secondary"
+            >
+                Fechar
+            </button>
+
+        </footer>
 
     </div>
 
