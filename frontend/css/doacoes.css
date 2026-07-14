@@ -85,7 +85,7 @@
 
 
 /* =====================================================
-   BOTÕES
+   BOTÕES GERAIS
 ===================================================== */
 
 .doacoes-page .btn,
@@ -198,6 +198,10 @@
     gap: 18px;
 }
 
+
+/* =====================================================
+   PESQUISA
+===================================================== */
 
 .doacoes-search {
     position: relative;
@@ -624,6 +628,283 @@
 
 
 /* =====================================================
+   CONTEÚDO DAS CÉLULAS
+===================================================== */
+
+.doacao-id {
+    color: #98a2b3;
+
+    font-size: 0.74rem;
+    font-weight: 700;
+}
+
+
+.doacao-codigo {
+    color: #850013;
+
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+}
+
+
+.doacao-pessoa {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+
+.doacao-pessoa-avatar {
+    width: 34px;
+    height: 34px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border-radius: 10px;
+
+    background: #f7e8eb;
+    color: #850013;
+}
+
+
+.doacao-pessoa-dados {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+
+.doacao-pessoa-dados strong {
+    overflow: hidden;
+
+    color: #344054;
+
+    font-size: 0.8rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.doacao-pessoa-dados span {
+    color: #98a2b3;
+
+    font-size: 0.67rem;
+}
+
+
+.doacao-instituicao,
+.doacao-quantidade,
+.doacao-data {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    color: #667085;
+}
+
+
+.doacao-instituicao i,
+.doacao-quantidade i,
+.doacao-data i {
+    color: #98a2b3;
+
+    font-size: 0.72rem;
+}
+
+
+/* =====================================================
+   BADGES DE TIPO
+===================================================== */
+
+.badge-doacao {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 27px;
+
+    padding: 5px 10px;
+
+    border: 1px solid transparent;
+    border-radius: 999px;
+
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+}
+
+
+.badge-doacao-cesta {
+    border-color: #f4d39d;
+
+    background: #fff7e8;
+    color: #b45309;
+}
+
+
+.badge-doacao-granel {
+    border-color: #bfdbfe;
+
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+
+.badge-doacao-ambos {
+    border-color: #ddd6fe;
+
+    background: #f5f3ff;
+    color: #6d28d9;
+}
+
+
+.badge-doacao-neutro {
+    border-color: #e4e7ec;
+
+    background: #f8fafc;
+    color: #667085;
+}
+
+
+/* =====================================================
+   AÇÕES DA TABELA
+===================================================== */
+
+.doacoes-acoes-tabela {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+
+.btn-acao-tabela {
+    width: 34px;
+    height: 34px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: 1px solid #e4e7ec;
+    border-radius: 9px;
+
+    background: #ffffff;
+    color: #667085;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease,
+        transform 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+
+.btn-acao-tabela:hover {
+    transform: translateY(-1px);
+}
+
+
+.btnVisualizarDoacao:hover {
+    border-color: #bfdbfe;
+
+    background: #eff6ff;
+    color: #2563eb;
+
+    box-shadow:
+        0 6px 14px rgba(37, 99, 235, 0.12);
+}
+
+
+.btnEditarDoacao:hover {
+    border-color: #f4d39d;
+
+    background: #fff7e8;
+    color: #b45309;
+
+    box-shadow:
+        0 6px 14px rgba(180, 83, 9, 0.12);
+}
+
+
+.btnExcluirDoacao:hover {
+    border-color: #fecaca;
+
+    background: #fff1f2;
+    color: #dc2626;
+
+    box-shadow:
+        0 6px 14px rgba(220, 38, 38, 0.12);
+}
+
+
+/* =====================================================
+   ESTADO VAZIO
+===================================================== */
+
+.doacoes-empty {
+    min-height: 250px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 8px;
+
+    padding: 30px;
+
+    color: #98a2b3;
+    text-align: center;
+}
+
+
+.doacoes-empty-icon {
+    width: 52px;
+    height: 52px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 5px;
+
+    border-radius: 15px;
+
+    background: #f7e8eb;
+    color: #850013;
+
+    font-size: 1.2rem;
+}
+
+
+.doacoes-empty strong {
+    color: #475467;
+
+    font-size: 0.9rem;
+}
+
+
+.doacoes-empty span {
+    max-width: 420px;
+
+    font-size: 0.76rem;
+    line-height: 1.5;
+}
+
+
+/* =====================================================
    ORDENAÇÃO
 ===================================================== */
 
@@ -723,6 +1004,14 @@
 }
 
 
+.doacoes-paginacao-info select:focus {
+    border-color: #850013;
+
+    box-shadow:
+        0 0 0 3px rgba(133, 0, 19, 0.08);
+}
+
+
 .doacoes-paginacao-controles,
 .paginacao-numeros {
     display: flex;
@@ -731,11 +1020,65 @@
 }
 
 
+.doacoes-paginacao .paginacao-botao,
+.doacoes-paginacao .paginacao-numero {
+    min-width: 34px;
+    height: 34px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 9px;
+
+    border: 1px solid #dfe3e8;
+    border-radius: 8px;
+
+    background: #ffffff;
+    color: #667085;
+
+    cursor: pointer;
+
+    font-family: inherit;
+    font-size: 0.74rem;
+    font-weight: 700;
+
+    transition:
+        background-color 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease;
+}
+
+
+.doacoes-paginacao .paginacao-botao:hover:not(:disabled),
+.doacoes-paginacao .paginacao-numero:hover {
+    border-color: #d9b9bf;
+
+    background: #fff5f6;
+    color: #850013;
+}
+
+
+.doacoes-paginacao .paginacao-numero.ativo {
+    border-color: #850013;
+
+    background: #850013;
+    color: #ffffff;
+}
+
+
+.doacoes-paginacao .paginacao-botao:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+
 /* =====================================================
-   MODAL
+   MODAIS
 ===================================================== */
 
-#modalDoacao.modal {
+#modalDoacao.modal,
+#modalDetalhesDoacao.modal {
     position: fixed;
     inset: 0;
 
@@ -750,14 +1093,28 @@
     overflow-y: auto;
 
     background: rgba(15, 23, 42, 0.58);
+
     backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+
+
+#modalDetalhesDoacao.modal {
+    z-index: 9600;
 }
 
 
 #modalDoacao.modal.ativo,
 #modalDoacao.modal.aberto,
-#modalDoacao.modal.show {
+#modalDoacao.modal.show,
+#modalDetalhesDoacao.modal.ativo,
+#modalDetalhesDoacao.modal.aberto,
+#modalDetalhesDoacao.modal.show {
     display: flex;
+
+    animation:
+        aparecerFundoModalDoacao
+        0.2s ease;
 }
 
 
@@ -773,14 +1130,62 @@
 
     overflow: hidden;
 
+    border: 1px solid rgba(255, 255, 255, 0.5);
     border-radius: 20px;
 
     background: #ffffff;
 
     box-shadow:
         0 28px 70px rgba(15, 23, 42, 0.3);
+
+    animation:
+        aparecerConteudoModalDoacao
+        0.22s ease;
 }
 
+
+.modal-detalhes-doacao-content {
+    width: min(100%, 820px);
+}
+
+
+@keyframes aparecerFundoModalDoacao {
+
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+
+}
+
+
+@keyframes aparecerConteudoModalDoacao {
+
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(14px)
+            scale(0.985);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0)
+            scale(1);
+    }
+
+}
+
+
+/* =====================================================
+   CABEÇALHO DOS MODAIS
+===================================================== */
 
 .modal-doacao-header {
     display: flex;
@@ -816,10 +1221,14 @@
     align-items: center;
     justify-content: center;
 
+    flex-shrink: 0;
+
     border-radius: 13px;
 
     background: #f7e8eb;
     color: #850013;
+
+    font-size: 1rem;
 }
 
 
@@ -854,6 +1263,8 @@
     align-items: center;
     justify-content: center;
 
+    flex-shrink: 0;
+
     border: 0;
     border-radius: 10px;
 
@@ -863,14 +1274,25 @@
     cursor: pointer;
 
     font-size: 1rem;
+
+    transition:
+        background-color 0.18s ease,
+        color 0.18s ease,
+        transform 0.18s ease;
 }
 
 
 .modal-doacao-fechar:hover {
     background: #f7e8eb;
     color: #850013;
+
+    transform: rotate(4deg);
 }
 
+
+/* =====================================================
+   CORPO E AÇÕES DOS MODAIS
+===================================================== */
 
 .form-doacao {
     min-height: 0;
@@ -884,6 +1306,21 @@
     padding: 24px;
 
     overflow-y: auto;
+
+    scrollbar-width: thin;
+    scrollbar-color: #d0d5dd transparent;
+}
+
+
+.modal-doacao-body::-webkit-scrollbar {
+    width: 7px;
+}
+
+
+.modal-doacao-body::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+
+    background: #d0d5dd;
 }
 
 
@@ -898,6 +1335,350 @@
     border-top: 1px solid #eceff3;
 
     background: #fafbfc;
+}
+
+
+/* =====================================================
+   SEÇÕES DO FORMULÁRIO
+===================================================== */
+
+.modal-doacao-content .form-section {
+    margin-bottom: 22px;
+    padding-bottom: 22px;
+
+    border-bottom: 1px solid #edf0f3;
+}
+
+
+.modal-doacao-content .form-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+
+    border-bottom: 0;
+}
+
+
+.modal-doacao-content .form-section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+
+    margin-bottom: 17px;
+}
+
+
+.modal-doacao-content .form-section-icon {
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border-radius: 11px;
+
+    background: #f7e8eb;
+    color: #850013;
+}
+
+
+.modal-doacao-content .form-section-header h3 {
+    margin: 0 0 3px;
+
+    color: #344054;
+
+    font-size: 0.92rem;
+}
+
+
+.modal-doacao-content .form-section-header p {
+    margin: 0;
+
+    color: #98a2b3;
+
+    font-size: 0.74rem;
+    line-height: 1.45;
+}
+
+
+/* =====================================================
+   CAMPOS DO FORMULÁRIO
+===================================================== */
+
+.modal-doacao-content .form-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+
+.modal-doacao-content .form-group {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+
+.modal-doacao-content .form-group.full {
+    grid-column: 1 / -1;
+}
+
+
+.modal-doacao-content .form-group[hidden] {
+    display: none;
+}
+
+
+.modal-doacao-content label {
+    color: #475467;
+
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+
+
+.modal-doacao-content .required {
+    color: #b42318;
+}
+
+
+.modal-doacao-content input,
+.modal-doacao-content select,
+.modal-doacao-content textarea {
+    width: 100%;
+
+    border: 1px solid #dfe3e8;
+    border-radius: 10px;
+    outline: none;
+
+    background: #fafbfc;
+    color: #344054;
+
+    font-family: inherit;
+    font-size: 0.82rem;
+
+    transition:
+        border-color 0.18s ease,
+        background-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+
+.modal-doacao-content input,
+.modal-doacao-content select {
+    min-height: 43px;
+
+    padding: 0 12px;
+}
+
+
+.modal-doacao-content textarea {
+    min-height: 110px;
+
+    padding: 12px;
+
+    resize: vertical;
+}
+
+
+.modal-doacao-content input:focus,
+.modal-doacao-content select:focus,
+.modal-doacao-content textarea:focus {
+    border-color: #850013;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 0 0 4px rgba(133, 0, 19, 0.08);
+}
+
+
+.modal-doacao-content input:disabled,
+.modal-doacao-content select:disabled,
+.modal-doacao-content textarea:disabled {
+    background: #f2f4f7;
+    color: #98a2b3;
+
+    cursor: not-allowed;
+}
+
+
+.modal-doacao-content .form-help {
+    color: #98a2b3;
+
+    font-size: 0.68rem;
+    line-height: 1.4;
+}
+
+
+/* =====================================================
+   RESUMO DO MODAL DE DETALHES
+===================================================== */
+
+.detalhes-doacao-resumo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    margin-bottom: 24px;
+    padding: 18px 20px;
+
+    border: 1px solid #eadde0;
+    border-radius: 15px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #fff9fa,
+            #ffffff
+        );
+}
+
+
+.detalhes-doacao-codigo {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+
+.detalhes-doacao-codigo span {
+    color: #98a2b3;
+
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+
+.detalhes-doacao-codigo strong {
+    color: #850013;
+
+    font-size: 1.15rem;
+    letter-spacing: 0.02em;
+}
+
+
+.detalhes-doacao-tipo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 31px;
+
+    padding: 6px 12px;
+
+    border-radius: 999px;
+
+    background: #f2f4f7;
+    color: #667085;
+
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+
+/* =====================================================
+   GRID DOS DETALHES
+===================================================== */
+
+.detalhes-doacao-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+
+.detalhe-doacao-item {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+    padding: 14px 15px;
+
+    border: 1px solid #eceff3;
+    border-radius: 12px;
+
+    background: #fafbfc;
+
+    transition:
+        border-color 0.18s ease,
+        background-color 0.18s ease,
+        transform 0.18s ease;
+}
+
+
+.detalhe-doacao-item:hover {
+    border-color: #e5c8cd;
+
+    background: #fffafb;
+
+    transform: translateY(-1px);
+}
+
+
+.detalhe-doacao-label {
+    color: #98a2b3;
+
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+
+.detalhe-doacao-item strong {
+    overflow-wrap: anywhere;
+
+    color: #344054;
+
+    font-size: 0.82rem;
+    line-height: 1.45;
+}
+
+
+/* =====================================================
+   OBSERVAÇÕES DOS DETALHES
+===================================================== */
+
+.detalhes-doacao-observacoes {
+    min-height: 90px;
+
+    padding: 15px 16px;
+
+    border: 1px solid #eceff3;
+    border-radius: 12px;
+
+    background: #fafbfc;
+    color: #667085;
+
+    font-size: 0.8rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+
+/* =====================================================
+   ACESSIBILIDADE
+===================================================== */
+
+.doacoes-page button:focus-visible,
+.modal-doacao-content button:focus-visible,
+.doacoes-page input:focus-visible,
+.doacoes-page select:focus-visible {
+    outline: 3px solid rgba(133, 0, 19, 0.18);
+    outline-offset: 2px;
 }
 
 
@@ -953,6 +1734,11 @@
         justify-content: center;
     }
 
+    .modal-doacao-content .form-grid,
+    .detalhes-doacao-grid {
+        grid-template-columns: 1fr;
+    }
+
 }
 
 
@@ -980,6 +1766,11 @@
         width: 100%;
     }
 
+    .detalhes-doacao-resumo {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
 }
 
 
@@ -997,7 +1788,8 @@
         grid-template-columns: 1fr;
     }
 
-    #modalDoacao.modal {
+    #modalDoacao.modal,
+    #modalDetalhesDoacao.modal {
         padding: 10px;
     }
 
@@ -1005,6 +1797,52 @@
         max-height: calc(100vh - 20px);
 
         border-radius: 15px;
+    }
+
+    .modal-doacao-header {
+        padding: 17px;
+    }
+
+    .modal-doacao-body {
+        padding: 17px;
+    }
+
+    .modal-doacao-actions {
+        padding: 15px 17px;
+    }
+
+    .modal-doacao-header h2 {
+        font-size: 1.05rem;
+    }
+
+    .modal-doacao-icone {
+        width: 40px;
+        height: 40px;
+    }
+
+}
+
+
+/* =====================================================
+   REDUZIR ANIMAÇÕES
+===================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+    #modalDoacao.modal.ativo,
+    #modalDoacao.modal.aberto,
+    #modalDoacao.modal.show,
+    #modalDetalhesDoacao.modal.ativo,
+    #modalDetalhesDoacao.modal.aberto,
+    #modalDetalhesDoacao.modal.show,
+    .modal-doacao-content {
+        animation: none;
+    }
+
+    .doacoes-page *,
+    .modal-doacao-content * {
+        scroll-behavior: auto;
+        transition-duration: 0.01ms;
     }
 
 }

@@ -60,19 +60,19 @@ const API_URL =
 
 export const estadoDoacoes = {
 
-    // Dados do usuário autenticado.
+    // Usuário autenticado.
     usuarioLogado: null,
 
     // Lista completa recebida da API.
     lista: [],
 
-    // Filtro de tipo atualmente selecionado.
+    // Filtro atualmente selecionado.
     filtroAtual: "TODAS",
 
-    // Página atualmente exibida.
+    // Página atual.
     paginaAtual: 1,
 
-    // Quantidade de registros exibidos por página.
+    // Registros exibidos por página.
     itensPorPagina: 10,
 
     // Campo utilizado na ordenação.
@@ -81,11 +81,14 @@ export const estadoDoacoes = {
     // Direção da ordenação.
     direcaoOrdenacao: "desc",
 
-    // ID da doação que está sendo editada.
+    // ID da doação em edição.
     doacaoEditandoId: null,
 
-    // Temporizador da pesquisa com debounce.
-    temporizadorPesquisa: null
+    // Temporizador da pesquisa.
+    temporizadorPesquisa: null,
+
+    // Controlador utilizado para remover eventos antigos.
+    controladorEventos: null
 
 };
 
@@ -156,7 +159,7 @@ async function lerRespostaJson(
 
 
 // =====================================================
-// CAPTURAR ELEMENTOS
+// CAPTURAR ELEMENTOS DA TELA
 // =====================================================
 
 function capturarElementosDoacoes() {
@@ -164,6 +167,10 @@ function capturarElementosDoacoes() {
     Object.assign(
         elementosDoacoes,
         {
+
+            // ==========================================
+            // TABELA E MODAL DE FORMULÁRIO
+            // ==========================================
 
             tabela:
                 document.getElementById(
@@ -185,17 +192,20 @@ function capturarElementosDoacoes() {
                     "tituloModalDoacao"
                 ),
 
-            // Grupo exibido somente para o ADMIN.
             grupoInstituicao:
                 document.getElementById(
                     "grupoInstituicaoDoacao"
                 ),
 
-            // Select de instituições do ADMIN.
             selectInstituicao:
                 document.getElementById(
                     "instituicaoIdDoacao"
                 ),
+
+
+            // ==========================================
+            // BOTÕES PRINCIPAIS
+            // ==========================================
 
             btnNova:
                 document.getElementById(
@@ -217,6 +227,11 @@ function capturarElementosDoacoes() {
                     "btnCancelarDoacao"
                 ),
 
+
+            // ==========================================
+            // PESQUISA E FILTROS
+            // ==========================================
+
             pesquisa:
                 document.getElementById(
                     "pesquisaDoacao"
@@ -236,6 +251,11 @@ function capturarElementosDoacoes() {
                 document.querySelectorAll(
                     "#conteudo [data-ordenar-doacao]"
                 ),
+
+
+            // ==========================================
+            // CONTADORES
+            // ==========================================
 
             contadorTodas:
                 document.getElementById(
@@ -261,6 +281,11 @@ function capturarElementosDoacoes() {
                 document.getElementById(
                     "resultadoFiltroDoacoes"
                 ),
+
+
+            // ==========================================
+            // PAGINAÇÃO
+            // ==========================================
 
             quantidadePorPagina:
                 document.getElementById(
@@ -295,6 +320,86 @@ function capturarElementosDoacoes() {
             btnUltimaPagina:
                 document.getElementById(
                     "btnUltimaPaginaDoacoes"
+                ),
+
+
+            // ==========================================
+            // MODAL DE DETALHES
+            // ==========================================
+
+            modalDetalhes:
+                document.getElementById(
+                    "modalDetalhesDoacao"
+                ),
+
+            btnFecharDetalhes:
+                document.getElementById(
+                    "btnFecharDetalhesDoacao"
+                ),
+
+            btnFecharDetalhesRodape:
+                document.getElementById(
+                    "btnFecharDetalhesDoacaoRodape"
+                ),
+
+
+            // ==========================================
+            // CAMPOS DO MODAL DE DETALHES
+            // ==========================================
+
+            detalheId:
+                document.getElementById(
+                    "detalheDoacaoId"
+                ),
+
+            detalheCodigo:
+                document.getElementById(
+                    "detalheDoacaoCodigo"
+                ),
+
+            detalheBeneficiario:
+                document.getElementById(
+                    "detalheDoacaoBeneficiario"
+                ),
+
+            detalheInstituicao:
+                document.getElementById(
+                    "detalheDoacaoInstituicao"
+                ),
+
+            detalheTipo:
+                document.getElementById(
+                    "detalheDoacaoTipo"
+                ),
+
+            detalheTipoBadge:
+                document.getElementById(
+                    "detalheDoacaoTipoBadge"
+                ),
+
+            detalheQuantidade:
+                document.getElementById(
+                    "detalheDoacaoQuantidade"
+                ),
+
+            detalheData:
+                document.getElementById(
+                    "detalheDoacaoData"
+                ),
+
+            detalheUsuario:
+                document.getElementById(
+                    "detalheDoacaoUsuario"
+                ),
+
+            detalheComprovante:
+                document.getElementById(
+                    "detalheDoacaoComprovante"
+                ),
+
+            detalheObservacoes:
+                document.getElementById(
+                    "detalheDoacaoObservacoes"
                 )
 
         }
@@ -332,34 +437,39 @@ function capturarElementosDoacoes() {
 
 
 // =====================================================
-// VALIDAR ELEMENTOS
+// VALIDAR ELEMENTOS OBRIGATÓRIOS
 // =====================================================
 
 function validarElementosDoacoes() {
 
     const obrigatorios = [
 
+        // Tabela e formulário.
         elementosDoacoes.tabela,
         elementosDoacoes.modal,
         elementosDoacoes.formulario,
         elementosDoacoes.tituloModal,
-
         elementosDoacoes.grupoInstituicao,
         elementosDoacoes.selectInstituicao,
 
+        // Botões principais.
         elementosDoacoes.btnNova,
         elementosDoacoes.btnAtualizar,
         elementosDoacoes.btnFecharModal,
         elementosDoacoes.btnCancelar,
+
+        // Pesquisa.
         elementosDoacoes.pesquisa,
         elementosDoacoes.btnLimparPesquisa,
 
+        // Contadores.
         elementosDoacoes.contadorTodas,
         elementosDoacoes.contadorCesta,
         elementosDoacoes.contadorGranel,
         elementosDoacoes.contadorAmbos,
-
         elementosDoacoes.resultadoFiltro,
+
+        // Paginação.
         elementosDoacoes.quantidadePorPagina,
         elementosDoacoes.intervaloPaginacao,
         elementosDoacoes.numerosPaginacao,
@@ -368,19 +478,50 @@ function validarElementosDoacoes() {
         elementosDoacoes.btnProximaPagina,
         elementosDoacoes.btnUltimaPagina,
 
+        // Campos do formulário.
         camposDoacoes.beneficiarioId,
         camposDoacoes.tipo,
         camposDoacoes.quantidade,
-        camposDoacoes.observacoes
+        camposDoacoes.observacoes,
+
+        // Modal de detalhes.
+        elementosDoacoes.modalDetalhes,
+        elementosDoacoes.btnFecharDetalhes,
+        elementosDoacoes.btnFecharDetalhesRodape,
+
+        // Dados do modal de detalhes.
+        elementosDoacoes.detalheId,
+        elementosDoacoes.detalheCodigo,
+        elementosDoacoes.detalheBeneficiario,
+        elementosDoacoes.detalheInstituicao,
+        elementosDoacoes.detalheTipo,
+        elementosDoacoes.detalheTipoBadge,
+        elementosDoacoes.detalheQuantidade,
+        elementosDoacoes.detalheData,
+        elementosDoacoes.detalheUsuario,
+        elementosDoacoes.detalheComprovante,
+        elementosDoacoes.detalheObservacoes
 
     ];
+
 
     const possuiAusente =
         obrigatorios.some(
             (elemento) => !elemento
         );
 
+
     if (possuiAusente) {
+
+        console.error(
+            "Elementos capturados:",
+            elementosDoacoes
+        );
+
+        console.error(
+            "Campos capturados:",
+            camposDoacoes
+        );
 
         throw new Error(
             "A página de Doações não possui todos os elementos HTML necessários."
@@ -399,6 +540,7 @@ async function carregarUsuarioLogado() {
 
     const token =
         obterToken();
+
 
     if (!token) {
 
@@ -476,11 +618,6 @@ function configurarCampoInstituicao() {
             ?.role === "ADMIN";
 
 
-    /*
-     * Nesta etapa, apenas controlamos a exibição.
-     * Na próxima, carregaremos as instituições
-     * e filtraremos os beneficiários.
-     */
     elementosDoacoes
         .grupoInstituicao
         .hidden =
@@ -529,7 +666,7 @@ export function obterDoacoesFiltradas() {
 
 
 // =====================================================
-// APLICAR FILTROS, ORDENAÇÃO E PAGINAÇÃO
+// RENDERIZAR DOAÇÕES
 // =====================================================
 
 export function renderizarDoacoes() {
@@ -699,6 +836,42 @@ export async function carregarDoacoes() {
 
 
 // =====================================================
+// REINICIAR ESTADO
+// =====================================================
+
+function reiniciarEstadoDoacoes() {
+
+    estadoDoacoes.usuarioLogado =
+        null;
+
+    estadoDoacoes.lista =
+        [];
+
+    estadoDoacoes.filtroAtual =
+        "TODAS";
+
+    estadoDoacoes.paginaAtual =
+        1;
+
+    estadoDoacoes.itensPorPagina =
+        10;
+
+    estadoDoacoes.campoOrdenacao =
+        "dataDoacao";
+
+    estadoDoacoes.direcaoOrdenacao =
+        "desc";
+
+    estadoDoacoes.doacaoEditandoId =
+        null;
+
+    estadoDoacoes.temporizadorPesquisa =
+        null;
+
+}
+
+
+// =====================================================
 // INICIALIZAR DOAÇÕES
 // =====================================================
 
@@ -710,32 +883,7 @@ export async function inicializarDoacoes() {
         // REINICIAR ESTADO
         // ==============================================
 
-        estadoDoacoes.usuarioLogado =
-            null;
-
-        estadoDoacoes.lista =
-            [];
-
-        estadoDoacoes.filtroAtual =
-            "TODAS";
-
-        estadoDoacoes.paginaAtual =
-            1;
-
-        estadoDoacoes.itensPorPagina =
-            10;
-
-        estadoDoacoes.campoOrdenacao =
-            "dataDoacao";
-
-        estadoDoacoes.direcaoOrdenacao =
-            "desc";
-
-        estadoDoacoes.doacaoEditandoId =
-            null;
-
-        estadoDoacoes.temporizadorPesquisa =
-            null;
+        reiniciarEstadoDoacoes();
 
 
         // ==============================================
@@ -798,9 +946,15 @@ export async function inicializarDoacoes() {
 
         configurarCampoInstituicao();
 
+
+        // ==============================================
+        // CARREGAR INSTITUIÇÕES DO ADMIN
+        // ==============================================
+
         if (
-            estadoDoacoes.usuarioLogado?.role ===
-            "ADMIN"
+            estadoDoacoes
+                .usuarioLogado
+                ?.role === "ADMIN"
         ) {
 
             await carregarInstituicoesDoacao(
@@ -839,13 +993,43 @@ export async function inicializarDoacoes() {
 
 
         // ==============================================
-        // CARREGAR DADOS
+        // CARREGAR BENEFICIÁRIOS
         // ==============================================
 
-        await carregarBeneficiariosDoacao(
-            camposDoacoes
-        );
+        if (
+            estadoDoacoes
+                .usuarioLogado
+                ?.role === "ADMIN"
+        ) {
 
+            camposDoacoes
+                .beneficiarioId
+                .innerHTML = `
+
+                    <option value="">
+                        Selecione primeiro uma instituição
+                    </option>
+
+                `;
+
+
+            camposDoacoes
+                .beneficiarioId
+                .disabled =
+                    true;
+
+        } else {
+
+            await carregarBeneficiariosDoacao(
+                camposDoacoes
+            );
+
+        }
+
+
+        // ==============================================
+        // CARREGAR DOAÇÕES
+        // ==============================================
 
         await carregarDoacoes();
 
