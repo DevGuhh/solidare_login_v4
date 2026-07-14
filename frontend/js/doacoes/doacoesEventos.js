@@ -3,40 +3,71 @@
 // =====================================================
 
 import {
+
     cadastrarDoacaoAPI,
+
     editarDoacaoAPI,
-    excluirDoacaoAPI
+
+    excluirDoacaoAPI,
+
+    alterarComprovanteDoacaoAPI
+
 } from "../api/doacoesApi.js";
 
+
 import {
+
     carregarBeneficiariosDoacao,
+
     encerrarModalDoacao,
+
     montarDadosFormularioDoacao
+
 } from "./doacoesFormulario.js";
 
+
 import {
+
     visualizarDetalhesDoacao,
+
     fecharDetalhesDoacao
+
 } from "./doacoesDetalhes.js";
 
+
 import {
+
     atualizarBotoesFiltroDoacoes,
+
     atualizarBotoesOrdenacaoDoacoes,
+
     calcularTotalPaginasDoacoes
+
 } from "./doacoesUtils.js";
 
+
 import {
+
     mostrarSucesso,
+
     mostrarErro
+
 } from "../utils/toast.js";
 
-import {
-    mostrarLoading,
-    esconderLoading
-} from "../utils/loading.js";
 
 import {
+
+    mostrarLoading,
+
+    esconderLoading
+
+} from "../utils/loading.js";
+
+
+import {
+
     confirmarAcao
+
 } from "../utils/confirm.js";
 
 
@@ -59,9 +90,13 @@ async function lerRespostaJson(
     const texto =
         await resposta.text();
 
+
     if (!texto) {
+
         return {};
+
     }
+
 
     try {
 
@@ -75,6 +110,7 @@ async function lerRespostaJson(
             "Resposta inválida recebida do servidor:",
             texto
         );
+
 
         throw new Error(
             "O servidor retornou uma resposta inválida."
@@ -94,12 +130,16 @@ function cancelarPesquisaPendente(
 ) {
 
     if (!estado.temporizadorPesquisa) {
+
         return;
+
     }
+
 
     clearTimeout(
         estado.temporizadorPesquisa
     );
+
 
     estado.temporizadorPesquisa =
         null;
@@ -114,9 +154,13 @@ function cancelarPesquisaPendente(
 async function salvarDoacao({
 
     event,
+
     estado,
+
     elementos,
+
     campos,
+
     carregarDoacoes
 
 }) {
@@ -125,6 +169,7 @@ async function salvarDoacao({
 
 
     let dados;
+
 
     try {
 
@@ -139,12 +184,14 @@ async function salvarDoacao({
             erro.message
         );
 
+
         return;
 
     }
 
 
     mostrarLoading();
+
 
     try {
 
@@ -173,26 +220,37 @@ async function salvarDoacao({
         if (!resposta.ok) {
 
             throw new Error(
+
                 resultado.issues?.[0]?.message ||
+
                 resultado.error ||
+
                 resultado.erro ||
+
                 resultado.mensagem ||
+
                 "Erro ao salvar a doação."
+
             );
 
         }
 
 
         mostrarSucesso(
+
             editando
                 ? "Doação atualizada com sucesso!"
                 : "Doação cadastrada com sucesso!"
+
         );
 
 
         encerrarModalDoacao({
+
             estado,
+
             elementos
+
         });
 
 
@@ -207,8 +265,168 @@ async function salvarDoacao({
 
 
         mostrarErro(
+
             erro.message ||
+
             "Não foi possível salvar a doação."
+
+        );
+
+    } finally {
+
+        esconderLoading();
+
+    }
+
+}
+
+
+// =====================================================
+// ALTERAR COMPROVANTE
+// =====================================================
+
+async function alterarComprovanteDoacao({
+
+    botao,
+
+    carregarDoacoes
+
+}) {
+
+    const id =
+        Number(
+            botao.dataset.id
+        );
+
+
+    if (
+        !Number.isInteger(id) ||
+        id <= 0
+    ) {
+
+        mostrarErro(
+            "ID da doação inválido."
+        );
+
+
+        return;
+
+    }
+
+
+    const comprovanteAtual =
+        botao.dataset.comprovante ===
+        "true";
+
+
+    const novoStatus =
+        !comprovanteAtual;
+
+
+    const mensagemConfirmacao =
+        novoStatus
+            ? "Deseja confirmar que esta doação possui comprovante?"
+            : "Deseja remover a confirmação do comprovante desta doação?";
+
+
+    const confirmou =
+        await confirmarAcao(
+            mensagemConfirmacao
+        );
+
+
+    if (!confirmou) {
+
+        return;
+
+    }
+
+
+    mostrarLoading();
+
+
+    try {
+
+        /*
+         * Impede novos cliques enquanto
+         * a requisição está sendo processada.
+         */
+        botao.disabled =
+            true;
+
+
+        const resposta =
+            await alterarComprovanteDoacaoAPI(
+
+                id,
+
+                novoStatus
+
+            );
+
+
+        const resultado =
+            await lerRespostaJson(
+                resposta
+            );
+
+
+        if (!resposta.ok) {
+
+            throw new Error(
+
+                resultado.issues?.[0]?.message ||
+
+                resultado.error ||
+
+                resultado.erro ||
+
+                resultado.mensagem ||
+
+                "Erro ao atualizar o comprovante."
+
+            );
+
+        }
+
+
+        mostrarSucesso(
+
+            resultado.mensagem ||
+
+            (
+                novoStatus
+                    ? "Comprovante confirmado com sucesso!"
+                    : "Comprovante removido com sucesso!"
+            )
+
+        );
+
+
+        await carregarDoacoes();
+
+    } catch (erro) {
+
+        console.error(
+            "Erro ao alterar comprovante da doação:",
+            erro
+        );
+
+
+        /*
+         * Caso a atualização falhe, o botão
+         * continua disponível para uma nova tentativa.
+         */
+        botao.disabled =
+            false;
+
+
+        mostrarErro(
+
+            erro.message ||
+
+            "Não foi possível atualizar o comprovante."
+
         );
 
     } finally {
@@ -227,6 +445,7 @@ async function salvarDoacao({
 async function cancelarDoacao({
 
     id,
+
     carregarDoacoes
 
 }) {
@@ -246,6 +465,7 @@ async function cancelarDoacao({
             "ID da doação inválido."
         );
 
+
         return;
 
     }
@@ -258,11 +478,14 @@ async function cancelarDoacao({
 
 
     if (!confirmou) {
+
         return;
+
     }
 
 
     mostrarLoading();
+
 
     try {
 
@@ -281,18 +504,26 @@ async function cancelarDoacao({
         if (!resposta.ok) {
 
             throw new Error(
+
                 resultado.error ||
+
                 resultado.erro ||
+
                 resultado.mensagem ||
+
                 "Erro ao cancelar a doação."
+
             );
 
         }
 
 
         mostrarSucesso(
+
             resultado.mensagem ||
+
             "Doação cancelada com sucesso!"
+
         );
 
 
@@ -307,8 +538,11 @@ async function cancelarDoacao({
 
 
         mostrarErro(
+
             erro.message ||
+
             "Não foi possível cancelar a doação."
+
         );
 
     } finally {
@@ -327,10 +561,15 @@ async function cancelarDoacao({
 function tratarCliqueTabela({
 
     event,
+
     estado,
+
     elementos,
+
     campos,
+
     prepararEdicaoDoacao,
+
     carregarDoacoes
 
 }) {
@@ -355,6 +594,7 @@ function tratarCliqueTabela({
             elementos
 
         });
+
 
         return;
 
@@ -385,6 +625,34 @@ function tratarCliqueTabela({
             campos
 
         });
+
+
+        return;
+
+    }
+
+
+    // =================================================
+    // COMPROVANTE
+    // =================================================
+
+    const botaoComprovante =
+        event.target.closest(
+            ".btnComprovanteDoacao"
+        );
+
+
+    if (botaoComprovante) {
+
+        alterarComprovanteDoacao({
+
+            botao:
+                botaoComprovante,
+
+            carregarDoacoes
+
+        });
+
 
         return;
 
@@ -424,8 +692,11 @@ function tratarCliqueTabela({
 function selecionarFiltro({
 
     event,
+
     estado,
+
     elementos,
+
     renderizarDoacoes
 
 }) {
@@ -444,7 +715,9 @@ function selecionarFiltro({
             "AMBOS"
         ].includes(filtro)
     ) {
+
         return;
+
     }
 
 
@@ -457,8 +730,11 @@ function selecionarFiltro({
 
 
     atualizarBotoesFiltroDoacoes(
+
         elementos,
+
         estado
+
     );
 
 
@@ -474,8 +750,11 @@ function selecionarFiltro({
 function selecionarOrdenacao({
 
     event,
+
     estado,
+
     elementos,
+
     renderizarDoacoes
 
 }) {
@@ -487,7 +766,9 @@ function selecionarOrdenacao({
 
 
     if (!campo) {
+
         return;
+
     }
 
 
@@ -507,6 +788,7 @@ function selecionarOrdenacao({
         estado.campoOrdenacao =
             campo;
 
+
         estado.direcaoOrdenacao =
             "asc";
 
@@ -518,8 +800,11 @@ function selecionarOrdenacao({
 
 
     atualizarBotoesOrdenacaoDoacoes(
+
         elementos,
+
         estado
+
     );
 
 
@@ -535,7 +820,9 @@ function selecionarOrdenacao({
 function alterarQuantidadePorPagina({
 
     estado,
+
     elementos,
+
     renderizarDoacoes
 
 }) {
@@ -571,8 +858,11 @@ function alterarQuantidadePorPagina({
 function irParaPagina({
 
     pagina,
+
     estado,
+
     obterDoacoesFiltradas,
+
     renderizarDoacoes
 
 }) {
@@ -583,18 +873,27 @@ function irParaPagina({
 
     const totalPaginas =
         calcularTotalPaginasDoacoes(
+
             filtradas.length,
+
             estado.itensPorPagina
+
         );
 
 
     const paginaValidada =
         Math.min(
+
             Math.max(
+
                 Number(pagina) || 1,
+
                 1
+
             ),
+
             totalPaginas
+
         );
 
 
@@ -602,7 +901,9 @@ function irParaPagina({
         paginaValidada ===
         estado.paginaAtual
     ) {
+
         return;
+
     }
 
 
@@ -622,6 +923,7 @@ function irParaPagina({
 async function alterarInstituicaoDoacao({
 
     elementos,
+
     campos
 
 }) {
@@ -654,7 +956,9 @@ async function alterarInstituicaoDoacao({
 
 
     if (!instituicaoId) {
+
         return;
+
     }
 
 
@@ -662,8 +966,11 @@ async function alterarInstituicaoDoacao({
 
         const beneficiarios =
             await carregarBeneficiariosDoacao(
+
                 campos,
+
                 instituicaoId
+
             );
 
 
@@ -679,7 +986,9 @@ async function alterarInstituicaoDoacao({
             campos.beneficiarioId.innerHTML = `
 
                 <option value="">
+
                     Nenhum beneficiário ativo encontrado
+
                 </option>
 
             `;
@@ -701,7 +1010,9 @@ async function alterarInstituicaoDoacao({
         campos.beneficiarioId.innerHTML = `
 
             <option value="">
+
                 Não foi possível carregar os beneficiários
+
             </option>
 
         `;
@@ -712,8 +1023,11 @@ async function alterarInstituicaoDoacao({
 
 
         mostrarErro(
+
             erro.message ||
+
             "Não foi possível carregar os beneficiários."
+
         );
 
     }
@@ -728,7 +1042,9 @@ async function alterarInstituicaoDoacao({
 function tratarTeclaEscape({
 
     event,
+
     estado,
+
     elementos
 
 }) {
@@ -737,7 +1053,9 @@ function tratarTeclaEscape({
         event.key !==
         "Escape"
     ) {
+
         return;
+
     }
 
 
@@ -754,6 +1072,7 @@ function tratarTeclaEscape({
             elementos
         );
 
+
         return;
 
     }
@@ -769,8 +1088,11 @@ function tratarTeclaEscape({
     if (formularioAberto) {
 
         encerrarModalDoacao({
+
             estado,
+
             elementos
+
         });
 
     }
@@ -803,8 +1125,8 @@ export function configurarEventosDoacoes({
 }) {
 
     /*
-     * Se a página for aberta novamente pelo router,
-     * removemos todos os eventos da inicialização anterior.
+     * Remove eventos antigos quando a página
+     * for carregada novamente pelo router.
      */
     if (
         estado.controladorEventos
@@ -836,9 +1158,13 @@ export function configurarEventosDoacoes({
     // =================================================
 
     elementos.btnAtualizar.addEventListener(
+
         "click",
+
         carregarDoacoes,
+
         opcoes
+
     );
 
 
@@ -847,49 +1173,71 @@ export function configurarEventosDoacoes({
     // =================================================
 
     elementos.btnNova.addEventListener(
+
         "click",
+
         () => {
 
             prepararNovaDoacao({
+
                 estado,
+
                 elementos,
+
                 campos
+
             });
 
         },
+
         opcoes
+
     );
 
 
     // =================================================
-    // FECHAR MODAL DE CADASTRO
+    // FECHAR MODAL DO FORMULÁRIO
     // =================================================
 
     elementos.btnFecharModal.addEventListener(
+
         "click",
+
         () => {
 
             encerrarModalDoacao({
+
                 estado,
+
                 elementos
+
             });
 
         },
+
         opcoes
+
     );
 
 
     elementos.btnCancelar.addEventListener(
+
         "click",
+
         () => {
 
             encerrarModalDoacao({
+
                 estado,
+
                 elementos
+
             });
 
         },
+
         opcoes
+
     );
 
 
@@ -898,19 +1246,29 @@ export function configurarEventosDoacoes({
     // =================================================
 
     elementos.formulario.addEventListener(
+
         "submit",
+
         (event) => {
 
             salvarDoacao({
+
                 event,
+
                 estado,
+
                 elementos,
+
                 campos,
+
                 carregarDoacoes
+
             });
 
         },
+
         opcoes
+
     );
 
 
@@ -919,25 +1277,34 @@ export function configurarEventosDoacoes({
     // =================================================
 
     elementos.selectInstituicao.addEventListener(
+
         "change",
+
         () => {
 
             alterarInstituicaoDoacao({
+
                 elementos,
+
                 campos
+
             });
 
         },
+
         opcoes
+
     );
 
 
     // =================================================
-    // PESQUISA COM DEBOUNCE
+    // PESQUISA
     // =================================================
 
     elementos.pesquisa.addEventListener(
+
         "input",
+
         () => {
 
             cancelarPesquisaPendente(
@@ -957,6 +1324,7 @@ export function configurarEventosDoacoes({
 
             estado.temporizadorPesquisa =
                 setTimeout(
+
                     () => {
 
                         estado.paginaAtual =
@@ -970,23 +1338,31 @@ export function configurarEventosDoacoes({
                             null;
 
                     },
+
                     TEMPO_DEBOUNCE_PESQUISA
+
                 );
 
         },
+
         opcoes
+
     );
 
 
     elementos.pesquisa.addEventListener(
+
         "keydown",
+
         (event) => {
 
             if (
                 event.key !==
                 "Enter"
             ) {
+
                 return;
+
             }
 
 
@@ -1005,12 +1381,16 @@ export function configurarEventosDoacoes({
             renderizarDoacoes();
 
         },
+
         opcoes
+
     );
 
 
     elementos.btnLimparPesquisa.addEventListener(
+
         "click",
+
         () => {
 
             cancelarPesquisaPendente(
@@ -1032,7 +1412,9 @@ export function configurarEventosDoacoes({
             renderizarDoacoes();
 
         },
+
         opcoes
+
     );
 
 
@@ -1044,18 +1426,27 @@ export function configurarEventosDoacoes({
         (botao) => {
 
             botao.addEventListener(
+
                 "click",
+
                 (event) => {
 
                     selecionarFiltro({
+
                         event,
+
                         estado,
+
                         elementos,
+
                         renderizarDoacoes
+
                     });
 
                 },
+
                 opcoes
+
             );
 
         }
@@ -1070,18 +1461,27 @@ export function configurarEventosDoacoes({
         (botao) => {
 
             botao.addEventListener(
+
                 "click",
+
                 (event) => {
 
                     selecionarOrdenacao({
+
                         event,
+
                         estado,
+
                         elementos,
+
                         renderizarDoacoes
+
                     });
 
                 },
+
                 opcoes
+
             );
 
         }
@@ -1093,17 +1493,25 @@ export function configurarEventosDoacoes({
     // =================================================
 
     elementos.quantidadePorPagina.addEventListener(
+
         "change",
+
         () => {
 
             alterarQuantidadePorPagina({
+
                 estado,
+
                 elementos,
+
                 renderizarDoacoes
+
             });
 
         },
+
         opcoes
+
     );
 
 
@@ -1112,18 +1520,28 @@ export function configurarEventosDoacoes({
     // =================================================
 
     elementos.btnPrimeiraPagina.addEventListener(
+
         "click",
+
         () => {
 
             irParaPagina({
-                pagina: 1,
+
+                pagina:
+                    1,
+
                 estado,
+
                 obterDoacoesFiltradas,
+
                 renderizarDoacoes
+
             });
 
         },
+
         opcoes
+
     );
 
 
@@ -1132,7 +1550,9 @@ export function configurarEventosDoacoes({
     // =================================================
 
     elementos.btnPaginaAnterior.addEventListener(
+
         "click",
+
         () => {
 
             irParaPagina({
@@ -1149,7 +1569,9 @@ export function configurarEventosDoacoes({
             });
 
         },
+
         opcoes
+
     );
 
 
@@ -1158,7 +1580,9 @@ export function configurarEventosDoacoes({
     // =================================================
 
     elementos.btnProximaPagina.addEventListener(
+
         "click",
+
         () => {
 
             irParaPagina({
@@ -1175,7 +1599,9 @@ export function configurarEventosDoacoes({
             });
 
         },
+
         opcoes
+
     );
 
 
@@ -1184,7 +1610,9 @@ export function configurarEventosDoacoes({
     // =================================================
 
     elementos.btnUltimaPagina.addEventListener(
+
         "click",
+
         () => {
 
             const filtradas =
@@ -1193,8 +1621,11 @@ export function configurarEventosDoacoes({
 
             const totalPaginas =
                 calcularTotalPaginasDoacoes(
+
                     filtradas.length,
+
                     estado.itensPorPagina
+
                 );
 
 
@@ -1212,7 +1643,9 @@ export function configurarEventosDoacoes({
             });
 
         },
+
         opcoes
+
     );
 
 
@@ -1221,7 +1654,9 @@ export function configurarEventosDoacoes({
     // =================================================
 
     elementos.numerosPaginacao.addEventListener(
+
         "click",
+
         (event) => {
 
             const botao =
@@ -1231,7 +1666,9 @@ export function configurarEventosDoacoes({
 
 
             if (!botao) {
+
                 return;
+
             }
 
 
@@ -1251,7 +1688,9 @@ export function configurarEventosDoacoes({
             });
 
         },
+
         opcoes
+
     );
 
 
@@ -1260,29 +1699,42 @@ export function configurarEventosDoacoes({
     // =================================================
 
     elementos.tabela.addEventListener(
+
         "click",
+
         (event) => {
 
             tratarCliqueTabela({
+
                 event,
+
                 estado,
+
                 elementos,
+
                 campos,
+
                 prepararEdicaoDoacao,
+
                 carregarDoacoes
+
             });
 
         },
+
         opcoes
+
     );
 
 
     // =================================================
-    // CLIQUE FORA DO MODAL DE FORMULÁRIO
+    // CLIQUE FORA DO MODAL DO FORMULÁRIO
     // =================================================
 
     elementos.modal.addEventListener(
+
         "click",
+
         (event) => {
 
             if (
@@ -1291,14 +1743,19 @@ export function configurarEventosDoacoes({
             ) {
 
                 encerrarModalDoacao({
+
                     estado,
+
                     elementos
+
                 });
 
             }
 
         },
+
         opcoes
+
     );
 
 
@@ -1307,7 +1764,9 @@ export function configurarEventosDoacoes({
     // =================================================
 
     elementos.btnFecharDetalhes.addEventListener(
+
         "click",
+
         () => {
 
             fecharDetalhesDoacao(
@@ -1315,12 +1774,16 @@ export function configurarEventosDoacoes({
             );
 
         },
+
         opcoes
+
     );
 
 
     elementos.btnFecharDetalhesRodape.addEventListener(
+
         "click",
+
         () => {
 
             fecharDetalhesDoacao(
@@ -1328,12 +1791,16 @@ export function configurarEventosDoacoes({
             );
 
         },
+
         opcoes
+
     );
 
 
     elementos.modalDetalhes.addEventListener(
+
         "click",
+
         (event) => {
 
             if (
@@ -1348,7 +1815,9 @@ export function configurarEventosDoacoes({
             }
 
         },
+
         opcoes
+
     );
 
 
@@ -1357,17 +1826,25 @@ export function configurarEventosDoacoes({
     // =================================================
 
     document.addEventListener(
+
         "keydown",
+
         (event) => {
 
             tratarTeclaEscape({
+
                 event,
+
                 estado,
+
                 elementos
+
             });
 
         },
+
         opcoes
+
     );
 
 

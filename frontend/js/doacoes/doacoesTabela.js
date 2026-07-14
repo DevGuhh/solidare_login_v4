@@ -2,7 +2,9 @@
 // ESCAPAR HTML
 // =====================================================
 
-function escaparHtml(valor) {
+function escaparHtml(
+    valor
+) {
 
     return String(valor ?? "")
         .replaceAll("&", "&amp;")
@@ -29,6 +31,7 @@ function formatarData(
     const data =
         new Date(valor);
 
+
     if (
         Number.isNaN(
             data.getTime()
@@ -37,13 +40,39 @@ function formatarData(
         return "-";
     }
 
+
     return data.toLocaleDateString(
         "pt-BR",
         {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric"
+
+            day:
+                "2-digit",
+
+            month:
+                "2-digit",
+
+            year:
+                "numeric"
+
         }
+    );
+
+}
+
+
+// =====================================================
+// VERIFICAR VALOR BOOLEANO
+// =====================================================
+
+function valorBooleano(
+    valor
+) {
+
+    return (
+        valor === true ||
+        valor === 1 ||
+        valor === "1" ||
+        valor === "true"
     );
 
 }
@@ -130,6 +159,7 @@ function renderizarBadgeTipo(
             tipo
         );
 
+
     const texto =
         escaparHtml(
             obterTextoTipo(
@@ -137,10 +167,142 @@ function renderizarBadgeTipo(
             )
         );
 
+
     return `
+
         <span class="badge-doacao ${classe}">
+
             ${texto}
+
         </span>
+
+    `;
+
+}
+
+
+// =====================================================
+// RENDERIZAR ESTADO DO COMPROVANTE
+// =====================================================
+
+function renderizarStatusComprovante(
+    comprovante
+) {
+
+    const possuiComprovante =
+        valorBooleano(
+            comprovante
+        );
+
+
+    if (possuiComprovante) {
+
+        return `
+
+            <span
+                class="doacao-comprovante-status confirmado"
+                title="Doação com comprovante"
+            >
+
+                <i
+                    class="fa-solid fa-circle-check"
+                    aria-hidden="true"
+                ></i>
+
+                Comprovado
+
+            </span>
+
+        `;
+
+    }
+
+
+    return `
+
+        <span
+            class="doacao-comprovante-status pendente"
+            title="Doação sem comprovante"
+        >
+
+            <i
+                class="fa-regular fa-circle-xmark"
+                aria-hidden="true"
+            ></i>
+
+            Pendente
+
+        </span>
+
+    `;
+
+}
+
+
+// =====================================================
+// RENDERIZAR BOTÃO DO COMPROVANTE
+// =====================================================
+
+function renderizarBotaoComprovante(
+    doacao,
+    codigo
+) {
+
+    const id =
+        Number(
+            doacao?.id
+        ) || 0;
+
+
+    const possuiComprovante =
+        valorBooleano(
+            doacao?.comprovante
+        );
+
+
+    const titulo =
+        possuiComprovante
+            ? "Remover comprovante"
+            : "Confirmar comprovante";
+
+
+    const descricao =
+        possuiComprovante
+            ? `Remover o comprovante da doação ${codigo}`
+            : `Confirmar o comprovante da doação ${codigo}`;
+
+
+    const classeEstado =
+        possuiComprovante
+            ? "comprovante-confirmado"
+            : "comprovante-pendente";
+
+
+    const icone =
+        possuiComprovante
+            ? "fa-solid fa-file-circle-check"
+            : "fa-regular fa-file";
+
+
+    return `
+
+        <button
+            type="button"
+            class="btn-acao-tabela btnComprovanteDoacao ${classeEstado}"
+            data-id="${id}"
+            data-comprovante="${String(possuiComprovante)}"
+            title="${titulo}"
+            aria-label="${descricao}"
+            aria-pressed="${String(possuiComprovante)}"
+        >
+
+            <i
+                class="${icone}"
+                aria-hidden="true"
+            ></i>
+
+        </button>
+
     `;
 
 }
@@ -166,15 +328,23 @@ function renderizarEstadoVazio(
                         class="doacoes-empty-icon"
                         aria-hidden="true"
                     >
+
                         <i class="fa-solid fa-hand-holding-heart"></i>
+
                     </div>
 
+
                     <strong>
+
                         Nenhuma doação encontrada
+
                     </strong>
 
+
                     <span>
+
                         Cadastre uma nova doação ou altere os filtros da pesquisa.
+
                     </span>
 
                 </div>
@@ -230,232 +400,295 @@ export function renderizarTabelaDoacoes(
 
 
     const linhas =
-        doacoes.map(
-            (doacao) => {
+        doacoes
+            .map(
+                (doacao) => {
 
-                const id =
-                    Number(
-                        doacao?.id
-                    ) || 0;
-
-
-                const codigo =
-                    escaparHtml(
-                        doacao?.codigo ||
-                        "-"
-                    );
+                    const id =
+                        Number(
+                            doacao?.id
+                        ) || 0;
 
 
-                const beneficiario =
-                    escaparHtml(
-                        doacao
-                            ?.beneficiario
-                            ?.nomeCompleto ||
-                        "-"
-                    );
+                    const codigo =
+                        escaparHtml(
+                            doacao?.codigo ||
+                            "-"
+                        );
 
 
-                const instituicao =
-                    escaparHtml(
-                        doacao
-                            ?.instituicao
-                            ?.nome ||
-                        "-"
-                    );
+                    const beneficiario =
+                        escaparHtml(
+                            doacao
+                                ?.beneficiario
+                                ?.nomeCompleto ||
+                            "-"
+                        );
 
 
-                const quantidade =
-                    Number(
-                        doacao?.quantidade
-                    ) || 0;
+                    const instituicao =
+                        escaparHtml(
+                            doacao
+                                ?.instituicao
+                                ?.nome ||
+                            "-"
+                        );
 
 
-                const data =
-                    formatarData(
-                        doacao?.dataDoacao
-                    );
+                    const quantidade =
+                        Number(
+                            doacao?.quantidade
+                        ) || 0;
 
 
-                return `
-
-                    <tr data-id-doacao="${id}">
-
-                        <!-- ID -->
-
-                        <td>
-
-                            <span class="doacao-id">
-                                #${id}
-                            </span>
-
-                        </td>
+                    const data =
+                        formatarData(
+                            doacao?.dataDoacao
+                        );
 
 
-                        <!-- CÓDIGO -->
+                    return `
 
-                        <td>
+                        <tr data-id-doacao="${id}">
 
-                            <strong class="doacao-codigo">
-                                ${codigo}
-                            </strong>
+                            <!-- =========================
+                                 ID
+                            ========================== -->
 
-                        </td>
+                            <td>
+
+                                <span class="doacao-id">
+
+                                    #${id}
+
+                                </span>
+
+                            </td>
 
 
-                        <!-- BENEFICIÁRIO -->
+                            <!-- =========================
+                                 CÓDIGO E COMPROVANTE
+                            ========================== -->
 
-                        <td>
+                            <td>
 
-                            <div class="doacao-pessoa">
+                                <div class="doacao-codigo-container">
 
-                                <div
-                                    class="doacao-pessoa-avatar"
-                                    aria-hidden="true"
-                                >
-                                    <i class="fa-solid fa-user"></i>
-                                </div>
+                                    <strong class="doacao-codigo">
 
-                                <div class="doacao-pessoa-dados">
+                                        ${codigo}
 
-                                    <strong>
-                                        ${beneficiario}
                                     </strong>
 
+
+                                    ${renderizarStatusComprovante(
+                                        doacao?.comprovante
+                                    )}
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- =========================
+                                 BENEFICIÁRIO
+                            ========================== -->
+
+                            <td>
+
+                                <div class="doacao-pessoa">
+
+                                    <div
+                                        class="doacao-pessoa-avatar"
+                                        aria-hidden="true"
+                                    >
+
+                                        <i class="fa-solid fa-user"></i>
+
+                                    </div>
+
+
+                                    <div class="doacao-pessoa-dados">
+
+                                        <strong>
+
+                                            ${beneficiario}
+
+                                        </strong>
+
+
+                                        <span>
+
+                                            Beneficiário
+
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- =========================
+                                 INSTITUIÇÃO
+                            ========================== -->
+
+                            <td>
+
+                                <div class="doacao-instituicao">
+
+                                    <i
+                                        class="fa-solid fa-building"
+                                        aria-hidden="true"
+                                    ></i>
+
+
                                     <span>
-                                        Beneficiário
+
+                                        ${instituicao}
+
                                     </span>
 
                                 </div>
 
-                            </div>
-
-                        </td>
+                            </td>
 
 
-                        <!-- INSTITUIÇÃO -->
+                            <!-- =========================
+                                 TIPO
+                            ========================== -->
 
-                        <td>
+                            <td>
 
-                            <div class="doacao-instituicao">
+                                ${renderizarBadgeTipo(
+                                    doacao?.tipo
+                                )}
 
-                                <i
-                                    class="fa-solid fa-building"
-                                    aria-hidden="true"
-                                ></i>
+                            </td>
 
-                                <span>
-                                    ${instituicao}
+
+                            <!-- =========================
+                                 QUANTIDADE
+                            ========================== -->
+
+                            <td>
+
+                                <span class="doacao-quantidade">
+
+                                    <i
+                                        class="fa-solid fa-box"
+                                        aria-hidden="true"
+                                    ></i>
+
+
+                                    ${quantidade}
+
                                 </span>
 
-                            </div>
-
-                        </td>
+                            </td>
 
 
-                        <!-- TIPO -->
+                            <!-- =========================
+                                 DATA
+                            ========================== -->
 
-                        <td>
+                            <td>
 
-                            ${renderizarBadgeTipo(
-                                doacao?.tipo
-                            )}
+                                <span class="doacao-data">
 
-                        </td>
-
-
-                        <!-- QUANTIDADE -->
-
-                        <td>
-
-                            <span class="doacao-quantidade">
-
-                                <i
-                                    class="fa-solid fa-box"
-                                    aria-hidden="true"
-                                ></i>
-
-                                ${quantidade}
-
-                            </span>
-
-                        </td>
-
-
-                        <!-- DATA -->
-
-                        <td>
-
-                            <span class="doacao-data">
-
-                                <i
-                                    class="fa-regular fa-calendar"
-                                    aria-hidden="true"
-                                ></i>
-
-                                ${data}
-
-                            </span>
-
-                        </td>
-
-
-                        <!-- AÇÕES -->
-
-                        <td class="coluna-acoes">
-
-                            <div class="doacoes-acoes-tabela">
-
-                                <button
-                                    type="button"
-                                    class="btn-acao-tabela btnVisualizarDoacao"
-                                    data-id="${id}"
-                                    title="Visualizar doação"
-                                    aria-label="Visualizar a doação ${codigo}"
-                                >
                                     <i
-                                        class="fa-solid fa-eye"
+                                        class="fa-regular fa-calendar"
                                         aria-hidden="true"
                                     ></i>
-                                </button>
 
 
-                                <button
-                                    type="button"
-                                    class="btn-acao-tabela btnEditarDoacao"
-                                    data-id="${id}"
-                                    title="Editar doação"
-                                    aria-label="Editar a doação ${codigo}"
-                                >
-                                    <i
-                                        class="fa-solid fa-pen"
-                                        aria-hidden="true"
-                                    ></i>
-                                </button>
+                                    ${data}
+
+                                </span>
+
+                            </td>
 
 
-                                <button
-                                    type="button"
-                                    class="btn-acao-tabela btnExcluirDoacao"
-                                    data-id="${id}"
-                                    title="Cancelar doação"
-                                    aria-label="Cancelar a doação ${codigo}"
-                                >
-                                    <i
-                                        class="fa-solid fa-trash"
-                                        aria-hidden="true"
-                                    ></i>
-                                </button>
+                            <!-- =========================
+                                 AÇÕES
+                            ========================== -->
 
-                            </div>
+                            <td class="coluna-acoes">
 
-                        </td>
+                                <div class="doacoes-acoes-tabela">
 
-                    </tr>
+                                    <!-- VISUALIZAR -->
 
-                `;
+                                    <button
+                                        type="button"
+                                        class="btn-acao-tabela btnVisualizarDoacao"
+                                        data-id="${id}"
+                                        title="Visualizar doação"
+                                        aria-label="Visualizar a doação ${codigo}"
+                                    >
 
-            }
-        )
+                                        <i
+                                            class="fa-solid fa-eye"
+                                            aria-hidden="true"
+                                        ></i>
+
+                                    </button>
+
+
+                                    <!-- EDITAR -->
+
+                                    <button
+                                        type="button"
+                                        class="btn-acao-tabela btnEditarDoacao"
+                                        data-id="${id}"
+                                        title="Editar doação"
+                                        aria-label="Editar a doação ${codigo}"
+                                    >
+
+                                        <i
+                                            class="fa-solid fa-pen"
+                                            aria-hidden="true"
+                                        ></i>
+
+                                    </button>
+
+
+                                    <!-- COMPROVANTE -->
+
+                                    ${renderizarBotaoComprovante(
+                                        doacao,
+                                        codigo
+                                    )}
+
+
+                                    <!-- CANCELAR -->
+
+                                    <button
+                                        type="button"
+                                        class="btn-acao-tabela btnExcluirDoacao"
+                                        data-id="${id}"
+                                        title="Cancelar doação"
+                                        aria-label="Cancelar a doação ${codigo}"
+                                    >
+
+                                        <i
+                                            class="fa-solid fa-trash"
+                                            aria-hidden="true"
+                                        ></i>
+
+                                    </button>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    `;
+
+                }
+            )
             .join("");
 
 

@@ -1846,3 +1846,192 @@
     }
 
 }
+
+/* =====================================================
+   CÓDIGO E STATUS DO COMPROVANTE
+===================================================== */
+
+.doacao-codigo-container {
+    min-width: 130px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+}
+
+
+.doacao-comprovante-status {
+    min-height: 24px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+
+    padding: 4px 8px;
+
+    border: 1px solid transparent;
+    border-radius: 999px;
+
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+
+/* =====================================================
+   COMPROVANTE CONFIRMADO
+===================================================== */
+
+.doacao-comprovante-status.confirmado {
+    border-color: #a7f3d0;
+
+    background: #ecfdf3;
+    color: #027a48;
+}
+
+
+.doacao-comprovante-status.confirmado i {
+    color: #039855;
+}
+
+
+/* =====================================================
+   COMPROVANTE PENDENTE
+===================================================== */
+
+.doacao-comprovante-status.pendente {
+    border-color: #fedf89;
+
+    background: #fffaeb;
+    color: #b54708;
+}
+
+
+.doacao-comprovante-status.pendente i {
+    color: #dc6803;
+}
+
+
+/* =====================================================
+   BOTÃO DO COMPROVANTE
+===================================================== */
+
+.btnComprovanteDoacao {
+    position: relative;
+}
+
+
+/* Estado pendente */
+
+.btnComprovanteDoacao.comprovante-pendente {
+    border-color: #fedf89;
+
+    background: #fffaeb;
+    color: #dc6803;
+}
+
+
+.btnComprovanteDoacao.comprovante-pendente:hover {
+    border-color: #fdb022;
+
+    background: #fef0c7;
+    color: #b54708;
+
+    box-shadow:
+        0 6px 14px rgba(220, 104, 3, 0.14);
+}
+
+
+/* Estado confirmado */
+
+.btnComprovanteDoacao.comprovante-confirmado {
+    border-color: #a7f3d0;
+
+    background: #ecfdf3;
+    color: #039855;
+}
+
+
+.btnComprovanteDoacao.comprovante-confirmado:hover {
+    border-color: #6ce9a6;
+
+    background: #d1fadf;
+    color: #027a48;
+
+    box-shadow:
+        0 6px 14px rgba(3, 152, 85, 0.14);
+}
+
+
+/* Botão processando */
+
+.btnComprovanteDoacao:disabled {
+    opacity: 0.55;
+
+    cursor: wait;
+    transform: none;
+}
+
+
+/* =====================================================
+   INDICADOR VISUAL NO BOTÃO
+===================================================== */
+
+.btnComprovanteDoacao.comprovante-confirmado::after {
+    content: "";
+
+    position: absolute;
+    top: 4px;
+    right: 4px;
+
+    width: 6px;
+    height: 6px;
+
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+
+    background: #12b76a;
+
+    box-shadow:
+        0 1px 4px rgba(3, 152, 85, 0.35);
+}
+
+
+.btnComprovanteDoacao.comprovante-pendente::after {
+    content: "";
+
+    position: absolute;
+    top: 4px;
+    right: 4px;
+
+    width: 6px;
+    height: 6px;
+
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+
+    background: #f79009;
+
+    box-shadow:
+        0 1px 4px rgba(220, 104, 3, 0.3);
+}
+
+
+/* =====================================================
+   RESPONSIVIDADE DO COMPROVANTE
+===================================================== */
+
+@media (max-width: 760px) {
+
+    .doacao-codigo-container {
+        min-width: 115px;
+    }
+
+    .doacao-comprovante-status {
+        font-size: 0.58rem;
+    }
+
+}

@@ -1,18 +1,41 @@
-const API_URL = "http://localhost:3000";
+// =====================================================
+// CONFIGURAÇÕES
+// =====================================================
+
+const API_URL =
+    "http://localhost:3000";
+
 
 // =====================================================
-// HEADERS
+// OBTER TOKEN
+// =====================================================
+
+function obterToken() {
+
+    return (
+        localStorage.getItem("token") ||
+        sessionStorage.getItem("token")
+    );
+
+}
+
+
+// =====================================================
+// OBTER HEADERS
 // =====================================================
 
 function obterHeaders() {
 
-    const token = localStorage.getItem("token");
+    const token =
+        obterToken();
 
     return {
 
-        "Content-Type": "application/json",
+        "Content-Type":
+            "application/json",
 
-        Authorization: `Bearer ${token}`
+        Authorization:
+            `Bearer ${token || ""}`
 
     };
 
@@ -20,85 +43,210 @@ function obterHeaders() {
 
 
 // =====================================================
-// LISTAR
+// LISTAR DOAÇÕES
 // =====================================================
 
-export async function listarDoacoes() {
+export async function listarDoacoes(
+    instituicaoId = null
+) {
 
-    return fetch(`${API_URL}/doacoes`, {
+    const parametros =
+        new URLSearchParams();
 
-        headers: obterHeaders()
 
-    });
+    const idInstituicao =
+        Number(
+            instituicaoId
+        );
+
+
+    if (
+        Number.isInteger(
+            idInstituicao
+        ) &&
+        idInstituicao > 0
+    ) {
+
+        parametros.set(
+            "instituicaoId",
+            String(idInstituicao)
+        );
+
+    }
+
+
+    const query =
+        parametros.toString();
+
+
+    const url =
+        query
+            ? `${API_URL}/doacoes?${query}`
+            : `${API_URL}/doacoes`;
+
+
+    return fetch(
+        url,
+        {
+
+            method:
+                "GET",
+
+            headers:
+                obterHeaders(),
+
+            cache:
+                "no-store"
+
+        }
+    );
 
 }
 
 
 // =====================================================
-// BUSCAR POR ID
+// BUSCAR DOAÇÃO POR ID
 // =====================================================
 
-export async function buscarDoacao(id) {
+export async function buscarDoacao(
+    id
+) {
 
-    return fetch(`${API_URL}/doacoes/${id}`, {
+    return fetch(
+        `${API_URL}/doacoes/${id}`,
+        {
 
-        headers: obterHeaders()
+            method:
+                "GET",
 
-    });
+            headers:
+                obterHeaders(),
+
+            cache:
+                "no-store"
+
+        }
+    );
 
 }
 
 
 // =====================================================
-// CADASTRAR
+// CADASTRAR DOAÇÃO
 // =====================================================
 
-export async function cadastrarDoacaoAPI(dados) {
+export async function cadastrarDoacaoAPI(
+    dados
+) {
 
-    return fetch(`${API_URL}/doacoes`, {
+    return fetch(
+        `${API_URL}/doacoes`,
+        {
 
-        method: "POST",
+            method:
+                "POST",
 
-        headers: obterHeaders(),
+            headers:
+                obterHeaders(),
 
-        body: JSON.stringify(dados)
+            body:
+                JSON.stringify(
+                    dados
+                )
 
-    });
+        }
+    );
 
 }
 
 
 // =====================================================
-// EDITAR
+// EDITAR DOAÇÃO
 // =====================================================
 
-export async function editarDoacaoAPI(id, dados) {
+export async function editarDoacaoAPI(
+    id,
+    dados
+) {
 
-    return fetch(`${API_URL}/doacoes/${id}`, {
+    return fetch(
+        `${API_URL}/doacoes/${id}`,
+        {
 
-        method: "PUT",
+            method:
+                "PUT",
 
-        headers: obterHeaders(),
+            headers:
+                obterHeaders(),
 
-        body: JSON.stringify(dados)
+            body:
+                JSON.stringify(
+                    dados
+                )
 
-    });
+        }
+    );
 
 }
 
 
 // =====================================================
-// EXCLUIR
+// ALTERAR COMPROVANTE
 // =====================================================
 
-export async function excluirDoacaoAPI(id) {
+export async function alterarComprovanteDoacaoAPI(
 
-    return fetch(`${API_URL}/doacoes/${id}`, {
+    id,
 
-        method: "DELETE",
+    comprovante
 
-        headers: obterHeaders()
+) {
 
-    });
+    return fetch(
+        `${API_URL}/doacoes/${id}/comprovante`,
+        {
+
+            method:
+                "PATCH",
+
+            headers:
+                obterHeaders(),
+
+            body:
+                JSON.stringify({
+
+                    comprovante:
+                        Boolean(
+                            comprovante
+                        )
+
+                })
+
+        }
+    );
+
+}
+
+
+// =====================================================
+// CANCELAR DOAÇÃO
+// =====================================================
+
+export async function excluirDoacaoAPI(
+    id
+) {
+
+    return fetch(
+        `${API_URL}/doacoes/${id}`,
+        {
+
+            method:
+                "DELETE",
+
+            headers:
+                obterHeaders()
+
+        }
+    );
 
 }
