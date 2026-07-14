@@ -1766,7 +1766,7 @@ async function excluirSelecionados() {
 
             beneficiariosSelecionados.clear();
 
-            aplicarFiltrosBeneficiarios();
+            atualizarBarraSelecao();
 
             return;
 
@@ -2509,9 +2509,9 @@ async function excluirBeneficiario(id) {
             "Beneficiário excluído com sucesso!"
         );
 
-        await carregarBeneficiarios();
-
         beneficiariosSelecionados.clear();
+
+        await carregarBeneficiarios();
 
     } catch (erro) {
 
@@ -2586,9 +2586,9 @@ async function alterarStatusBeneficiario(
                 : "Beneficiário inativado com sucesso!"
         );
 
-        await carregarBeneficiarios();
-
         beneficiariosSelecionados.clear();
+
+        await carregarBeneficiarios();
 
     } catch (erro) {
 

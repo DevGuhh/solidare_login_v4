@@ -2,6 +2,8 @@
 // ARQUIVO COMENTADO PARA ESTUDO
 // ==========================================================================
 
+import { Prisma } from "@prisma/client";
+
 // Importa o "prisma", que é a ferramenta usada para conversar com o banco
 // de dados sem precisar escrever comandos SQL complicados na mão.
 import { prisma } from "../config/db.js";
@@ -23,7 +25,6 @@ import { ZodError } from "zod";
 // Importa uma função própria do projeto que gera um código único para
 // identificar a doação (como um "número de protocolo").
 import { gerarCodigoDoacao } from "../utils/generateCode.js";
-import { id } from "zod/v4/locales";
 
 // --------------------------------------------------------------------------
 // Função principal: cadastra uma doação.
@@ -262,16 +263,16 @@ const listarDoacoes = async (req, res) => {
     // encontrada (pode ser uma lista vazia, se não houver nenhuma).
     return res.status(200).json(doacao);
   } catch (error) {
-    // Se qualquer coisa inesperada der errado no try (ex: banco fora
-    // do ar), caímos aqui. status(500) = erro interno do servidor.
-    //
-    // Dica de estudo: seria interessante adicionar um
-    // console.error(error) aqui antes do return, como foi feito na
-    // função "cadastrarDoacao", para facilitar encontrar o problema
-    // depois — no código original esse log não existe.
-    return res.status(500).json({
-      error: "Erro ao listar as doações.",
-    });
+
+      console.error(
+          "GET /doacoes - erro ao listar:",
+          error
+      );
+
+      return res.status(500).json({
+          error: "Erro ao listar as doações.",
+      });
+
   }
 };
 

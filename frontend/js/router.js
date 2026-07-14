@@ -92,6 +92,25 @@ const inicializadoresPaginas = {
         }
 
     },
+    
+
+    "doacoes.html": async () => {
+
+        const modulo =
+            await import(
+                "./doacoes/doacoes.js"
+            );
+
+        if (
+            typeof modulo.inicializarDoacoes ===
+            "function"
+        ) {
+
+            await modulo.inicializarDoacoes();
+
+        }
+
+    },
 
 
     "instituicoes.html": async () => {
