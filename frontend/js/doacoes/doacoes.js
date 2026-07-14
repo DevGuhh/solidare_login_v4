@@ -19,6 +19,7 @@ import {
 } from "./doacoesEventos.js";
 
 import {
+    carregarInstituicoesDoacao,
     carregarBeneficiariosDoacao,
     prepararNovaDoacao,
     prepararEdicaoDoacao
@@ -46,25 +47,44 @@ import {
 
 
 // =====================================================
+// CONFIGURAÇÕES
+// =====================================================
+
+const API_URL =
+    "http://localhost:3000";
+
+
+// =====================================================
 // ESTADO DO MÓDULO
 // =====================================================
 
 export const estadoDoacoes = {
 
+    // Dados do usuário autenticado.
+    usuarioLogado: null,
+
+    // Lista completa recebida da API.
     lista: [],
 
+    // Filtro de tipo atualmente selecionado.
     filtroAtual: "TODAS",
 
+    // Página atualmente exibida.
     paginaAtual: 1,
 
+    // Quantidade de registros exibidos por página.
     itensPorPagina: 10,
 
+    // Campo utilizado na ordenação.
     campoOrdenacao: "dataDoacao",
 
+    // Direção da ordenação.
     direcaoOrdenacao: "desc",
 
+    // ID da doação que está sendo editada.
     doacaoEditandoId: null,
 
+    // Temporizador da pesquisa com debounce.
     temporizadorPesquisa: null
 
 };
@@ -82,6 +102,57 @@ export const elementosDoacoes = {};
 // =====================================================
 
 export const camposDoacoes = {};
+
+
+// =====================================================
+// OBTER TOKEN
+// =====================================================
+
+function obterToken() {
+
+    return (
+        localStorage.getItem("token") ||
+        sessionStorage.getItem("token")
+    );
+
+}
+
+
+// =====================================================
+// LER JSON COM SEGURANÇA
+// =====================================================
+
+async function lerRespostaJson(
+    resposta
+) {
+
+    const texto =
+        await resposta.text();
+
+    if (!texto) {
+        return {};
+    }
+
+    try {
+
+        return JSON.parse(
+            texto
+        );
+
+    } catch (erro) {
+
+        console.error(
+            "Resposta inválida recebida do servidor:",
+            texto
+        );
+
+        throw new Error(
+            "O servidor retornou uma resposta inválida."
+        );
+
+    }
+
+}
 
 
 // =====================================================
@@ -112,6 +183,18 @@ function capturarElementosDoacoes() {
             tituloModal:
                 document.getElementById(
                     "tituloModalDoacao"
+                ),
+
+            // Grupo exibido somente para o ADMIN.
+            grupoInstituicao:
+                document.getElementById(
+                    "grupoInstituicaoDoacao"
+                ),
+
+            // Select de instituições do ADMIN.
+            selectInstituicao:
+                document.getElementById(
+                    "instituicaoIdDoacao"
                 ),
 
             btnNova:
@@ -260,16 +343,22 @@ function validarElementosDoacoes() {
         elementosDoacoes.modal,
         elementosDoacoes.formulario,
         elementosDoacoes.tituloModal,
+
+        elementosDoacoes.grupoInstituicao,
+        elementosDoacoes.selectInstituicao,
+
         elementosDoacoes.btnNova,
         elementosDoacoes.btnAtualizar,
         elementosDoacoes.btnFecharModal,
         elementosDoacoes.btnCancelar,
         elementosDoacoes.pesquisa,
         elementosDoacoes.btnLimparPesquisa,
+
         elementosDoacoes.contadorTodas,
         elementosDoacoes.contadorCesta,
         elementosDoacoes.contadorGranel,
         elementosDoacoes.contadorAmbos,
+
         elementosDoacoes.resultadoFiltro,
         elementosDoacoes.quantidadePorPagina,
         elementosDoacoes.intervaloPaginacao,
@@ -303,6 +392,120 @@ function validarElementosDoacoes() {
 
 
 // =====================================================
+// CARREGAR USUÁRIO LOGADO
+// =====================================================
+
+async function carregarUsuarioLogado() {
+
+    const token =
+        obterToken();
+
+    if (!token) {
+
+        throw new Error(
+            "Token de autenticação não encontrado."
+        );
+
+    }
+
+
+    const resposta =
+        await fetch(
+            `${API_URL}/auth/me`,
+            {
+                method: "GET",
+
+                headers: {
+                    Authorization:
+                        `Bearer ${token}`
+                },
+
+                cache:
+                    "no-store"
+            }
+        );
+
+
+    const dados =
+        await lerRespostaJson(
+            resposta
+        );
+
+
+    if (!resposta.ok) {
+
+        throw new Error(
+            dados.error ||
+            dados.erro ||
+            dados.mensagem ||
+            "Não foi possível identificar o usuário autenticado."
+        );
+
+    }
+
+
+    estadoDoacoes.usuarioLogado =
+        dados.usuario ||
+        dados.data?.usuario ||
+        null;
+
+
+    if (!estadoDoacoes.usuarioLogado) {
+
+        throw new Error(
+            "O servidor não retornou os dados do usuário autenticado."
+        );
+
+    }
+
+
+    return estadoDoacoes.usuarioLogado;
+
+}
+
+
+// =====================================================
+// CONFIGURAR CAMPO DE INSTITUIÇÃO
+// =====================================================
+
+function configurarCampoInstituicao() {
+
+    const usuarioAdmin =
+        estadoDoacoes
+            .usuarioLogado
+            ?.role === "ADMIN";
+
+
+    /*
+     * Nesta etapa, apenas controlamos a exibição.
+     * Na próxima, carregaremos as instituições
+     * e filtraremos os beneficiários.
+     */
+    elementosDoacoes
+        .grupoInstituicao
+        .hidden =
+            !usuarioAdmin;
+
+
+    elementosDoacoes
+        .selectInstituicao
+        .required =
+            usuarioAdmin;
+
+
+    if (!usuarioAdmin) {
+
+        elementosDoacoes
+            .selectInstituicao
+            .value =
+                "";
+
+    }
+
+}
+
+
+// =====================================================
 // OBTER LISTA FILTRADA E ORDENADA
 // =====================================================
 
@@ -314,6 +517,7 @@ export function obterDoacoesFiltradas() {
             elementosDoacoes.pesquisa.value,
             estadoDoacoes.filtroAtual
         );
+
 
     return ordenarDoacoes(
         filtradas,
@@ -333,6 +537,7 @@ export function renderizarDoacoes() {
     const filtradas =
         obterDoacoesFiltradas();
 
+
     const totalPaginas =
         Math.max(
             1,
@@ -341,6 +546,7 @@ export function renderizarDoacoes() {
                 estadoDoacoes.itensPorPagina
             )
         );
+
 
     if (
         estadoDoacoes.paginaAtual >
@@ -352,6 +558,7 @@ export function renderizarDoacoes() {
 
     }
 
+
     const inicio =
         (
             estadoDoacoes.paginaAtual -
@@ -359,9 +566,11 @@ export function renderizarDoacoes() {
         ) *
         estadoDoacoes.itensPorPagina;
 
+
     const fim =
         inicio +
         estadoDoacoes.itensPorPagina;
+
 
     const pagina =
         filtradas.slice(
@@ -375,14 +584,17 @@ export function renderizarDoacoes() {
         pagina
     );
 
+
     atualizarTextoResultadoDoacoes(
         elementosDoacoes,
         filtradas.length
     );
 
+
     atualizarBotaoLimparPesquisaDoacoes(
         elementosDoacoes
     );
+
 
     atualizarPaginacaoDoacoes(
         elementosDoacoes,
@@ -406,38 +618,48 @@ export async function carregarDoacoes() {
         const resposta =
             await listarDoacoes();
 
+
         const dados =
-            await resposta.json();
+            await lerRespostaJson(
+                resposta
+            );
+
 
         if (!resposta.ok) {
 
             throw new Error(
                 dados.error ||
+                dados.erro ||
                 dados.mensagem ||
                 "Erro ao carregar doações."
             );
 
         }
 
+
         estadoDoacoes.lista =
             normalizarListaDoacoes(
                 dados
             );
+
 
         atualizarContadoresDoacoes(
             elementosDoacoes,
             estadoDoacoes.lista
         );
 
+
         atualizarBotoesFiltroDoacoes(
             elementosDoacoes,
             estadoDoacoes
         );
 
+
         atualizarBotoesOrdenacaoDoacoes(
             elementosDoacoes,
             estadoDoacoes
         );
+
 
         renderizarDoacoes();
 
@@ -448,15 +670,19 @@ export async function carregarDoacoes() {
             erro
         );
 
+
         estadoDoacoes.lista =
             [];
+
 
         atualizarContadoresDoacoes(
             elementosDoacoes,
             estadoDoacoes.lista
         );
 
+
         renderizarDoacoes();
+
 
         mostrarErro(
             erro.message ||
@@ -480,6 +706,13 @@ export async function inicializarDoacoes() {
 
     try {
 
+        // ==============================================
+        // REINICIAR ESTADO
+        // ==============================================
+
+        estadoDoacoes.usuarioLogado =
+            null;
+
         estadoDoacoes.lista =
             [];
 
@@ -501,6 +734,13 @@ export async function inicializarDoacoes() {
         estadoDoacoes.doacaoEditandoId =
             null;
 
+        estadoDoacoes.temporizadorPesquisa =
+            null;
+
+
+        // ==============================================
+        // CAPTURAR E VALIDAR HTML
+        // ==============================================
 
         capturarElementosDoacoes();
 
@@ -516,24 +756,32 @@ export async function inicializarDoacoes() {
                 );
 
 
+        // ==============================================
+        // CONFIGURAÇÕES VISUAIS INICIAIS
+        // ==============================================
+
         atualizarBotoesFiltroDoacoes(
             elementosDoacoes,
             estadoDoacoes
         );
+
 
         atualizarBotoesOrdenacaoDoacoes(
             elementosDoacoes,
             estadoDoacoes
         );
 
+
         atualizarBotaoLimparPesquisaDoacoes(
             elementosDoacoes
         );
+
 
         atualizarContadoresDoacoes(
             elementosDoacoes,
             []
         );
+
 
         atualizarTextoResultadoDoacoes(
             elementosDoacoes,
@@ -541,7 +789,33 @@ export async function inicializarDoacoes() {
         );
 
 
+        // ==============================================
+        // IDENTIFICAR USUÁRIO
+        // ==============================================
+
+        await carregarUsuarioLogado();
+
+
+        configurarCampoInstituicao();
+
+        if (
+            estadoDoacoes.usuarioLogado?.role ===
+            "ADMIN"
+        ) {
+
+            await carregarInstituicoesDoacao(
+                elementosDoacoes
+            );
+
+        }
+
+
+        // ==============================================
+        // CONFIGURAR EVENTOS
+        // ==============================================
+
         configurarEventosDoacoes({
+
             estado:
                 estadoDoacoes,
 
@@ -560,12 +834,18 @@ export async function inicializarDoacoes() {
             prepararNovaDoacao,
 
             prepararEdicaoDoacao
+
         });
 
+
+        // ==============================================
+        // CARREGAR DADOS
+        // ==============================================
 
         await carregarBeneficiariosDoacao(
             camposDoacoes
         );
+
 
         await carregarDoacoes();
 
@@ -575,6 +855,7 @@ export async function inicializarDoacoes() {
             "Erro ao inicializar Doações:",
             erro
         );
+
 
         mostrarErro(
             erro.message ||

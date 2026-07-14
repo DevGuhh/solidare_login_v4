@@ -34,123 +34,293 @@ import { gerarCodigoDoacao } from "../utils/generateCode.js";
 // dados, que não chegam instantaneamente.
 // --------------------------------------------------------------------------
 const cadastrarDoacao = async (req, res) => {
-  // O bloco "try" contém tudo que pode dar certo OU dar errado.
-  // Se qualquer linha aqui dentro falhar, o código pula direto para o
-  // bloco "catch" lá embaixo, em vez de travar o servidor inteiro.
-  try {
-    // Pega os dados enviados pelo usuário (req.body) e verifica se eles
-    // seguem as regras do schema. Se estiver tudo certo, "data" passa a
-    // conter os dados já validados e prontos para uso.
-    // Se estiver errado, essa linha "explode" um erro (ZodError) e o
-    // código pula direto para o catch.
-    const data = criarDoacaoSchema.parse(req.body);
 
-    const beneficiario = await prisma.beneficiario.findFirst({
-      where: {
-        id: data.beneficiarioId,
-        instituicaoId: req.user.instituicaoId,
-        deletedAt: null,
-      },
-    });
+  try {
+
+    // =====================================================
+    // VALIDAR DADOS RECEBIDOS
+    // =====================================================
+
+    const data =
+      criarDoacaoSchema.parse(
+        req.body
+      );
+
+
+    // =====================================================
+    // MONTAR FILTRO DO BENEFICIÁRIO
+    // =====================================================
+
+    const whereBeneficiario = {
+
+      id:
+        data.beneficiarioId,
+
+      deletedAt:
+        null,
+
+      ativo:
+        true,
+
+    };
+
+
+    /*
+     * Usuário de instituição só pode cadastrar
+     * doação para beneficiário da própria instituição.
+     *
+     * O ADMIN não recebe esse filtro e pode escolher
+     * qualquer beneficiário ativo do sistema.
+     */
+    if (
+      req.user.role !== "ADMIN"
+    ) {
+
+      whereBeneficiario.instituicaoId =
+        req.user.instituicaoId;
+
+    }
+
+
+    // =====================================================
+    // BUSCAR BENEFICIÁRIO
+    // =====================================================
+
+    const beneficiario =
+      await prisma.beneficiario.findFirst({
+
+        where:
+          whereBeneficiario,
+
+        select: {
+
+          id:
+            true,
+
+          nomeCompleto:
+            true,
+
+          instituicaoId:
+            true,
+
+          ativo:
+            true,
+
+        },
+
+      });
+
 
     if (!beneficiario) {
+
       return res.status(403).json({
-        error: "Este beneficiário não pertence à sua instituição.",
+
+        error:
+          req.user.role === "ADMIN"
+            ? "Beneficiário não encontrado ou inativo."
+            : "Este beneficiário não pertence à sua instituição ou está inativo.",
+
       });
+
     }
 
-    // Pega a data/hora atual (new Date()) e calcula o primeiro dia do
-    // mês corrente. Ex: se hoje é 08/07/2026, inicioMes = 01/07/2026.
-    const inicioMes = startOfMonth(new Date());
 
-    // Calcula o último dia do mês corrente.
-    // Ex: se hoje é 08/07/2026, fimMes = 31/07/2026.
-    const fimMes = endOfMonth(new Date());
+    // =====================================================
+    // VERIFICAR DOAÇÃO NO MÊS
+    // =====================================================
 
-    // Pergunta ao banco de dados: "existe alguma doação que já foi feita
-    // para ESSE MESMO beneficiário, dentro DESTE MÊS, que não tenha sido
-    // deletada?"
-    // "await" = espera a resposta do banco antes de continuar, porque
-    // essa consulta leva um tempinho para ser respondida.
-    const doacaoExiste = await prisma.doacao.findFirst({
-      where: {
-        // Mesmo beneficiário informado na requisição.
-        beneficiarioId: data.beneficiarioId,
+    const inicioMes =
+      startOfMonth(
+        new Date()
+      );
 
-        // "deletedAt: null" significa "que não foi apagada" (muitos
-        // sistemas não apagam registros de verdade, apenas marcam a
-        // data em que foram "deletados" — isso se chama soft delete).
-        deletedAt: null,
+    const fimMes =
+      endOfMonth(
+        new Date()
+      );
 
-        // Verifica se a data da doação está DENTRO do intervalo do
-        // mês atual.
-        dataDoacao: {
-          gte: inicioMes, // gte = "greater than or equal" (maior ou igual ao início do mês)
-          lte: fimMes, // lte = "less than or equal" (menor ou igual ao fim do mês)
+
+    const doacaoExiste =
+      await prisma.doacao.findFirst({
+
+        where: {
+
+          beneficiarioId:
+            beneficiario.id,
+
+          deletedAt:
+            null,
+
+          dataDoacao: {
+
+            gte:
+              inicioMes,
+
+            lte:
+              fimMes,
+
+          },
+
         },
-      },
-    });
 
-    // Se "doacaoExiste" tiver algum valor (ou seja, encontrou uma doação),
-    // a função para tudo aqui e devolve um erro para quem fez o pedido.
+      });
+
+
     if (doacaoExiste) {
-      // status(400) = "código HTTP" que indica que o PEDIDO tem algo
-      // errado (nesse caso, uma regra de negócio foi violada).
+
       return res.status(400).json({
-        error: "Este beneficiário já recebeu uma doação neste mês.",
+
+        error:
+          "Este beneficiário já recebeu uma doação neste mês.",
+
       });
+
     }
 
-    // Gera um código único para identificar essa nova doação.
-    const codigo = gerarCodigoDoacao();
 
-    // Agora sim: salva a doação no banco de dados.
-    // "await" novamente, porque salvar no banco também leva um tempo.
-    const doacao = await prisma.doacao.create({
-      data: {
-        codigo, // código gerado acima
-        beneficiarioId: data.beneficiarioId, // quem recebe a doação
-        instituicaoId: req.user.instituicaoId, // instituição do usuário logado
-        usuarioId: req.user.id, // quem está cadastrando (peguei do login)
-        tipo: data.tipo, // tipo da doação (defalt: "CESTA")
-        quantidade: data.quantidade, // quantidade doada
-        observacoes: data.observacoes, // observações extras, se houver
-      },
-    });
+    // =====================================================
+    // GERAR CÓDIGO
+    // =====================================================
 
-    // status(201) = "código HTTP" que indica "criado com sucesso".
-    // Devolve a doação recém-criada como resposta.
-    return res.status(201).json(doacao);
+    const codigo =
+      gerarCodigoDoacao();
+
+
+    // =====================================================
+    // CADASTRAR DOAÇÃO
+    // =====================================================
+
+    const doacao =
+      await prisma.doacao.create({
+
+        data: {
+
+          codigo,
+
+          beneficiarioId:
+            beneficiario.id,
+
+          /*
+           * A instituição sempre vem do beneficiário.
+           *
+           * Isso funciona tanto para ADMIN quanto
+           * para usuário INSTITUICAO e evita que uma
+           * doação seja registrada na instituição errada.
+           */
+          instituicaoId:
+            beneficiario.instituicaoId,
+
+          usuarioId:
+            req.user.id,
+
+          tipo:
+            data.tipo,
+
+          quantidade:
+            data.quantidade,
+
+          observacoes:
+            data.observacoes,
+
+        },
+
+        include: {
+
+          beneficiario: {
+
+            select: {
+
+              id:
+                true,
+
+              nomeCompleto:
+                true,
+
+            },
+
+          },
+
+          instituicao: {
+
+            select: {
+
+              id:
+                true,
+
+              nome:
+                true,
+
+            },
+
+          },
+
+          usuario: {
+
+            select: {
+
+              id:
+                true,
+
+              nome:
+                true,
+
+            },
+
+          },
+
+        },
+
+      });
+
+
+    return res.status(201).json(
+      doacao
+    );
+
   } catch (error) {
-    // ------------------------------------------------------------------
-    // Bloco "catch": é o "plano B" para quando algo dá errado no "try".
-    // ------------------------------------------------------------------
 
-    // Verifica se o erro é do tipo ZodError, ou seja, se o problema foi
-    // nos DADOS enviados pelo usuário (ex: campo faltando, tipo errado).
-    if (error instanceof ZodError) {
+    if (
+      error instanceof ZodError
+    ) {
+
       return res.status(400).json({
-        error: "Payload inválido",
-        // Monta uma lista amigável mostrando exatamente quais campos
-        // deram problema e por quê, para facilitar a correção.
-        issues: error.issues.map((e) => ({
-          path: e.path.join("."), // caminho do campo com erro (ex: "quantidade")
-          message: e.message, // mensagem explicando o erro
-        })),
+
+        error:
+          "Payload inválido",
+
+        issues:
+          error.issues.map(
+            (issue) => ({
+
+              path:
+                issue.path.join("."),
+
+              message:
+                issue.message,
+
+            })
+          ),
+
       });
+
     }
 
-    // Se o erro NÃO foi de validação (ex: banco de dados fora do ar),
-    // registra o erro no console para o desenvolvedor investigar depois.
-    console.error("POST /doacoes:", error);
 
-    // Devolve uma mensagem genérica para quem usou a API, sem expor
-    // detalhes internos sensíveis do sistema.
-    // status(500) = "código HTTP" que indica erro INTERNO do servidor.
+    console.error(
+      "POST /doacoes - erro ao cadastrar:",
+      error
+    );
+
+
     return res.status(500).json({
-      error: "Erro interno ao cadastrar doação.",
+
+      error:
+        "Erro interno ao cadastrar doação.",
+
     });
+
   }
+
 };
 
 // Controller responsável por LISTAR doações, com regras diferentes
@@ -233,7 +403,7 @@ const listarDoacoes = async (req, res) => {
     // Agora sim: busca no banco de dados TODAS as doações que batem
     // com os filtros definidos no objeto "where" lá em cima.
     // "await" = espera a resposta do banco antes de continuar.
-    const doacao = await prisma.doacao.findMany({
+    const doacoes = await prisma.doacao.findMany({
       where,
       include: {
         beneficiario: {
@@ -257,11 +427,14 @@ const listarDoacoes = async (req, res) => {
           },
         },
       },
+      orderBy: {
+        dataDoacao: "desc",
+      },
     });
 
     // status(200) = "OK, deu tudo certo". Devolve a lista de doações
     // encontrada (pode ser uma lista vazia, se não houver nenhuma).
-    return res.status(200).json(doacao);
+    return res.status(200).json(doacoes);
   } catch (error) {
 
       console.error(
@@ -277,156 +450,502 @@ const listarDoacoes = async (req, res) => {
 };
 
 const detalheDeDoacao = async (req, res) => {
-  const id = Number(req.params.id);
 
-  if (!Number.isInteger(id) || id <= 0) {
+  const id =
+    Number(req.params.id);
+
+  if (
+    !Number.isInteger(id) ||
+    id <= 0
+  ) {
+
     return res.status(400).json({
-      error: "ID Inválido.",
+      error: "ID inválido.",
     });
+
   }
 
   try {
-    const doacao = await prisma.doacao.findFirst({
-      where: {
-        id,
-        instituicaoId: req.user.instituicaoId,
-        deletedAt: null,
-      },
-      include: {
-        beneficiario: {
-          select: {
-            id: true,
-            nomeCompleto: true,
+
+    // =====================================================
+    // MONTAR FILTRO DE ACESSO
+    // =====================================================
+
+    const where = {
+      id,
+      deletedAt: null,
+    };
+
+    /*
+     * Usuários de instituição só podem visualizar
+     * doações pertencentes à própria instituição.
+     *
+     * O ADMIN não recebe esse filtro e, portanto,
+     * pode visualizar qualquer doação.
+     */
+    if (
+      req.user.role !== "ADMIN"
+    ) {
+
+      where.instituicaoId =
+        req.user.instituicaoId;
+
+    }
+
+
+    // =====================================================
+    // BUSCAR DOAÇÃO
+    // =====================================================
+
+    const doacao =
+      await prisma.doacao.findFirst({
+
+        where,
+
+        include: {
+
+          beneficiario: {
+            select: {
+              id: true,
+              nomeCompleto: true,
+            },
           },
+
+          instituicao: {
+            select: {
+              id: true,
+              nome: true,
+            },
+          },
+
+          usuario: {
+            select: {
+              id: true,
+              nome: true,
+            },
+          },
+
         },
 
-        instituicao: {
-          select: {
-            id: true,
-            nome: true,
-          },
-        },
+      });
 
-        usuario: {
-          select: {
-            id: true,
-            nome: true,
-          },
-        },
-      },
-    });
 
     if (!doacao) {
+
       return res.status(404).json({
         error: "Doação não encontrada.",
       });
+
     }
 
-    return res.status(200).json(doacao);
+
+    return res.status(200).json(
+      doacao
+    );
+
   } catch (error) {
+
+    console.error(
+      `GET /doacoes/${req.params.id} - erro ao buscar:`,
+      error
+    );
+
     return res.status(500).json({
       error: "Erro ao buscar doação.",
     });
+
   }
+
 };
 
 const atualizarDoacaoSchema = criarDoacaoSchema.partial();
 
 const atualizarUmaDoacao = async (req, res) => {
-  const id = Number(req.params.id);
 
-  if (!Number.isInteger(id) || id <= 0) {
+  const id =
+    Number(req.params.id);
+
+  if (
+    !Number.isInteger(id) ||
+    id <= 0
+  ) {
+
     return res.status(400).json({
-      error: "ID Inválido.",
+      error: "ID inválido.",
     });
+
   }
 
   try {
-    const where = {
+
+    // =====================================================
+    // MONTAR FILTRO DE ACESSO
+    // =====================================================
+
+    const whereDoacao = {
       id,
+      deletedAt: null,
     };
 
-    if (req.user.role !== "ADMIN") {
-      where.instituicaoId = req.user.instituicaoId;
+    /*
+     * Usuário de instituição só pode editar
+     * doações da própria instituição.
+     *
+     * O ADMIN pode editar qualquer doação.
+     */
+    if (
+      req.user.role !== "ADMIN"
+    ) {
+
+      whereDoacao.instituicaoId =
+        req.user.instituicaoId;
+
     }
 
-    const doacao = await prisma.doacao.findFirst({
-      where,
-    });
 
-    if (!doacao) {
-      return res.status(404).json({
-        error: "Doação não encontrada",
+    // =====================================================
+    // BUSCAR DOAÇÃO
+    // =====================================================
+
+    const doacaoExistente =
+      await prisma.doacao.findFirst({
+
+        where:
+          whereDoacao,
+
       });
-    }
 
-    const data = atualizarDoacaoSchema.parse(req.body);
 
-    const update = await prisma.doacao.update({
-      where: { id },
-      data,
-    });
+    if (!doacaoExistente) {
 
-    return res.status(200).json(update);
-  } catch (error) {
-    if (error instanceof ZodError) {
-      return res.status(400).json({
-        error: "Payload inválido",
-        issues: error.issues.map((e) => ({
-          path: e.path.join("."),
-          message: e.message,
-        })),
-      });
-    }
-
-    console.error(`PUT /doacoes/${req.params.id} error:`, error);
-
-    return res.status(500).json({
-      error: "Erro interno ao atualizar doação.",
-    });
-  }
-};
-
-const cancelarDoacao = async (req, res) => {
-  const id = Number(req.params.id);
-  if (!Number.isInteger(id) || id <= 0) {
-    return res.status(400).json({ error: "ID inválido" });
-  }
-  try {
-    const doacao = await prisma.doacao.findUnique({
-      where: {
-        id,
-      },
-    });
-    if (!doacao || doacao.deletedAt) {
       return res.status(404).json({
         error: "Doação não encontrada.",
       });
+
     }
-    await prisma.doacao.updateMany({
-      where: {
-        id,
-        deletedAt: null,
-      },
-      data: {
-        deletedAt: new Date(),
-      },
-    });
-    return res.status(200).json({
-      mensagem: "Doação cancelada com sucesso!",
-    });
-  } catch (error) {
+
+
+    // =====================================================
+    // VALIDAR DADOS RECEBIDOS
+    // =====================================================
+
+    const data =
+      atualizarDoacaoSchema.parse(
+        req.body
+      );
+
+
+    // =====================================================
+    // VALIDAR BENEFICIÁRIO, CASO TENHA SIDO ALTERADO
+    // =====================================================
+
+    let instituicaoId =
+      doacaoExistente.instituicaoId;
+
+
     if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2025"
+      data.beneficiarioId !== undefined
     ) {
-      return res.status(404).json({ error: "Doação não encontrada." });
+
+      const whereBeneficiario = {
+
+        id:
+          data.beneficiarioId,
+
+        deletedAt:
+          null,
+
+        ativo:
+          true,
+
+      };
+
+
+      if (
+        req.user.role !== "ADMIN"
+      ) {
+
+        whereBeneficiario.instituicaoId =
+          req.user.instituicaoId;
+
+      }
+
+
+      const beneficiario =
+        await prisma.beneficiario.findFirst({
+
+          where:
+            whereBeneficiario,
+
+          select: {
+
+            id:
+              true,
+
+            instituicaoId:
+              true,
+
+          },
+
+        });
+
+
+      if (!beneficiario) {
+
+        return res.status(403).json({
+
+          error:
+            req.user.role === "ADMIN"
+              ? "Beneficiário não encontrado ou inativo."
+              : "Este beneficiário não pertence à sua instituição ou está inativo.",
+
+        });
+
+      }
+
+
+      instituicaoId =
+        beneficiario.instituicaoId;
+
     }
-    console.error(`DELETE /doacoes/${req.params.id} error:`, error);
+
+
+    // =====================================================
+    // ATUALIZAR DOAÇÃO
+    // =====================================================
+
+    const doacaoAtualizada =
+      await prisma.doacao.update({
+
+        where: {
+          id,
+        },
+
+        data: {
+
+          ...data,
+
+          instituicaoId,
+
+        },
+
+        include: {
+
+          beneficiario: {
+
+            select: {
+
+              id:
+                true,
+
+              nomeCompleto:
+                true,
+
+            },
+
+          },
+
+          instituicao: {
+
+            select: {
+
+              id:
+                true,
+
+              nome:
+                true,
+
+            },
+
+          },
+
+          usuario: {
+
+            select: {
+
+              id:
+                true,
+
+              nome:
+                true,
+
+            },
+
+          },
+
+        },
+
+      });
+
+
+    return res.status(200).json(
+      doacaoAtualizada
+    );
+
+  } catch (error) {
+
+    if (
+      error instanceof ZodError
+    ) {
+
+      return res.status(400).json({
+
+        error:
+          "Payload inválido",
+
+        issues:
+          error.issues.map(
+            (issue) => ({
+
+              path:
+                issue.path.join("."),
+
+              message:
+                issue.message,
+
+            })
+          ),
+
+      });
+
+    }
+
+
+    console.error(
+      `PUT /doacoes/${req.params.id} - erro ao atualizar:`,
+      error
+    );
+
+
     return res.status(500).json({
-      error: "Erro interno ao cancelar doação.",
+
+      error:
+        "Erro interno ao atualizar doação.",
+
     });
+
   }
+
+};
+
+const cancelarDoacao = async (req, res) => {
+
+    const id =
+        Number(req.params.id);
+
+    if (
+        !Number.isInteger(id) ||
+        id <= 0
+    ) {
+
+        return res.status(400).json({
+            error: "ID inválido."
+        });
+
+    }
+
+    try {
+
+        // =====================================================
+        // MONTAR FILTRO
+        // =====================================================
+
+        const where = {
+
+            id,
+
+            deletedAt: null
+
+        };
+
+        /*
+         * O ADMIN pode cancelar qualquer doação.
+         *
+         * Usuário da instituição apenas
+         * as da própria instituição.
+         */
+        if (
+            req.user.role !== "ADMIN"
+        ) {
+
+            where.instituicaoId =
+                req.user.instituicaoId;
+
+        }
+
+
+        // =====================================================
+        // BUSCAR DOAÇÃO
+        // =====================================================
+
+        const doacao =
+            await prisma.doacao.findFirst({
+
+                where
+
+            });
+
+
+        if (!doacao) {
+
+            return res.status(404).json({
+
+                error:
+                    "Doação não encontrada."
+
+            });
+
+        }
+
+
+        // =====================================================
+        // SOFT DELETE
+        // =====================================================
+
+        await prisma.doacao.update({
+
+            where: {
+
+                id
+
+            },
+
+            data: {
+
+                deletedAt:
+                    new Date()
+
+            }
+
+        });
+
+
+        return res.status(200).json({
+
+            mensagem:
+                "Doação cancelada com sucesso."
+
+        });
+
+    } catch (error) {
+
+        console.error(
+
+            `DELETE /doacoes/${req.params.id}:`,
+
+            error
+
+        );
+
+        return res.status(500).json({
+
+            error:
+                "Erro ao cancelar a doação."
+
+        });
+
+    }
+
 };
 
 // Exporta a função para que ela possa ser usada em outros arquivos

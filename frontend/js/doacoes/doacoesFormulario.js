@@ -27,6 +27,9 @@ import {
     esconderLoading
 } from "../utils/loading.js";
 
+const API_URL =
+    "http://localhost:3000";
+
 
 // =====================================================
 // ESCAPAR HTML
@@ -127,13 +130,143 @@ function normalizarListaBeneficiarios(
 
 }
 
+// =====================================================
+// OBTER TOKEN
+// =====================================================
+
+function obterToken() {
+
+    return (
+        localStorage.getItem("token") ||
+        sessionStorage.getItem("token")
+    );
+
+}
+
+
+// =====================================================
+// CARREGAR INSTITUIÇÕES
+// =====================================================
+
+export async function carregarInstituicoesDoacao(
+    elementos
+) {
+
+    if (!elementos?.selectInstituicao) {
+
+        throw new Error(
+            "O campo de instituição da doação não foi encontrado."
+        );
+
+    }
+
+    const token =
+        obterToken();
+
+    const resposta =
+        await fetch(
+            `${API_URL}/instituicoes`,
+            {
+                method: "GET",
+
+                headers: {
+                    Authorization:
+                        `Bearer ${token || ""}`
+                },
+
+                cache:
+                    "no-store"
+            }
+        );
+
+    const dados =
+        await lerRespostaJson(
+            resposta
+        );
+
+    if (!resposta.ok) {
+
+        throw new Error(
+            dados.error ||
+            dados.erro ||
+            dados.mensagem ||
+            "Não foi possível carregar as instituições."
+        );
+
+    }
+
+    const instituicoes =
+        Array.isArray(dados)
+            ? dados
+            : Array.isArray(dados?.instituicoes)
+                ? dados.instituicoes
+                : Array.isArray(dados?.data)
+                    ? dados.data
+                    : [];
+
+    elementos.selectInstituicao.innerHTML = `
+
+        <option value="">
+            Selecione uma instituição
+        </option>
+
+    `;
+
+    instituicoes
+        .filter(
+            (instituicao) =>
+                instituicao?.ativa !== false &&
+                !instituicao?.deletedAt
+        )
+        .sort(
+            (a, b) =>
+                String(a?.nome ?? "")
+                    .localeCompare(
+                        String(b?.nome ?? ""),
+                        "pt-BR",
+                        {
+                            sensitivity: "base"
+                        }
+                    )
+        )
+        .forEach(
+            (instituicao) => {
+
+                const id =
+                    Number(
+                        instituicao.id
+                    );
+
+                if (!id) {
+                    return;
+                }
+
+                elementos
+                    .selectInstituicao
+                    .insertAdjacentHTML(
+                        "beforeend",
+                        `
+                            <option value="${id}">
+                                ${escaparHtml(instituicao.nome)}
+                            </option>
+                        `
+                    );
+
+            }
+        );
+
+    return instituicoes;
+
+}
+
 
 // =====================================================
 // CARREGAR BENEFICIÁRIOS NO SELECT
 // =====================================================
 
 export async function carregarBeneficiariosDoacao(
-    campos
+    campos,
+    instituicaoId = null
 ) {
 
     if (!campos?.beneficiarioId) {
@@ -169,6 +302,33 @@ export async function carregarBeneficiariosDoacao(
             normalizarListaBeneficiarios(
                 dados
             );
+        
+        const instituicaoSelecionada =
+            Number(
+                instituicaoId
+            );
+
+        const beneficiariosFiltrados =
+            beneficiarios.filter(
+                (beneficiario) => {
+
+                    const estaAtivo =
+                        beneficiario?.ativo !== false;
+
+                    if (!estaAtivo) {
+                        return false;
+                    }
+
+                    if (!instituicaoSelecionada) {
+                        return true;
+                    }
+
+                    return Number(
+                        beneficiario?.instituicaoId
+                    ) === instituicaoSelecionada;
+
+                }
+            );
 
         campos.beneficiarioId.innerHTML = `
 
@@ -179,11 +339,7 @@ export async function carregarBeneficiariosDoacao(
         `;
 
 
-        beneficiarios
-            .filter(
-                (beneficiario) =>
-                    beneficiario?.ativo !== false
-            )
+        beneficiariosFiltrados
             .sort(
                 (a, b) =>
 
@@ -248,7 +404,7 @@ export async function carregarBeneficiariosDoacao(
                 }
             );
 
-        return beneficiarios;
+        return beneficiariosFiltrados;
 
     } catch (erro) {
 
@@ -305,9 +461,44 @@ export async function prepararNovaDoacao({
      * Atualizamos o select antes de abrir o modal
      * para garantir que novos beneficiários apareçam.
      */
-    await carregarBeneficiariosDoacao(
-        campos
-    );
+    if (
+        estado.usuarioLogado?.role ===
+        "ADMIN"
+    ) {
+
+        elementos.grupoInstituicao.hidden =
+            false;
+
+        elementos.selectInstituicao.required =
+            true;
+
+        elementos.selectInstituicao.value =
+            "";
+
+        campos.beneficiarioId.disabled =
+            true;
+
+        campos.beneficiarioId.innerHTML = `
+
+            <option value="">
+                Selecione primeiro uma instituição
+            </option>
+
+        `;
+
+    } else {
+
+        elementos.grupoInstituicao.hidden =
+            true;
+
+        elementos.selectInstituicao.required =
+            false;
+
+        await carregarBeneficiariosDoacao(
+            campos
+        );
+
+    }
 
     campos.tipo.value =
         "CESTA";
@@ -399,16 +590,76 @@ export async function prepararEdicaoDoacao({
         );
 
 
-        await carregarBeneficiariosDoacao(
-            campos
-        );
+        // ===========================================
+        // ADMIN
+        // ===========================================
+
+        if (
+            estado.usuarioLogado?.role ===
+            "ADMIN"
+        ) {
+
+            elementos.grupoInstituicao.hidden =
+                false;
+
+            elementos.selectInstituicao.required =
+                true;
+
+            /*
+            * Seleciona automaticamente
+            * a instituição da doação.
+            */
+            elementos.selectInstituicao.value =
+                String(
+                    doacao.instituicaoId ??
+                    doacao.instituicao?.id ??
+                    ""
+                );
+
+            /*
+            * Carrega somente os beneficiários
+            * dessa instituição.
+            */
+            await carregarBeneficiariosDoacao(
+
+                campos,
+
+                doacao.instituicaoId ??
+                doacao.instituicao?.id
+
+            );
+
+            campos.beneficiarioId.disabled =
+                false;
+
+        } else {
+
+            elementos.grupoInstituicao.hidden =
+                true;
+
+            elementos.selectInstituicao.required =
+                false;
+
+            await carregarBeneficiariosDoacao(
+                campos
+            );
+
+        }
 
 
+        /*
+        * Seleciona o beneficiário
+        * da doação.
+        */
         campos.beneficiarioId.value =
             String(
+
                 doacao.beneficiarioId ??
+
                 doacao.beneficiario?.id ??
+
                 ""
+
             );
 
         campos.tipo.value =

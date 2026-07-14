@@ -960,6 +960,100 @@ export function configurarEventosDoacoes({
         opcoes
     );
 
+    elementos.selectInstituicao.addEventListener(
+        "change",
+        async () => {
+
+            const instituicaoId =
+                Number(
+                    elementos
+                        .selectInstituicao
+                        .value
+                );
+
+            /*
+            * Sempre limpamos o beneficiário anterior,
+            * porque ele pode pertencer à instituição
+            * que acabou de ser trocada.
+            */
+            campos.beneficiarioId.innerHTML = `
+
+                <option value="">
+                    ${
+                        instituicaoId
+                            ? "Carregando beneficiários..."
+                            : "Selecione primeiro uma instituição"
+                    }
+                </option>
+
+            `;
+
+            campos.beneficiarioId.disabled =
+                !instituicaoId;
+
+            if (!instituicaoId) {
+                return;
+            }
+
+            try {
+
+                const moduloFormulario =
+                    await import(
+                        "./doacoesFormulario.js"
+                    );
+
+                const beneficiarios =
+                    await moduloFormulario
+                        .carregarBeneficiariosDoacao(
+                            campos,
+                            instituicaoId
+                        );
+
+                campos.beneficiarioId.disabled =
+                    false;
+
+                if (
+                    !Array.isArray(beneficiarios) ||
+                    beneficiarios.length === 0
+                ) {
+
+                    campos.beneficiarioId.innerHTML = `
+
+                        <option value="">
+                            Nenhum beneficiário ativo encontrado
+                        </option>
+
+                    `;
+
+                    campos.beneficiarioId.disabled =
+                        true;
+
+                }
+
+            } catch (erro) {
+
+                console.error(
+                    "Erro ao carregar beneficiários da instituição:",
+                    erro
+                );
+
+                campos.beneficiarioId.innerHTML = `
+
+                    <option value="">
+                        Não foi possível carregar os beneficiários
+                    </option>
+
+                `;
+
+                campos.beneficiarioId.disabled =
+                    true;
+
+            }
+
+        },
+        opcoes
+    );
+
 
     document.addEventListener(
         "keydown",
