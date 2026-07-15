@@ -67,7 +67,9 @@
 
                 <div>
 
-                    <span>Data atual</span>
+                    <span>
+                        Data atual
+                    </span>
 
                     <strong id="dataDashboard">
                         Carregando...
@@ -87,7 +89,9 @@
 
                 <div>
 
-                    <span>Última atualização</span>
+                    <span>
+                        Última atualização
+                    </span>
 
                     <strong id="ultimaAtualizacaoDashboard">
                         Agora
@@ -113,7 +117,9 @@
     aria-label="Indicadores principais"
 >
 
-    <!-- BENEFICIÁRIOS -->
+    <!-- ==================================================
+         BENEFICIÁRIOS
+    ================================================== -->
 
     <article
         class="dashboard-card dashboard-link dashboard-card-beneficiarios"
@@ -126,10 +132,12 @@
         <div class="dashboard-card-topo">
 
             <div class="dashboard-card-icon">
+
                 <i
                     class="fa-solid fa-users"
                     aria-hidden="true"
                 ></i>
+
             </div>
 
             <span class="dashboard-card-status">
@@ -162,7 +170,9 @@
 
         <div class="dashboard-card-footer">
 
-            <span>Ver beneficiários</span>
+            <span>
+                Ver beneficiários
+            </span>
 
             <i
                 class="fa-solid fa-arrow-right"
@@ -174,7 +184,9 @@
     </article>
 
 
-    <!-- INSTITUIÇÕES -->
+    <!-- ==================================================
+         INSTITUIÇÕES
+    ================================================== -->
 
     <article
         id="cardInstituicoesDashboard"
@@ -188,10 +200,12 @@
         <div class="dashboard-card-topo">
 
             <div class="dashboard-card-icon">
+
                 <i
                     class="fa-solid fa-building"
                     aria-hidden="true"
                 ></i>
+
             </div>
 
             <span class="dashboard-card-status">
@@ -224,7 +238,9 @@
 
         <div class="dashboard-card-footer">
 
-            <span>Ver instituições</span>
+            <span>
+                Ver instituições
+            </span>
 
             <i
                 class="fa-solid fa-arrow-right"
@@ -236,7 +252,9 @@
     </article>
 
 
-    <!-- BENEFICIÁRIOS ATIVOS -->
+    <!-- ==================================================
+         BENEFICIÁRIOS ATIVOS
+    ================================================== -->
 
     <article
         class="dashboard-card dashboard-link dashboard-card-ativos"
@@ -249,10 +267,12 @@
         <div class="dashboard-card-topo">
 
             <div class="dashboard-card-icon">
+
                 <i
                     class="fa-solid fa-user-check"
                     aria-hidden="true"
                 ></i>
+
             </div>
 
             <span class="dashboard-card-status dashboard-card-status-sucesso">
@@ -285,7 +305,9 @@
 
         <div class="dashboard-card-footer">
 
-            <span>Consultar ativos</span>
+            <span>
+                Consultar ativos
+            </span>
 
             <i
                 class="fa-solid fa-arrow-right"
@@ -297,7 +319,9 @@
     </article>
 
 
-    <!-- BENEFICIÁRIOS INATIVOS -->
+    <!-- ==================================================
+         BENEFICIÁRIOS INATIVOS
+    ================================================== -->
 
     <article
         class="dashboard-card dashboard-link dashboard-card-inativos"
@@ -310,10 +334,12 @@
         <div class="dashboard-card-topo">
 
             <div class="dashboard-card-icon">
+
                 <i
                     class="fa-solid fa-user-xmark"
                     aria-hidden="true"
                 ></i>
+
             </div>
 
             <span class="dashboard-card-status dashboard-card-status-alerta">
@@ -346,7 +372,288 @@
 
         <div class="dashboard-card-footer">
 
-            <span>Consultar inativos</span>
+            <span>
+                Consultar inativos
+            </span>
+
+            <i
+                class="fa-solid fa-arrow-right"
+                aria-hidden="true"
+            ></i>
+
+        </div>
+
+    </article>
+
+</section>
+
+
+<!-- ==================================================
+     INDICADORES DE DOAÇÕES
+================================================== -->
+
+<section
+    class="dashboard-cards dashboard-cards-doacoes"
+    aria-label="Indicadores de doações"
+>
+
+    <!-- ==================================================
+         TOTAL DE DOAÇÕES
+    ================================================== -->
+
+    <article
+        class="dashboard-card dashboard-link dashboard-card-doacoes"
+        data-pagina="doacoes.html"
+        tabindex="0"
+        role="button"
+        aria-label="Abrir página de doações"
+    >
+
+        <div class="dashboard-card-topo">
+
+            <div class="dashboard-card-icon">
+
+                <i
+                    class="fa-solid fa-hand-holding-heart"
+                    aria-hidden="true"
+                ></i>
+
+            </div>
+
+            <span class="dashboard-card-status">
+                Total
+            </span>
+
+        </div>
+
+        <div class="dashboard-card-content">
+
+            <span class="dashboard-card-label">
+                Doações
+            </span>
+
+            <strong
+                id="totalDoacoesDashboard"
+                class="dashboard-card-number"
+            >
+                0
+            </strong>
+
+            <span
+                id="kpiTotalDoacoesDashboard"
+                class="dashboard-card-description dashboard-kpi"
+            >
+                Doações registradas
+            </span>
+
+        </div>
+
+        <div class="dashboard-card-footer">
+
+            <span>
+                Ver doações
+            </span>
+
+            <i
+                class="fa-solid fa-arrow-right"
+                aria-hidden="true"
+            ></i>
+
+        </div>
+
+    </article>
+
+
+    <!-- ==================================================
+         DOAÇÕES DESTE MÊS
+    ================================================== -->
+
+    <article
+        class="dashboard-card dashboard-link dashboard-card-doacoes-mes"
+        data-pagina="doacoes.html"
+        tabindex="0"
+        role="button"
+        aria-label="Abrir doações deste mês"
+    >
+
+        <div class="dashboard-card-topo">
+
+            <div class="dashboard-card-icon">
+
+                <i
+                    class="fa-regular fa-calendar-check"
+                    aria-hidden="true"
+                ></i>
+
+            </div>
+
+            <span class="dashboard-card-status">
+                Este mês
+            </span>
+
+        </div>
+
+        <div class="dashboard-card-content">
+
+            <span class="dashboard-card-label">
+                Doações no mês
+            </span>
+
+            <strong
+                id="doacoesMesDashboard"
+                class="dashboard-card-number"
+            >
+                0
+            </strong>
+
+            <span
+                id="kpiDoacoesMesDashboard"
+                class="dashboard-card-description dashboard-kpi"
+            >
+                Entregas realizadas no mês atual
+            </span>
+
+        </div>
+
+        <div class="dashboard-card-footer">
+
+            <span>
+                Consultar período
+            </span>
+
+            <i
+                class="fa-solid fa-arrow-right"
+                aria-hidden="true"
+            ></i>
+
+        </div>
+
+    </article>
+
+
+    <!-- ==================================================
+         DOAÇÕES COMPROVADAS
+    ================================================== -->
+
+    <article
+        class="dashboard-card dashboard-link dashboard-card-comprovadas"
+        data-pagina="doacoes.html"
+        tabindex="0"
+        role="button"
+        aria-label="Abrir doações comprovadas"
+    >
+
+        <div class="dashboard-card-topo">
+
+            <div class="dashboard-card-icon">
+
+                <i
+                    class="fa-solid fa-file-circle-check"
+                    aria-hidden="true"
+                ></i>
+
+            </div>
+
+            <span class="dashboard-card-status dashboard-card-status-sucesso">
+                Comprovadas
+            </span>
+
+        </div>
+
+        <div class="dashboard-card-content">
+
+            <span class="dashboard-card-label">
+                Com comprovante
+            </span>
+
+            <strong
+                id="doacoesComprovadasDashboard"
+                class="dashboard-card-number"
+            >
+                0
+            </strong>
+
+            <span
+                id="kpiDoacoesComprovadasDashboard"
+                class="dashboard-card-description dashboard-kpi"
+            >
+                0% das doações
+            </span>
+
+        </div>
+
+        <div class="dashboard-card-footer">
+
+            <span>
+                Consultar comprovadas
+            </span>
+
+            <i
+                class="fa-solid fa-arrow-right"
+                aria-hidden="true"
+            ></i>
+
+        </div>
+
+    </article>
+
+
+    <!-- ==================================================
+         COMPROVANTES PENDENTES
+    ================================================== -->
+
+    <article
+        class="dashboard-card dashboard-link dashboard-card-pendentes"
+        data-pagina="doacoes.html"
+        tabindex="0"
+        role="button"
+        aria-label="Abrir doações com comprovante pendente"
+    >
+
+        <div class="dashboard-card-topo">
+
+            <div class="dashboard-card-icon">
+
+                <i
+                    class="fa-regular fa-file"
+                    aria-hidden="true"
+                ></i>
+
+            </div>
+
+            <span class="dashboard-card-status dashboard-card-status-alerta">
+                Pendentes
+            </span>
+
+        </div>
+
+        <div class="dashboard-card-content">
+
+            <span class="dashboard-card-label">
+                Comprovantes pendentes
+            </span>
+
+            <strong
+                id="doacoesPendentesDashboard"
+                class="dashboard-card-number"
+            >
+                0
+            </strong>
+
+            <span
+                id="kpiDoacoesPendentesDashboard"
+                class="dashboard-card-description dashboard-kpi"
+            >
+                0% das doações
+            </span>
+
+        </div>
+
+        <div class="dashboard-card-footer">
+
+            <span>
+                Consultar pendências
+            </span>
 
             <i
                 class="fa-solid fa-arrow-right"
@@ -366,7 +673,9 @@
 
 <section class="dashboard-grid">
 
-    <!-- GRÁFICO -->
+    <!-- ==================================================
+         GRÁFICO DE BENEFICIÁRIOS
+    ================================================== -->
 
     <article class="dashboard-panel dashboard-chart-panel">
 
@@ -392,7 +701,9 @@
                 class="dashboard-panel-icon"
                 aria-hidden="true"
             >
+
                 <i class="fa-solid fa-chart-column"></i>
+
             </div>
 
         </div>
@@ -409,7 +720,9 @@
     </article>
 
 
-    <!-- ÚLTIMOS BENEFICIÁRIOS -->
+    <!-- ==================================================
+         ÚLTIMOS BENEFICIÁRIOS
+    ================================================== -->
 
     <article class="dashboard-panel dashboard-recent-panel">
 
@@ -443,6 +756,7 @@
                     class="fa-solid fa-arrow-right"
                     aria-hidden="true"
                 ></i>
+
             </button>
 
         </div>
@@ -459,7 +773,128 @@
                     aria-hidden="true"
                 ></i>
 
-                <span>Carregando beneficiários...</span>
+                <span>
+                    Carregando beneficiários...
+                </span>
+
+            </div>
+
+        </div>
+
+    </article>
+
+</section>
+
+
+<!-- ==================================================
+     RESUMO DE DOAÇÕES
+================================================== -->
+
+<section class="dashboard-grid dashboard-grid-doacoes">
+
+    <!-- ==================================================
+         DISTRIBUIÇÃO POR TIPO
+    ================================================== -->
+
+    <article class="dashboard-panel dashboard-chart-panel">
+
+        <div class="dashboard-panel-header">
+
+            <div>
+
+                <span class="dashboard-panel-eyebrow">
+                    Distribuição
+                </span>
+
+                <h2>
+                    Doações por tipo
+                </h2>
+
+                <p class="dashboard-panel-description">
+                    Comparativo entre cesta, granel e ambos.
+                </p>
+
+            </div>
+
+            <div
+                class="dashboard-panel-icon"
+                aria-hidden="true"
+            >
+
+                <i class="fa-solid fa-boxes-stacked"></i>
+
+            </div>
+
+        </div>
+
+        <div class="dashboard-chart-container">
+
+            <canvas
+                id="graficoTiposDoacoesDashboard"
+                aria-label="Gráfico de doações por tipo"
+            ></canvas>
+
+        </div>
+
+    </article>
+
+
+    <!-- ==================================================
+         ÚLTIMAS DOAÇÕES
+    ================================================== -->
+
+    <article class="dashboard-panel dashboard-recent-panel">
+
+        <div class="dashboard-panel-header">
+
+            <div>
+
+                <span class="dashboard-panel-eyebrow">
+                    Entregas recentes
+                </span>
+
+                <h2>
+                    Últimas doações
+                </h2>
+
+                <p class="dashboard-panel-description">
+                    Doações registradas mais recentemente.
+                </p>
+
+            </div>
+
+            <button
+                type="button"
+                class="dashboard-panel-action"
+                data-pagina="doacoes.html"
+                title="Ver todas as doações"
+            >
+                Ver todas
+
+                <i
+                    class="fa-solid fa-arrow-right"
+                    aria-hidden="true"
+                ></i>
+
+            </button>
+
+        </div>
+
+        <div
+            id="ultimasDoacoesDashboard"
+            class="dashboard-recent-list"
+        >
+
+            <div class="dashboard-list-loading">
+
+                <i
+                    class="fa-solid fa-spinner fa-spin"
+                    aria-hidden="true"
+                ></i>
+
+                <span>
+                    Carregando doações...
+                </span>
 
             </div>
 
@@ -498,12 +933,18 @@
             class="dashboard-panel-icon"
             aria-hidden="true"
         >
+
             <i class="fa-solid fa-bolt"></i>
+
         </div>
 
     </div>
 
     <div class="dashboard-actions">
+
+        <!-- ==================================================
+             BENEFICIÁRIOS
+        ================================================== -->
 
         <button
             type="button"
@@ -512,10 +953,12 @@
         >
 
             <span class="dashboard-action-icon">
+
                 <i
                     class="fa-solid fa-user-plus"
                     aria-hidden="true"
                 ></i>
+
             </span>
 
             <span class="dashboard-action-content">
@@ -538,6 +981,10 @@
         </button>
 
 
+        <!-- ==================================================
+             INSTITUIÇÕES
+        ================================================== -->
+
         <button
             type="button"
             id="acaoInstituicoesDashboard"
@@ -546,10 +993,12 @@
         >
 
             <span class="dashboard-action-icon">
+
                 <i
                     class="fa-solid fa-building"
                     aria-hidden="true"
                 ></i>
+
             </span>
 
             <span class="dashboard-action-content">
@@ -572,6 +1021,49 @@
         </button>
 
 
+        <!-- ==================================================
+             DOAÇÕES
+        ================================================== -->
+
+        <button
+            type="button"
+            class="dashboard-action dashboard-action-doacoes"
+            data-pagina="doacoes.html"
+        >
+
+            <span class="dashboard-action-icon">
+
+                <i
+                    class="fa-solid fa-hand-holding-heart"
+                    aria-hidden="true"
+                ></i>
+
+            </span>
+
+            <span class="dashboard-action-content">
+
+                <strong>
+                    Doações
+                </strong>
+
+                <small>
+                    Registrar e acompanhar entregas
+                </small>
+
+            </span>
+
+            <i
+                class="fa-solid fa-chevron-right dashboard-action-arrow"
+                aria-hidden="true"
+            ></i>
+
+        </button>
+
+
+        <!-- ==================================================
+             RELATÓRIOS
+        ================================================== -->
+
         <button
             type="button"
             class="dashboard-action dashboard-action-secondary"
@@ -579,10 +1071,12 @@
         >
 
             <span class="dashboard-action-icon">
+
                 <i
                     class="fa-solid fa-chart-pie"
                     aria-hidden="true"
                 ></i>
+
             </span>
 
             <span class="dashboard-action-content">

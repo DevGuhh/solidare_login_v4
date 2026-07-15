@@ -1,14 +1,67 @@
 // =====================================================
-// HOME DO DASHBOARD
+// IMPORTAÇÕES DA API
 // =====================================================
 
-const API_URL = "http://localhost:3000";
+import {
+    buscarUsuarioDashboard,
+    buscarBeneficiariosDashboard,
+    buscarInstituicoesDashboard,
+    buscarDoacoesDashboard
+} from "../dashboard/dashboardApi.js";
+
+
+// =====================================================
+// IMPORTAÇÕES DOS CARDS
+// =====================================================
+
+import {
+    preencherCardsBeneficiarios,
+    preencherCardInstituicoes,
+    preencherCardsDoacoes
+} from "../dashboard/dashboardCards.js";
+
+
+// =====================================================
+// IMPORTAÇÕES DOS GRÁFICOS
+// =====================================================
+
+import {
+    renderizarGraficoBeneficiarios,
+    renderizarGraficoTiposDoacoes,
+    destruirGraficosDashboard
+} from "../dashboard/dashboardGraficos.js";
+
+
+// =====================================================
+// IMPORTAÇÕES DAS LISTAS
+// =====================================================
+
+import {
+    renderizarUltimosBeneficiarios,
+    renderizarUltimasDoacoes
+} from "../dashboard/dashboardListas.js";
+
+
+// =====================================================
+// IMPORTAÇÕES UTILITÁRIAS
+// =====================================================
+
+import {
+    preencherCabecalhoDashboard,
+    atualizarHorarioDashboard,
+    configurarNavegacaoDashboard,
+    mostrarErroListaDashboard
+} from "../dashboard/dashboardUtils.js";
+
+
+// =====================================================
+// ESTADO DA HOME
+// =====================================================
 
 let elementos = {};
 
-let controladorEventos = null;
-
-let graficoBeneficiarios = null;
+let controladorEventos =
+    null;
 
 
 // =====================================================
@@ -18,6 +71,10 @@ let graficoBeneficiarios = null;
 function capturarElementos() {
 
     elementos = {
+
+        // =============================================
+        // CABEÇALHO
+        // =============================================
 
         nome:
             document.getElementById(
@@ -39,19 +96,14 @@ function capturarElementos() {
                 "ultimaAtualizacaoDashboard"
             ),
 
-        grafico:
-            document.getElementById(
-                "graficoDashboard"
-            ),
+
+        // =============================================
+        // CARDS DE BENEFICIÁRIOS
+        // =============================================
 
         totalBeneficiarios:
             document.getElementById(
                 "totalBeneficiariosDashboard"
-            ),
-
-        totalInstituicoes:
-            document.getElementById(
-                "totalInstituicoesDashboard"
             ),
 
         beneficiariosAtivos:
@@ -69,11 +121,6 @@ function capturarElementos() {
                 "kpiBeneficiariosDashboard"
             ),
 
-        kpiInstituicoes:
-            document.getElementById(
-                "kpiInstituicoesDashboard"
-            ),
-
         kpiAtivos:
             document.getElementById(
                 "kpiAtivosDashboard"
@@ -82,6 +129,21 @@ function capturarElementos() {
         kpiInativos:
             document.getElementById(
                 "kpiInativosDashboard"
+            ),
+
+
+        // =============================================
+        // CARD DE INSTITUIÇÕES
+        // =============================================
+
+        totalInstituicoes:
+            document.getElementById(
+                "totalInstituicoesDashboard"
+            ),
+
+        kpiInstituicoes:
+            document.getElementById(
+                "kpiInstituicoesDashboard"
             ),
 
         cardInstituicoes:
@@ -94,10 +156,85 @@ function capturarElementos() {
                 "acaoInstituicoesDashboard"
             ),
 
+
+        // =============================================
+        // CARDS DE DOAÇÕES
+        // =============================================
+
+        totalDoacoes:
+            document.getElementById(
+                "totalDoacoesDashboard"
+            ),
+
+        doacoesMes:
+            document.getElementById(
+                "doacoesMesDashboard"
+            ),
+
+        doacoesComprovadas:
+            document.getElementById(
+                "doacoesComprovadasDashboard"
+            ),
+
+        doacoesPendentes:
+            document.getElementById(
+                "doacoesPendentesDashboard"
+            ),
+
+        kpiTotalDoacoes:
+            document.getElementById(
+                "kpiTotalDoacoesDashboard"
+            ),
+
+        kpiDoacoesMes:
+            document.getElementById(
+                "kpiDoacoesMesDashboard"
+            ),
+
+        kpiDoacoesComprovadas:
+            document.getElementById(
+                "kpiDoacoesComprovadasDashboard"
+            ),
+
+        kpiDoacoesPendentes:
+            document.getElementById(
+                "kpiDoacoesPendentesDashboard"
+            ),
+
+
+        // =============================================
+        // GRÁFICOS
+        // =============================================
+
+        graficoBeneficiarios:
+            document.getElementById(
+                "graficoDashboard"
+            ),
+
+        graficoTiposDoacoes:
+            document.getElementById(
+                "graficoTiposDoacoesDashboard"
+            ),
+
+
+        // =============================================
+        // LISTAS RECENTES
+        // =============================================
+
         ultimosBeneficiarios:
             document.getElementById(
                 "ultimosBeneficiariosDashboard"
             ),
+
+        ultimasDoacoes:
+            document.getElementById(
+                "ultimasDoacoesDashboard"
+            ),
+
+
+        // =============================================
+        // NAVEGAÇÃO
+        // =============================================
 
         acoesRapidas:
             document.querySelectorAll(
@@ -106,8 +243,8 @@ function capturarElementos() {
 
         cards:
             document.querySelectorAll(
-                ".dashboard-link"
-            ),
+                "#conteudo .dashboard-link"
+            )
 
     };
 
@@ -115,544 +252,237 @@ function capturarElementos() {
 
 
 // =====================================================
-// HEADERS DA API
+// VALIDAR ELEMENTOS PRINCIPAIS
 // =====================================================
 
-function obterHeaders() {
+function validarElementos() {
 
-    const token =
-        localStorage.getItem("token");
+    const obrigatorios = [
 
-    return {
-        Authorization: `Bearer ${token}`
-    };
+        elementos.nome,
+        elementos.avatar,
+        elementos.data,
+        elementos.ultimaAtualizacao,
 
-}
+        elementos.totalBeneficiarios,
+        elementos.beneficiariosAtivos,
+        elementos.beneficiariosInativos,
+
+        elementos.totalDoacoes,
+        elementos.doacoesMes,
+        elementos.doacoesComprovadas,
+        elementos.doacoesPendentes,
+
+        elementos.graficoBeneficiarios,
+        elementos.graficoTiposDoacoes,
+
+        elementos.ultimosBeneficiarios,
+        elementos.ultimasDoacoes
+
+    ];
 
 
-// =====================================================
-// CARREGAR USUÁRIO
-// =====================================================
-
-async function carregarUsuario() {
-
-    const resposta = await fetch(
-        `${API_URL}/auth/me`,
-        {
-            headers: obterHeaders()
-        }
-    );
-
-    const dados = await resposta.json();
-
-    if (!resposta.ok) {
-
-        throw new Error(
-            dados.error ||
-            "Erro ao carregar usuário."
+    const possuiAusente =
+        obrigatorios.some(
+            (elemento) =>
+                !elemento
         );
 
-    }
 
-    if (elementos.nome) {
-
-        const horaAtual = new Date().getHours();
-
-        let saudacao;
-
-        if (horaAtual >= 5 && horaAtual < 12) {
-
-            saudacao = "Bom dia";
-
-        } else if (horaAtual >= 12 && horaAtual < 18) {
-
-            saudacao = "Boa tarde";
-
-        } else {
-
-            saudacao = "Boa noite";
-
-        }
-
-        elementos.nome.textContent =
-            `${saudacao}, ${dados.usuario.nome}`;
-
-        if (elementos.avatar) {
-
-            elementos.avatar.textContent =
-                dados.usuario.nome
-                    .trim()
-                    .charAt(0)
-                    .toUpperCase();
-
-        }
-
-    }
-
-    return dados.usuario;
-
-}
-
-
-// =====================================================
-// MOSTRAR DATA
-// =====================================================
-
-function mostrarDataAtual() {
-
-    if (!elementos.data) {
-        return;
-    }
-
-    const dataFormatada =
-        new Date().toLocaleDateString(
-            "pt-BR",
-            {
-                weekday: "long",
-                day: "2-digit",
-                month: "long",
-                year: "numeric"
-            }
-        );
-
-    elementos.data.textContent =
-        dataFormatada.charAt(0).toUpperCase() +
-        dataFormatada.slice(1);
-
-    const agora = new Date();
-
-    const hora =
-        agora
-            .getHours()
-            .toString()
-            .padStart(2, "0");
-
-    const minuto =
-        agora
-            .getMinutes()
-            .toString()
-            .padStart(2, "0");
-
-    if (elementos.ultimaAtualizacao) {
-
-        elementos.ultimaAtualizacao.textContent =
-            `Atualizado às ${hora}:${minuto}`;
-
-    }
-
-}
-
-// =====================================================
-// RENDERIZAR GRÁFICO PREMIUM
-// =====================================================
-
-function renderizarGraficoBeneficiarios(
-    totalAtivos,
-    totalInativos
-) {
-
-    // Se o canvas não existir, encerra.
-    if (!elementos.grafico) {
-        return;
-    }
-
-    // Verifica se o Chart.js foi carregado.
-    if (typeof Chart === "undefined") {
+    if (possuiAusente) {
 
         console.error(
-            "A biblioteca Chart.js não foi carregada."
+            "Elementos capturados da Home:",
+            elementos
         );
 
-        return;
+
+        throw new Error(
+            "A página inicial não possui todos os elementos necessários."
+        );
 
     }
 
-    // Remove o gráfico anterior para evitar duplicação
-    // quando o usuário sai e volta para o Dashboard.
-    if (graficoBeneficiarios) {
+}
 
-        graficoBeneficiarios.destroy();
 
-    }
+// =====================================================
+// MOSTRAR ERRO NOS INDICADORES
+// =====================================================
 
-    // Pega o contexto usado para desenhar o gráfico.
-    const contexto =
-        elementos.grafico.getContext("2d");
+function mostrarErroIndicadoresBeneficiarios() {
 
-    // Cria um gradiente verde para os beneficiários ativos.
-    const gradienteAtivos =
-        contexto.createLinearGradient(
-            0,
-            0,
-            0,
-            320
-        );
+    const campos = [
 
-    gradienteAtivos.addColorStop(
-        0,
-        "rgba(25, 135, 84, 0.95)"
-    );
+        elementos.totalBeneficiarios,
+        elementos.beneficiariosAtivos,
+        elementos.beneficiariosInativos
 
-    gradienteAtivos.addColorStop(
-        1,
-        "rgba(25, 135, 84, 0.30)"
-    );
+    ];
 
-    // Cria um gradiente vermelho para os inativos.
-    const gradienteInativos =
-        contexto.createLinearGradient(
-            0,
-            0,
-            0,
-            320
-        );
 
-    gradienteInativos.addColorStop(
-        0,
-        "rgba(220, 53, 69, 0.95)"
-    );
+    campos.forEach(
+        (elemento) => {
 
-    gradienteInativos.addColorStop(
-        1,
-        "rgba(220, 53, 69, 0.30)"
-    );
-
-    graficoBeneficiarios = new Chart(
-        elementos.grafico,
-        {
-            type: "bar",
-
-            data: {
-
-                labels: [
-                    "Ativos",
-                    "Inativos"
-                ],
-
-                datasets: [
-                    {
-                        label: "Beneficiários",
-
-                        data: [
-                            totalAtivos,
-                            totalInativos
-                        ],
-
-                        backgroundColor: [
-                            gradienteAtivos,
-                            gradienteInativos
-                        ],
-
-                        borderColor: [
-                            "#198754",
-                            "#dc3545"
-                        ],
-
-                        borderWidth: 1,
-
-                        borderRadius: 14,
-
-                        borderSkipped: false,
-
-                        maxBarThickness: 110
-                    }
-                ]
-
-            },
-
-            options: {
-
-                responsive: true,
-
-                maintainAspectRatio: false,
-
-                animation: {
-                    duration: 1100,
-                    easing: "easeOutQuart"
-                },
-
-                interaction: {
-                    mode: "index",
-                    intersect: false
-                },
-
-                plugins: {
-
-                    legend: {
-                        display: false
-                    },
-
-                    tooltip: {
-
-                        backgroundColor:
-                            "rgba(33, 37, 41, 0.95)",
-
-                        titleColor: "#ffffff",
-
-                        bodyColor: "#ffffff",
-
-                        padding: 14,
-
-                        cornerRadius: 10,
-
-                        displayColors: true,
-
-                        callbacks: {
-
-                            title(contextoTooltip) {
-
-                                const rotulo =
-                                    contextoTooltip[0].label;
-
-                                return rotulo === "Ativos"
-                                    ? "Beneficiários ativos"
-                                    : "Beneficiários inativos";
-
-                            },
-
-                            label(contextoTooltip) {
-
-                                return ` Total: ${contextoTooltip.raw}`;
-
-                            }
-
-                        }
-
-                    }
-
-                },
-
-                scales: {
-
-                    x: {
-
-                        grid: {
-                            display: false
-                        },
-
-                        border: {
-                            display: false
-                        },
-
-                        ticks: {
-
-                            color: "#666",
-
-                            font: {
-                                size: 14,
-                                weight: "600"
-                            }
-
-                        }
-
-                    },
-
-                    y: {
-
-                        beginAtZero: true,
-
-                        grace: "10%",
-
-                        border: {
-                            display: false
-                        },
-
-                        grid: {
-                            color: "rgba(0, 0, 0, 0.06)"
-                        },
-
-                        ticks: {
-
-                            precision: 0,
-
-                            color: "#777",
-
-                            padding: 8
-
-                        }
-
-                    }
-
-                }
-
+            if (elemento) {
+                elemento.textContent = "-";
             }
+
+        }
+    );
+
+
+    if (
+        elementos.kpiBeneficiarios
+    ) {
+
+        elementos.kpiBeneficiarios.innerHTML = `
+
+            <i class="fa-solid fa-triangle-exclamation"></i>
+
+            Dados indisponíveis
+
+        `;
+
+    }
+
+}
+
+
+// =====================================================
+// MOSTRAR ERRO NAS DOAÇÕES
+// =====================================================
+
+function mostrarErroIndicadoresDoacoes() {
+
+    const campos = [
+
+        elementos.totalDoacoes,
+        elementos.doacoesMes,
+        elementos.doacoesComprovadas,
+        elementos.doacoesPendentes
+
+    ];
+
+
+    campos.forEach(
+        (elemento) => {
+
+            if (elemento) {
+                elemento.textContent = "-";
+            }
+
         }
     );
 
-}
 
-// =====================================================
-// ANIMAR NÚMEROS DOS CARDS
-// =====================================================
+    if (
+        elementos.kpiTotalDoacoes
+    ) {
 
-function animarNumero(elemento, valorFinal) {
+        elementos.kpiTotalDoacoes.innerHTML = `
 
-    // Se o elemento não existir, encerra a função.
-    if (!elemento) {
-        return;
-    }
+            <i class="fa-solid fa-triangle-exclamation"></i>
 
-    // Garante que o valor final seja um número.
-    const total = Number(valorFinal) || 0;
+            Dados indisponíveis
 
-    // Define a duração da animação em milissegundos.
-    const duracao = 800;
-
-    // Guarda o momento em que a animação começou.
-    const inicio = performance.now();
-
-    function atualizarNumero(tempoAtual) {
-
-        // Calcula quanto da animação já foi concluído.
-        const progresso = Math.min(
-            (tempoAtual - inicio) / duracao,
-            1
-        );
-
-        // Calcula o valor que deve aparecer naquele momento.
-        const valorAtual = Math.floor(
-            progresso * total
-        );
-
-        elemento.textContent = valorAtual;
-
-        // Enquanto o progresso for menor que 1,
-        // continua executando a animação.
-        if (progresso < 1) {
-
-            requestAnimationFrame(
-                atualizarNumero
-            );
-
-            return;
-
-        }
-
-        // Garante que o número final fique exato.
-        elemento.textContent = total;
+        `;
 
     }
 
-    requestAnimationFrame(
-        atualizarNumero
-    );
-
 }
 
-// =====================================================
-// CALCULAR PERCENTUAL
-// =====================================================
-
-function calcularPercentual(parte, total) {
-
-    // Evita divisão por zero.
-    if (total === 0) {
-        return 0;
-    }
-
-    return Math.round(
-        (parte / total) * 100
-    );
-
-}
 
 // =====================================================
 // CARREGAR BENEFICIÁRIOS
 // =====================================================
 
-async function carregarBeneficiarios() {
+async function carregarBeneficiariosDashboard() {
 
-    const resposta = await fetch(
-        `${API_URL}/beneficiarios`,
-        {
-            headers: obterHeaders()
-        }
-    );
+    try {
 
-    const beneficiarios =
-        await resposta.json();
+        const beneficiarios =
+            await buscarBeneficiariosDashboard();
 
-    if (!resposta.ok) {
 
-        throw new Error(
-            beneficiarios.error ||
-            "Erro ao carregar beneficiários."
+        const resumo =
+            preencherCardsBeneficiarios({
+
+                elementos,
+
+                beneficiarios
+
+            });
+
+
+        renderizarGraficoBeneficiarios({
+
+            canvas:
+                elementos.graficoBeneficiarios,
+
+            ativos:
+                resumo.ativos,
+
+            inativos:
+                resumo.inativos
+
+        });
+
+
+        renderizarUltimosBeneficiarios({
+
+            elemento:
+                elementos.ultimosBeneficiarios,
+
+            beneficiarios,
+
+            limite:
+                5
+
+        });
+
+
+        return beneficiarios;
+
+    } catch (erro) {
+
+        console.error(
+            "Erro ao carregar beneficiários no Dashboard:",
+            erro
         );
 
-    }
 
-    const ativos = beneficiarios.filter(
-        (beneficiario) =>
-            beneficiario.ativo
-    );
+        mostrarErroIndicadoresBeneficiarios();
 
-    const inativos = beneficiarios.filter(
-        (beneficiario) =>
-            !beneficiario.ativo
-    );
 
-    const percentualAtivos =
-        calcularPercentual(
-            ativos.length,
-            beneficiarios.length
-        );
+        mostrarErroListaDashboard({
 
-    const percentualInativos =
-        calcularPercentual(
-            inativos.length,
-            beneficiarios.length
-        );
+            elemento:
+                elementos.ultimosBeneficiarios,
 
-    renderizarGraficoBeneficiarios(
-        ativos.length,
-        inativos.length
-    );
+            mensagem:
+                "Não foi possível carregar os beneficiários."
 
-    animarNumero(
-        elementos.totalBeneficiarios,
-        beneficiarios.length
-    );
+        });
 
-    animarNumero(
-        elementos.beneficiariosAtivos,
-        ativos.length
-    );
 
-    animarNumero(
-        elementos.beneficiariosInativos,
-        inativos.length
-    );
+        renderizarGraficoBeneficiarios({
 
-    if (elementos.kpiBeneficiarios) {
+            canvas:
+                elementos.graficoBeneficiarios,
 
-        elementos.kpiBeneficiarios.innerHTML = `
-            <i class="fa-solid fa-rotate"></i>
-            Dados atualizados agora
-        `;
+            ativos:
+                0,
+
+            inativos:
+                0
+
+        });
+
+
+        return [];
 
     }
-
-    if (elementos.kpiAtivos) {
-
-        elementos.kpiAtivos.innerHTML = `
-            <i class="fa-solid fa-arrow-trend-up"></i>
-            ${percentualAtivos}% do total
-        `;
-
-    }
-
-    if (elementos.kpiInativos) {
-
-        elementos.kpiInativos.innerHTML = `
-            <i class="fa-solid fa-chart-pie"></i>
-            ${percentualInativos}% do total
-        `;
-
-    }
-
-    renderizarUltimosBeneficiarios(
-        beneficiarios
-    );
 
 }
 
@@ -661,281 +491,331 @@ async function carregarBeneficiarios() {
 // CARREGAR INSTITUIÇÕES
 // =====================================================
 
-async function carregarInstituicoes(usuario) {
-
-    if (usuario.role !== "ADMIN") {
-
-        if (elementos.cardInstituicoes) {
-
-            elementos.cardInstituicoes.style.display =
-                "none";
-
-        }
-
-        if (elementos.acaoInstituicoes) {
-
-            elementos.acaoInstituicoes.style.display =
-                "none";
-
-        }
-
-        return;
-
-    }
-
-    const resposta = await fetch(
-        `${API_URL}/instituicoes`,
-        {
-            headers: obterHeaders()
-        }
-    );
-
-    const instituicoes =
-        await resposta.json();
-
-    if (!resposta.ok) {
-
-        throw new Error(
-            instituicoes.error ||
-            "Erro ao carregar instituições."
-        );
-
-    }
-
-    if (elementos.totalInstituicoes) {
-
-        animarNumero(
-            elementos.totalInstituicoes,
-            instituicoes.length
-        );
-
-    }
-
-    if (elementos.kpiInstituicoes) {
-
-        elementos.kpiInstituicoes.innerHTML = `
-            <i class="fa-solid fa-handshake"></i>
-            Parceiras cadastradas
-        `;
-
-    }
-
-}
-
-
-// =====================================================
-// ÚLTIMOS BENEFICIÁRIOS
-// =====================================================
-
-function renderizarUltimosBeneficiarios(
-    beneficiarios
+async function carregarInstituicoesDashboard(
+    usuario
 ) {
 
-    if (!elementos.ultimosBeneficiarios) {
-        return;
+    /*
+     * Usuários de instituição não possuem acesso
+     * à listagem geral de instituições.
+     */
+    if (
+        usuario?.role !==
+        "ADMIN"
+    ) {
+
+        preencherCardInstituicoes({
+
+            elementos,
+
+            instituicoes:
+                [],
+
+            usuario
+
+        });
+
+
+        return [];
+
     }
 
-    if (beneficiarios.length === 0) {
-
-        elementos.ultimosBeneficiarios.innerHTML = `
-            <p class="dashboard-empty">
-                Nenhum beneficiário cadastrado.
-            </p>
-        `;
-
-        return;
-
-    }
-
-    const ultimos = [...beneficiarios]
-        .sort((a, b) => {
-
-            const dataA = new Date(
-                a.criadoEm ||
-                a.dataCadastro
-            );
-
-            const dataB = new Date(
-                b.criadoEm ||
-                b.dataCadastro
-            );
-
-            return dataB - dataA;
-
-        })
-        .slice(0, 5);
-
-    elementos.ultimosBeneficiarios.innerHTML =
-        ultimos
-            .map((beneficiario) => `
-
-                <div class="dashboard-recent-item">
-
-                    <div class="dashboard-recent-icon">
-
-                        <i class="fa-solid fa-user"></i>
-
-                    </div>
-
-                    <div>
-
-                        <strong>
-                            ${beneficiario.nomeCompleto}
-                        </strong>
-
-                        <span>
-                            ${
-                                beneficiario.instituicao
-                                    ?.nome ||
-                                "Instituição não informada"
-                            }
-                        </span>
-
-                    </div>
-
-                </div>
-
-            `)
-            .join("");
-
-}
-
-
-// =====================================================
-// CONFIGURAR AÇÕES RÁPIDAS E CARDS
-// =====================================================
-
-function configurarAcoesRapidas() {
-
-    // ----------------------------------------
-    // Botões da seção "Ações Rápidas"
-    // ----------------------------------------
-
-    elementos.acoesRapidas.forEach(
-
-        (botao) => {
-
-            botao.addEventListener(
-
-                "click",
-
-                () => {
-
-                    const pagina =
-                        botao.dataset.pagina;
-
-                    if (pagina) {
-
-                        carregarPagina(
-                            pagina
-                        );
-
-                    }
-
-                },
-
-                {
-                    signal:
-                        controladorEventos.signal
-                }
-
-            );
-
-        }
-
-    );
-
-    // ----------------------------------------
-    // Cards do Dashboard
-    // ----------------------------------------
-
-    elementos.cards.forEach(
-
-        (card) => {
-
-            card.addEventListener(
-
-                "click",
-
-                () => {
-
-                    const pagina =
-                        card.dataset.pagina;
-
-                    if (pagina) {
-
-                        carregarPagina(
-                            pagina
-                        );
-
-                    }
-
-                },
-
-                {
-                    signal:
-                        controladorEventos.signal
-                }
-
-            );
-
-        }
-
-    );
-
-}
-
-
-// =====================================================
-// INICIALIZAR HOME
-// =====================================================
-
-export async function inicializarDashboard() {
 
     try {
 
-        capturarElementos();
+        const instituicoes =
+            await buscarInstituicoesDashboard();
 
-        if (controladorEventos) {
 
-            controladorEventos.abort();
+        preencherCardInstituicoes({
 
-        }
+            elementos,
 
-        controladorEventos =
-            new AbortController();
+            instituicoes,
 
-        mostrarDataAtual();
+            usuario
 
-        const usuario =
-            await carregarUsuario();
+        });
 
-        configurarAcoesRapidas();
 
-        await Promise.all([
-
-            carregarBeneficiarios(),
-
-            carregarInstituicoes(usuario)
-
-        ]);
+        return instituicoes;
 
     } catch (erro) {
 
         console.error(
-            "Erro ao inicializar Dashboard:",
+            "Erro ao carregar instituições no Dashboard:",
             erro
         );
 
-        if (elementos.ultimosBeneficiarios) {
 
-            elementos.ultimosBeneficiarios.innerHTML = `
-                <p class="dashboard-empty">
-                    Não foi possível carregar os dados.
-                </p>
+        if (
+            elementos.totalInstituicoes
+        ) {
+
+            elementos.totalInstituicoes.textContent =
+                "-";
+
+        }
+
+
+        if (
+            elementos.kpiInstituicoes
+        ) {
+
+            elementos.kpiInstituicoes.innerHTML = `
+
+                <i class="fa-solid fa-triangle-exclamation"></i>
+
+                Dados indisponíveis
+
             `;
 
         }
+
+
+        return [];
+
+    }
+
+}
+
+
+// =====================================================
+// CARREGAR DOAÇÕES
+// =====================================================
+
+async function carregarDoacoesDashboard() {
+
+    try {
+
+        const doacoes =
+            await buscarDoacoesDashboard();
+
+
+        preencherCardsDoacoes({
+
+            elementos,
+
+            doacoes
+
+        });
+
+
+        renderizarGraficoTiposDoacoes({
+
+            canvas:
+                elementos.graficoTiposDoacoes,
+
+            doacoes
+
+        });
+
+
+        renderizarUltimasDoacoes({
+
+            elemento:
+                elementos.ultimasDoacoes,
+
+            doacoes,
+
+            limite:
+                5
+
+        });
+
+
+        return doacoes;
+
+    } catch (erro) {
+
+        console.error(
+            "Erro ao carregar doações no Dashboard:",
+            erro
+        );
+
+
+        mostrarErroIndicadoresDoacoes();
+
+
+        mostrarErroListaDashboard({
+
+            elemento:
+                elementos.ultimasDoacoes,
+
+            mensagem:
+                "Não foi possível carregar as doações."
+
+        });
+
+
+        renderizarGraficoTiposDoacoes({
+
+            canvas:
+                elementos.graficoTiposDoacoes,
+
+            doacoes:
+                []
+
+        });
+
+
+        return [];
+
+    }
+
+}
+
+
+// =====================================================
+// CONFIGURAR EVENTOS DA HOME
+// =====================================================
+
+function configurarEventos() {
+
+    if (
+        controladorEventos
+    ) {
+
+        controladorEventos.abort();
+
+    }
+
+
+    controladorEventos =
+        new AbortController();
+
+
+    configurarNavegacaoDashboard({
+
+        elementos,
+
+        controladorEventos
+
+    });
+
+}
+
+
+// =====================================================
+// LIMPAR INSTÂNCIAS ANTERIORES
+// =====================================================
+
+function limparEstadoAnterior() {
+
+    destruirGraficosDashboard();
+
+
+    if (
+        controladorEventos
+    ) {
+
+        controladorEventos.abort();
+
+        controladorEventos =
+            null;
+
+    }
+
+}
+
+
+// =====================================================
+// INICIALIZAR HOME DO DASHBOARD
+// =====================================================
+
+export async function inicializarDashboard() {
+
+    limparEstadoAnterior();
+
+
+    try {
+
+        // =============================================
+        // CAPTURAR VIEW
+        // =============================================
+
+        capturarElementos();
+
+        validarElementos();
+
+
+        // =============================================
+        // CARREGAR USUÁRIO
+        // =============================================
+
+        const usuario =
+            await buscarUsuarioDashboard();
+
+
+        preencherCabecalhoDashboard({
+
+            elementos,
+
+            usuario
+
+        });
+
+
+        // =============================================
+        // CONFIGURAR NAVEGAÇÃO
+        // =============================================
+
+        configurarEventos();
+
+
+        // =============================================
+        // CARREGAR DADOS EM PARALELO
+        // =============================================
+
+        await Promise.all([
+
+            carregarBeneficiariosDashboard(),
+
+            carregarInstituicoesDashboard(
+                usuario
+            ),
+
+            carregarDoacoesDashboard()
+
+        ]);
+
+
+        // =============================================
+        // ATUALIZAR HORÁRIO
+        // =============================================
+
+        atualizarHorarioDashboard(
+            elementos.ultimaAtualizacao
+        );
+
+    } catch (erro) {
+
+        console.error(
+            "Erro ao inicializar a Home do Dashboard:",
+            erro
+        );
+
+
+        mostrarErroListaDashboard({
+
+            elemento:
+                elementos.ultimosBeneficiarios,
+
+            mensagem:
+                "Não foi possível carregar os dados do painel."
+
+        });
+
+
+        mostrarErroListaDashboard({
+
+            elemento:
+                elementos.ultimasDoacoes,
+
+            mensagem:
+                "Não foi possível carregar os dados do painel."
+
+        });
 
     }
 
