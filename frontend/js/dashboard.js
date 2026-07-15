@@ -28,7 +28,16 @@ const CHAVE_MENU_RECOLHIDO =
 
 
 // =====================================================
-// PERMISSÕES DO MENU
+// USUÁRIO AUTENTICADO ATUAL
+// =====================================================
+
+let usuarioAutenticadoAtual = null;
+
+let observadorPermissoes = null;
+
+
+// =====================================================
+// PERMISSÕES DAS PÁGINAS
 // =====================================================
 
 const paginasPermitidasPorPerfil = {
@@ -53,17 +62,33 @@ const paginasPermitidasPorPerfil = {
 
 
 // =====================================================
+// NORMALIZAR PERFIL
+// =====================================================
+
+function normalizarPerfil(role) {
+
+    return String(role || "")
+        .trim()
+        .toUpperCase();
+
+}
+
+
+// =====================================================
 // FORMATAR PERFIL
 // =====================================================
 
 function formatarPerfil(role) {
+
+    const perfilNormalizado =
+        normalizarPerfil(role);
 
     const perfis = {
         ADMIN: "Administrador",
         INSTITUICAO: "Instituição"
     };
 
-    return perfis[role] || "Usuário";
+    return perfis[perfilNormalizado] || "Usuário";
 
 }
 
@@ -78,10 +103,6 @@ function gerarIniciais(nome) {
         return "US";
     }
 
-    /*
-     * Remove espaços extras e separa o nome
-     * em palavras.
-     */
     const partesNome = nome
         .trim()
         .split(/\s+/)
@@ -91,10 +112,6 @@ function gerarIniciais(nome) {
         return "US";
     }
 
-    /*
-     * Caso tenha apenas um nome,
-     * usa as duas primeiras letras.
-     */
     if (partesNome.length === 1) {
 
         return partesNome[0]
@@ -103,10 +120,6 @@ function gerarIniciais(nome) {
 
     }
 
-    /*
-     * Usa a primeira letra do primeiro nome
-     * e a primeira letra do último nome.
-     */
     const primeiraInicial =
         partesNome[0].charAt(0);
 
@@ -191,13 +204,241 @@ function preencherInformacoesUsuario(usuario) {
 
 
 // =====================================================
+// VERIFICAR SE O PERFIL TEM PERMISSÃO
+// =====================================================
+
+function possuiPermissaoElemento(
+    elemento,
+    perfilUsuario
+) {
+
+    const perfisPermitidosTexto =
+        elemento.dataset.perfis;
+
+    /*
+     * Elementos sem data-perfis ficam disponíveis
+     * para todos os usuários.
+     */
+    if (!perfisPermitidosTexto) {
+        return true;
+    }
+
+    const perfisPermitidos =
+        perfisPermitidosTexto
+            .split(",")
+            .map((perfil) =>
+                normalizarPerfil(perfil)
+            )
+            .filter(Boolean);
+
+    return perfisPermitidos.includes(
+        perfilUsuario
+    );
+
+}
+
+
+// =====================================================
+// APLICAR PERMISSÕES AOS ELEMENTOS DA TELA
+// =====================================================
+
+function aplicarPermissoesElementos(
+    usuario,
+    raiz = document
+) {
+
+    if (!usuario || !raiz) {
+        return;
+    }
+
+    const perfilUsuario =
+        normalizarPerfil(usuario.role);
+
+    const elementosProtegidos =
+        raiz.querySelectorAll(
+            "[data-perfis]"
+        );
+
+    elementosProtegidos.forEach(
+        (elemento) => {
+
+            const possuiPermissao =
+                possuiPermissaoElemento(
+                    elemento,
+                    perfilUsuario
+                );
+
+            elemento.hidden =
+                !possuiPermissao;
+
+            if (possuiPermissao) {
+
+                elemento.removeAttribute(
+                    "aria-hidden"
+                );
+
+                /*
+                 * Restaura o tabindex original,
+                 * caso ele tenha sido alterado.
+                 */
+                if (
+                    elemento.dataset
+                        .tabindexOriginal !== undefined
+                ) {
+
+                    const tabindexOriginal =
+                        elemento.dataset
+                            .tabindexOriginal;
+
+                    if (tabindexOriginal === "") {
+
+                        elemento.removeAttribute(
+                            "tabindex"
+                        );
+
+                    } else {
+
+                        elemento.setAttribute(
+                            "tabindex",
+                            tabindexOriginal
+                        );
+
+                    }
+
+                    delete elemento.dataset
+                        .tabindexOriginal;
+
+                }
+
+                if (
+                    "disabled" in elemento &&
+                    elemento.dataset
+                        .desabilitadoPorPermissao ===
+                        "true"
+                ) {
+
+                    elemento.disabled = false;
+
+                    delete elemento.dataset
+                        .desabilitadoPorPermissao;
+
+                }
+
+                return;
+
+            }
+
+            elemento.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+
+            /*
+             * Salva o tabindex original para permitir
+             * restaurá-lo posteriormente.
+             */
+            if (
+                elemento.dataset
+                    .tabindexOriginal === undefined
+            ) {
+
+                elemento.dataset
+                    .tabindexOriginal =
+                    elemento.getAttribute(
+                        "tabindex"
+                    ) ?? "";
+
+            }
+
+            elemento.setAttribute(
+                "tabindex",
+                "-1"
+            );
+
+            elemento.classList.remove(
+                "ativo"
+            );
+
+            if ("disabled" in elemento) {
+
+                elemento.disabled = true;
+
+                elemento.dataset
+                    .desabilitadoPorPermissao =
+                    "true";
+
+            }
+
+        }
+    );
+
+}
+
+
+// =====================================================
+// OBSERVAR CONTEÚDO CARREGADO PELO ROUTER
+// =====================================================
+
+function configurarObservadorPermissoes() {
+
+    const conteudo =
+        document.getElementById("conteudo");
+
+    if (!conteudo) {
+
+        console.warn(
+            "Área principal de conteúdo não encontrada."
+        );
+
+        return;
+
+    }
+
+    /*
+     * Evita criar mais de um observador.
+     */
+    if (observadorPermissoes) {
+
+        observadorPermissoes.disconnect();
+
+    }
+
+    observadorPermissoes =
+        new MutationObserver(() => {
+
+            if (!usuarioAutenticadoAtual) {
+                return;
+            }
+
+            aplicarPermissoesElementos(
+                usuarioAutenticadoAtual,
+                conteudo
+            );
+
+        });
+
+    observadorPermissoes.observe(
+        conteudo,
+        {
+            childList: true,
+            subtree: true
+        }
+    );
+
+}
+
+
+// =====================================================
 // APLICAR PERMISSÕES AO MENU
 // =====================================================
 
 function aplicarPermissoesMenu(role) {
 
+    const perfil =
+        normalizarPerfil(role);
+
     const paginasPermitidas =
-        paginasPermitidasPorPerfil[role] || [
+        paginasPermitidasPorPerfil[perfil] || [
             "home.html"
         ];
 
@@ -227,23 +468,23 @@ function aplicarPermissoesMenu(role) {
                 "tabindex"
             );
 
-        } else {
-
-            link.setAttribute(
-                "aria-hidden",
-                "true"
-            );
-
-            link.setAttribute(
-                "tabindex",
-                "-1"
-            );
-
-            link.classList.remove(
-                "ativo"
-            );
+            return;
 
         }
+
+        link.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+
+        link.setAttribute(
+            "tabindex",
+            "-1"
+        );
+
+        link.classList.remove(
+            "ativo"
+        );
 
     });
 
@@ -258,13 +499,17 @@ function salvarUsuarioNaSessao(usuario) {
 
     const dadosUsuario = {
 
-        id: usuario.id,
+        id:
+            usuario.id,
 
-        nome: usuario.nome,
+        nome:
+            usuario.nome,
 
-        email: usuario.email,
+        email:
+            usuario.email,
 
-        role: usuario.role,
+        role:
+            normalizarPerfil(usuario.role),
 
         instituicaoId:
             usuario.instituicaoId ?? null
@@ -290,6 +535,11 @@ async function carregarUsuarioLogado() {
         const usuario =
             await obterUsuarioAutenticado();
 
+        /*
+         * Primeiro verifica se o usuário existe.
+         * No código anterior, aplicarPermissoes era
+         * chamado antes desta verificação.
+         */
         if (!usuario) {
 
             console.warn(
@@ -308,12 +558,26 @@ async function carregarUsuarioLogado() {
 
         }
 
+        usuario.role =
+            normalizarPerfil(usuario.role);
+
+        usuarioAutenticadoAtual =
+            usuario;
+
         preencherInformacoesUsuario(
             usuario
         );
 
         aplicarPermissoesMenu(
             usuario.role
+        );
+
+        /*
+         * Aplica as permissões nos elementos
+         * que já estão presentes no dashboard.html.
+         */
+        aplicarPermissoesElementos(
+            usuario
         );
 
         salvarUsuarioNaSessao(
@@ -366,8 +630,11 @@ async function carregarPaginaInicial(usuario) {
         toast.erro(
             "O sistema de navegação não foi carregado corretamente.",
             {
-                titulo: "Erro de navegação",
-                duracao: 6000
+                titulo:
+                    "Erro de navegação",
+
+                duracao:
+                    6000
             }
         );
 
@@ -400,15 +667,17 @@ async function carregarPaginaInicial(usuario) {
 
     }
 
+    const perfil =
+        normalizarPerfil(usuario.role);
+
     const paginasPermitidas =
         paginasPermitidasPorPerfil[
-            usuario.role
+            perfil
         ] || ["home.html"];
 
     /*
-     * Impede que um usuário de instituição
-     * carregue uma página reservada ao ADMIN
-     * por meio do sessionStorage.
+     * Impede o acesso a uma página não permitida
+     * por hash, histórico ou sessionStorage.
      */
     if (
         !paginasPermitidas.includes(
@@ -424,15 +693,39 @@ async function carregarPaginaInicial(usuario) {
             paginaInicial
         );
 
+        window.location.hash =
+            "home";
+
     }
 
-    return await window.carregarPagina(
-        paginaInicial,
-        null,
-        {
-            substituirHistorico: true
-        }
-    );
+    const paginaCarregada =
+        await window.carregarPagina(
+            paginaInicial,
+            null,
+            {
+                substituirHistorico: true
+            }
+        );
+
+    /*
+     * O home.html só existe no DOM depois que
+     * o router termina o carregamento.
+     */
+    if (paginaCarregada) {
+
+        const conteudo =
+            document.getElementById(
+                "conteudo"
+            );
+
+        aplicarPermissoesElementos(
+            usuario,
+            conteudo || document
+        );
+
+    }
+
+    return paginaCarregada;
 
 }
 
@@ -453,6 +746,7 @@ function aguardar(milissegundos) {
     });
 
 }
+
 
 // =====================================================
 // ATUALIZAR ESTADO VISUAL DO MENU
@@ -713,7 +1007,8 @@ function configurarLogout() {
                     forcar: true
                 });
 
-                botaoLogout.disabled = false;
+                botaoLogout.disabled =
+                    false;
 
                 botaoLogout.innerHTML =
                     conteudoOriginal;
@@ -742,6 +1037,8 @@ async function inicializarDashboard() {
 
     configurarResponsividadeMenu();
 
+    configurarObservadorPermissoes();
+
     loading.mostrar({
 
         titulo:
@@ -769,6 +1066,17 @@ async function inicializarDashboard() {
         if (!paginaCarregada) {
             return;
         }
+
+        /*
+         * Garante novamente as permissões depois
+         * que a página inicial foi inserida no DOM.
+         */
+        aplicarPermissoesElementos(
+            usuario,
+            document.getElementById(
+                "conteudo"
+            ) || document
+        );
 
         toast.sucesso(
             `Bem-vindo, ${usuario.nome || "usuário"}!`,
