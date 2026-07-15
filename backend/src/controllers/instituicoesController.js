@@ -9,9 +9,75 @@ import { da } from "zod/v4/locales";
 import { error } from "node:console";
 import { Prisma } from "@prisma/client";
 
-const cadastrarInstituicao = async (req, res) => {
-  console.log("Entrou em listarInstituicoes");
+class InstituicaoController {
 
+  // Listar
+  async index(req, res) {
+    const { nome, tipo, cidade, statusOk, ativa, sort } = req.query;
+
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 25;
+
+    const where = {};
+
+    if (nome) {
+      where.nome = {
+        contains: nome,
+        mode: "insensitive",
+      };
+    }
+
+    if (tipo) {
+      where.tipo = tipo.toUpperCase();
+    }
+
+    if (cidade) {
+      where.cidade = {
+        contains: cidade,
+        mode: "insensitive",
+      };
+    }
+
+    if (statusOk) {
+      where.statusOk = statusOk;
+    }
+
+    if (ativa !== undefined) {
+      where.ativa = ativa === "true";
+    }
+
+    let orderBy = { nome: "asc" };
+
+    if (sort) {
+      orderBy = sort.split(",").map((item) => {
+        const [campo, direcao] = item.split(":");
+
+        return {
+          [campo]: direcao.toLowerCase(),
+        };
+      });
+    }
+
+    try {
+      const instituicoes = await prisma.instituicaoParceira.findMany({
+        where,
+        orderBy,
+        take: limit,
+        skip: (page - 1) * limit,
+      });
+
+      return res.status(200).json(instituicoes);
+    } catch (error) {
+      return res.status(500).json({
+        error: "Erro ao listar as instituições",
+      });
+    }
+  }
+}
+
+export default new InstituicaoController();
+
+const cadastrarInstituicao = async (req, res) => {
   try {
     const data = criarInstituicaoSchema.parse(req.body);
 
@@ -77,18 +143,7 @@ const cadastrarInstituicao = async (req, res) => {
   }
 };
 
-const listarInstituicoes = async (req, res) => {
-  try {
-    const instituicoes = await prisma.instituicaoParceira.findMany({
-      where: {
-        deletedAt: null,
-      },
-    });
-    return res.status(200).json(instituicoes);
-  } catch (error) {
-    return res.status(500).json({ error: "Erro ao listar as instituições" });
-  }
-};
+const listarInstituicoes = async (req, res) => {};
 
 const detalheDaInstituicao = async (req, res) => {
   const id = Number(req.params.id);
