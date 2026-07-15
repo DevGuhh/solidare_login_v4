@@ -67,29 +67,29 @@
         rel="stylesheet"
         href="../css/components/loading.css"
     >
-
 </head>
-
 
 <body>
 
     <div class="container">
 
         <!-- MENU LATERAL -->
-
         <aside>
 
             <div class="logo">
 
-                <i class="fa-solid fa-heart fa-3x"></i>
+                <i
+                    class="fa-solid fa-heart fa-3x"
+                    aria-hidden="true"
+                ></i>
 
                 <h2>Solidare</h2>
 
             </div>
 
-
             <nav id="menuPrincipal">
 
+                <!-- Disponível para todos os perfis -->
                 <a
                     href="#"
                     class="menu-link ativo"
@@ -97,12 +97,15 @@
                     data-tooltip="Dashboard"
                     title="Dashboard"
                 >
-                    <i class="fa-solid fa-chart-line"></i>
+                    <i
+                        class="fa-solid fa-chart-line"
+                        aria-hidden="true"
+                    ></i>
 
                     <span>Dashboard</span>
                 </a>
 
-
+                <!-- Disponível para todos os perfis -->
                 <a
                     href="#"
                     class="menu-link"
@@ -110,12 +113,15 @@
                     data-tooltip="Beneficiários"
                     title="Beneficiários"
                 >
-                    <i class="fa-solid fa-users"></i>
+                    <i
+                        class="fa-solid fa-users"
+                        aria-hidden="true"
+                    ></i>
 
                     <span>Beneficiários</span>
                 </a>
 
-
+                <!-- Disponível para todos até definirmos outra regra -->
                 <a
                     href="#"
                     class="menu-link"
@@ -123,12 +129,15 @@
                     data-tooltip="Instituições"
                     title="Instituições"
                 >
-                    <i class="fa-solid fa-building"></i>
+                    <i
+                        class="fa-solid fa-building"
+                        aria-hidden="true"
+                    ></i>
 
                     <span>Instituições</span>
                 </a>
 
-
+                <!-- Disponível para todos até definirmos outra regra -->
                 <a
                     href="#"
                     class="menu-link"
@@ -136,12 +145,15 @@
                     data-tooltip="RFID"
                     title="RFID"
                 >
-                    <i class="fa-solid fa-id-card"></i>
+                    <i
+                        class="fa-solid fa-id-card"
+                        aria-hidden="true"
+                    ></i>
 
                     <span>RFID</span>
                 </a>
 
-
+                <!-- Disponível para todos os perfis -->
                 <a
                     href="#"
                     class="menu-link"
@@ -149,20 +161,27 @@
                     data-tooltip="Doações"
                     title="Doações"
                 >
-                    <i class="fa-solid fa-hand-holding-heart"></i>
+                    <i
+                        class="fa-solid fa-hand-holding-heart"
+                        aria-hidden="true"
+                    ></i>
 
                     <span>Doações</span>
                 </a>
 
-
+                <!-- Exclusivo para administradores -->
                 <a
                     href="#"
                     class="menu-link"
                     data-pagina="relatorios.html"
                     data-tooltip="Relatórios"
+                    data-perfis="ADMIN"
                     title="Relatórios"
                 >
-                    <i class="fa-solid fa-file-lines"></i>
+                    <i
+                        class="fa-solid fa-file-lines"
+                        aria-hidden="true"
+                    ></i>
 
                     <span>Relatórios</span>
                 </a>
@@ -203,9 +222,7 @@
 
         </aside>
 
-
         <!-- ÁREA PRINCIPAL -->
-
         <div class="content">
 
             <header class="topbar">
@@ -225,7 +242,6 @@
                             aria-hidden="true"
                         ></i>
                     </button>
-
 
                     <div class="topbar-header">
 
@@ -247,12 +263,10 @@
                                 Início
                             </button>
 
-
                             <i
                                 class="fa-solid fa-chevron-right breadcrumb-separador"
                                 aria-hidden="true"
                             ></i>
-
 
                             <span
                                 id="breadcrumbPagina"
@@ -260,9 +274,7 @@
                             >
                                 Dashboard
                             </span>
-
                         </nav>
-
 
                         <h2
                             id="tituloPagina"
@@ -270,7 +282,6 @@
                         >
                             Dashboard
                         </h2>
-
 
                         <p
                             id="descricaoPagina"
@@ -283,15 +294,16 @@
 
                 </div>
 
-
                 <div class="usuario">
 
                     <div class="usuario-avatar">
 
-                        <i class="fa-solid fa-user"></i>
+                        <i
+                            class="fa-solid fa-user"
+                            aria-hidden="true"
+                        ></i>
 
                     </div>
-
 
                     <div class="usuario-info">
 
@@ -309,12 +321,14 @@
 
                     </div>
 
-
                     <button
                         id="logout"
                         type="button"
                     >
-                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <i
+                            class="fa-solid fa-right-from-bracket"
+                            aria-hidden="true"
+                        ></i>
 
                         Sair
                     </button>
@@ -323,12 +337,14 @@
 
             </header>
 
-
             <main id="conteudo">
 
                 <div class="carregando-pagina">
 
-                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    <i
+                        class="fa-solid fa-spinner fa-spin"
+                        aria-hidden="true"
+                    ></i>
 
                     &nbsp; Carregando painel...
 
@@ -339,7 +355,6 @@
         </div>
 
     </div>
-
 
     <script
         type="module"
