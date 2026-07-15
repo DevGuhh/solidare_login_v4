@@ -2,97 +2,143 @@
 // TABELA DOS RELATÓRIOS
 // =====================================================
 
-// Esta função recebe:
-//
-// 1. O elemento <tbody> da tabela.
-// 2. A lista de beneficiários que será exibida.
-//
-// Ela apenas monta o HTML da tabela.
-// Não faz requisições para a API e não aplica filtros.
+function escaparHTML(valor) {
+    return String(valor ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+function formatarCPF(valor) {
+    const cpf = String(valor ?? "").replace(/\D/g, "");
+
+    if (cpf.length !== 11) {
+        return valor || "Não informado";
+    }
+
+    return cpf.replace(
+        /^(\d{3})(\d{3})(\d{3})(\d{2})$/,
+        "$1.$2.$3-$4"
+    );
+}
+
+function formatarBeneficio(valor) {
+    const opcoes = {
+        CESTA: "Cesta",
+        GRANEL: "Granel",
+        AMBOS: "Ambos"
+    };
+
+    return opcoes[valor] ?? valor ?? "Não informado";
+}
 
 export function renderizarTabelaRelatorios(
     tabela,
     beneficiarios
 ) {
-
-    // Limpa o conteúdo anterior da tabela.
     tabela.innerHTML = "";
 
-    // Se não existir nenhum resultado,
-    // mostra uma mensagem dentro da tabela.
-    if (beneficiarios.length === 0) {
-
+    if (!beneficiarios.length) {
         tabela.innerHTML = `
             <tr>
-                <td
-                    colspan="6"
-                    style="text-align:center;">
+                <td colspan="6">
+                    <div class="estado-tabela">
+                        <i class="fa-solid fa-file-circle-xmark"></i>
 
-                    Nenhum beneficiário encontrado.
+                        <strong>
+                            Nenhum registro encontrado
+                        </strong>
 
+                        <span>
+                            Altere os filtros para consultar outros resultados.
+                        </span>
+                    </div>
                 </td>
             </tr>
         `;
 
         return;
-
     }
 
-    // Percorre todos os beneficiários recebidos.
-    beneficiarios.forEach(
-        (beneficiario) => {
+    const fragmento =
+        document.createDocumentFragment();
 
-            // Define o nome da instituição.
-            // Caso não exista, mostra um hífen.
-            const nomeInstituicao =
-                beneficiario.instituicao?.nome ??
-                "-";
+    beneficiarios.forEach((beneficiario) => {
+        const linha =
+            document.createElement("tr");
 
-            // Cria a badge conforme o status.
-            const status = beneficiario.ativo
-                ? `
-                    <span class="badge badge-success">
-                        ATIVO
+        const instituicao =
+            beneficiario.instituicao?.nome ??
+            "Não informada";
+
+        linha.innerHTML = `
+            <td>
+                <span class="identificador-registro">
+                    #${escaparHTML(beneficiario.id)}
+                </span>
+            </td>
+
+            <td>
+                <div class="celula-principal">
+                    <span class="avatar-tabela">
+                        <i class="fa-solid fa-user"></i>
                     </span>
-                `
-                : `
-                    <span class="badge badge-danger">
-                        INATIVO
-                    </span>
-                `;
 
-            // Adiciona uma nova linha na tabela.
-            tabela.innerHTML += `
-                <tr>
+                    <div>
+                        <strong>
+                            ${escaparHTML(beneficiario.nomeCompleto)}
+                        </strong>
 
-                    <td>
-                        ${beneficiario.id}
-                    </td>
+                        <small>
+                            ${escaparHTML(formatarCPF(beneficiario.cpf))}
+                        </small>
+                    </div>
+                </div>
+            </td>
 
-                    <td>
-                        ${beneficiario.nomeCompleto}
-                    </td>
+            <td>
+                ${escaparHTML(formatarCPF(beneficiario.cpf))}
+            </td>
 
-                    <td>
-                        ${beneficiario.cpf}
-                    </td>
+            <td>
+                ${escaparHTML(instituicao)}
+            </td>
 
-                    <td>
-                        ${nomeInstituicao}
-                    </td>
+            <td>
+                <span class="badge badge-neutro">
+                    ${escaparHTML(
+                        formatarBeneficio(
+                            beneficiario.tipoBeneficio
+                        )
+                    )}
+                </span>
+            </td>
 
-                    <td>
-                        ${beneficiario.tipoBeneficio}
-                    </td>
+            <td>
+                <span class="badge-status ${
+                    beneficiario.ativo
+                        ? "status-ativo"
+                        : "status-pendente"
+                }">
+                    <i class="fa-solid ${
+                        beneficiario.ativo
+                            ? "fa-circle-check"
+                            : "fa-circle-pause"
+                    }"></i>
 
-                    <td>
-                        ${status}
-                    </td>
+                    ${
+                        beneficiario.ativo
+                            ? "Ativo"
+                            : "Inativo"
+                    }
+                </span>
+            </td>
+        `;
 
-                </tr>
-            `;
+        fragmento.appendChild(linha);
+    });
 
-        }
-    );
-
+    tabela.appendChild(fragmento);
 }

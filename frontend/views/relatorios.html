@@ -1,403 +1,944 @@
-<!-- ==================================================
-     RELATÓRIOS
-================================================== -->
+<!-- =====================================================
+     PÁGINA DE RELATÓRIOS
+====================================================== -->
 
-<section class="dashboard-header">
+<section class="pagina-conteudo pagina-relatorios">
 
-    <div>
+    <!-- =================================================
+         CABEÇALHO
+    ================================================== -->
 
-        <p class="dashboard-subtitle">
-            Gestão
-        </p>
+    <header class="cabecalho-pagina">
 
-        <h1>
-            Relatórios
-        </h1>
+        <div class="cabecalho-pagina-texto">
 
-        <p class="dashboard-description">
-
-            Gere relatórios personalizados do sistema.
-
-        </p>
-
-    </div>
-
-</section>
-
-
-<!-- ==========================================
-     FILTROS
-========================================== -->
-
-<section class="dashboard-panel">
-
-    <div class="dashboard-panel-header">
-
-        <div>
-
-            <span class="dashboard-panel-eyebrow">
-                Filtros
+            <span class="cabecalho-pagina-icone">
+                <i class="fa-solid fa-chart-column"></i>
             </span>
 
-            <h2>
-                Personalizar relatório
-            </h2>
+            <div>
 
-        </div>
+                <h1>
+                    Relatórios
+                </h1>
 
-    </div>
+                <p>
+                    Consulte, filtre e exporte informações consolidadas do sistema.
+                </p>
 
-    <div class="form-grid">
-
-        <div class="form-group">
-
-            <label>
-
-                Data Inicial
-
-            </label>
-
-            <input
-                type="date"
-                id="filtroDataInicial">
+            </div>
 
         </div>
 
 
-        <div class="form-group">
+        <div class="cabecalho-pagina-acoes">
 
-            <label>
+            <button
+                type="button"
+                id="btnAtualizarRelatorio"
+                class="btn btn-secondary"
+            >
+                <i class="fa-solid fa-rotate"></i>
 
-                Data Final
-
-            </label>
-
-            <input
-                type="date"
-                id="filtroDataFinal">
-
-        </div>
-
-
-        <div class="form-group">
-
-            <label>
-
-                Instituição
-
-            </label>
-
-            <select id="filtroInstituicao">
-
-                <option value="">
-
-                    Todas
-
-                </option>
-
-            </select>
+                Atualizar dados
+            </button>
 
         </div>
 
-
-        <div class="form-group">
-
-            <label>
-
-                Benefício
-
-            </label>
-
-            <select id="filtroBeneficio">
-
-                <option value="">
-
-                    Todos
-
-                </option>
-
-                <option value="CESTA">
-
-                    Cesta
-
-                </option>
-
-                <option value="GRANEL">
-
-                    Granel
-
-                </option>
-
-                <option value="AMBOS">
-
-                    Ambos
-
-                </option>
-
-            </select>
-
-        </div>
+    </header>
 
 
-        <div class="form-group">
+    <!-- =================================================
+         CARDS DE RESUMO
+    ================================================== -->
 
-            <label>
+    <section
+        class="cards-resumo cards-resumo-relatorios"
+        aria-label="Resumo dos relatórios"
+    >
 
-                Situação
+        <article class="card-resumo">
 
-            </label>
+            <div class="card-resumo-icone">
+                <i class="fa-solid fa-users"></i>
+            </div>
 
-            <select id="filtroAtivo">
+            <div class="card-resumo-conteudo">
 
-                <option value="">
+                <span class="card-resumo-label">
+                    Beneficiários
+                </span>
 
-                    Todos
+                <strong id="totalRelatorioBeneficiarios">
+                    0
+                </strong>
 
-                </option>
+                <small>
+                    Registros encontrados
+                </small>
 
-                <option value="true">
+            </div>
 
+        </article>
+
+
+        <article class="card-resumo">
+
+            <div class="card-resumo-icone">
+                <i class="fa-solid fa-building"></i>
+            </div>
+
+            <div class="card-resumo-conteudo">
+
+                <span class="card-resumo-label">
+                    Instituições
+                </span>
+
+                <strong id="totalRelatorioInstituicoes">
+                    0
+                </strong>
+
+                <small>
+                    Instituições relacionadas
+                </small>
+
+            </div>
+
+        </article>
+
+
+        <article class="card-resumo">
+
+            <div class="card-resumo-icone">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+
+            <div class="card-resumo-conteudo">
+
+                <span class="card-resumo-label">
                     Ativos
+                </span>
 
-                </option>
+                <strong id="totalRelatorioAtivos">
+                    0
+                </strong>
 
-                <option value="false">
+                <small>
+                    Beneficiários ativos
+                </small>
 
+            </div>
+
+        </article>
+
+
+        <article class="card-resumo">
+
+            <div class="card-resumo-icone">
+                <i class="fa-solid fa-circle-pause"></i>
+            </div>
+
+            <div class="card-resumo-conteudo">
+
+                <span class="card-resumo-label">
                     Inativos
+                </span>
 
-                </option>
+                <strong id="totalRelatorioInativos">
+                    0
+                </strong>
 
-            </select>
+                <small>
+                    Beneficiários inativos
+                </small>
+
+            </div>
+
+        </article>
+
+    </section>
+
+
+    <!-- =================================================
+         FILTROS
+    ================================================== -->
+
+    <section class="painel-relatorio painel-filtros-relatorio">
+
+        <header class="painel-relatorio-cabecalho">
+
+            <div class="painel-relatorio-titulo">
+
+                <span class="painel-relatorio-icone">
+                    <i class="fa-solid fa-sliders"></i>
+                </span>
+
+                <div>
+
+                    <span class="painel-relatorio-subtitulo">
+                        Filtros
+                    </span>
+
+                    <h2>
+                        Personalizar relatório
+                    </h2>
+
+                    <p>
+                        Selecione os critérios abaixo para refinar os dados exibidos.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <button
+                type="button"
+                id="btnLimparFiltros"
+                class="btn btn-secondary"
+            >
+                <i class="fa-solid fa-filter-circle-xmark"></i>
+
+                Limpar filtros
+            </button>
+
+        </header>
+
+
+        <div class="filtros-relatorio-grid">
+
+            <div class="campo-formulario">
+
+                <label for="filtroDataInicial">
+                    Data inicial
+                </label>
+
+                <div class="input-com-icone">
+
+                    <i class="fa-regular fa-calendar"></i>
+
+                    <input
+                        type="date"
+                        id="filtroDataInicial"
+                        name="filtroDataInicial"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="campo-formulario">
+
+                <label for="filtroDataFinal">
+                    Data final
+                </label>
+
+                <div class="input-com-icone">
+
+                    <i class="fa-regular fa-calendar-check"></i>
+
+                    <input
+                        type="date"
+                        id="filtroDataFinal"
+                        name="filtroDataFinal"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="campo-formulario">
+
+                <label for="filtroInstituicao">
+                    Instituição
+                </label>
+
+                <div class="input-com-icone">
+
+                    <i class="fa-solid fa-building"></i>
+
+                    <select
+                        id="filtroInstituicao"
+                        name="filtroInstituicao"
+                    >
+
+                        <option value="">
+                            Todas as instituições
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <div class="campo-formulario">
+
+                <label for="filtroBeneficio">
+                    Tipo de benefício
+                </label>
+
+                <div class="input-com-icone">
+
+                    <i class="fa-solid fa-box-open"></i>
+
+                    <select
+                        id="filtroBeneficio"
+                        name="filtroBeneficio"
+                    >
+
+                        <option value="">
+                            Todos os benefícios
+                        </option>
+
+                        <option value="CESTA">
+                            Cesta
+                        </option>
+
+                        <option value="GRANEL">
+                            Granel
+                        </option>
+
+                        <option value="AMBOS">
+                            Ambos
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <div class="campo-formulario">
+
+                <label for="filtroAtivo">
+                    Situação
+                </label>
+
+                <div class="input-com-icone">
+
+                    <i class="fa-solid fa-toggle-on"></i>
+
+                    <select
+                        id="filtroAtivo"
+                        name="filtroAtivo"
+                    >
+
+                        <option value="">
+                            Todos os status
+                        </option>
+
+                        <option value="true">
+                            Ativos
+                        </option>
+
+                        <option value="false">
+                            Inativos
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <div class="campo-formulario">
+
+                <label for="pesquisaRelatorio">
+                    Pesquisa
+                </label>
+
+                <div class="input-com-icone">
+
+                    <i class="fa-solid fa-magnifying-glass"></i>
+
+                    <input
+                        type="search"
+                        id="pesquisaRelatorio"
+                        name="pesquisaRelatorio"
+                        placeholder="Nome, CPF ou instituição"
+                        autocomplete="off"
+                    >
+
+                </div>
+
+            </div>
 
         </div>
 
-    </div>
 
-    <div class="form-actions">
+        <footer class="painel-relatorio-rodape">
 
-        <button
-            type="button"
-            id="btnLimparFiltros"
-            class="btn btn-secondary">
-
-            <i class="fa-solid fa-filter-circle-xmark"></i>
-
-            Limpar filtros
-
-        </button>
-
-    </div>
-
-</section>
-
-
-<!-- ==========================================
-     RESUMO
-========================================== -->
-
-<section class="dashboard-cards">
-
-    <article class="dashboard-card">
-
-        <div class="dashboard-card-icon">
-            <i class="fa-solid fa-users"></i>
-        </div>
-
-        <div class="dashboard-card-content">
-
-            <span class="dashboard-card-label">
-
-                Beneficiários
-
-            </span>
-
-            <strong
-                id="totalRelatorioBeneficiarios"
-                class="dashboard-card-number">
-
-                0
-
-            </strong>
-
-            <span class="dashboard-card-description">
-
-                Encontrados
-
-            </span>
-
-        </div>
-
-    </article>
-
-
-    <article class="dashboard-card">
-
-        <div class="dashboard-card-icon">
-            <i class="fa-solid fa-building"></i>
-        </div>
-
-        <div class="dashboard-card-content">
-
-            <span class="dashboard-card-label">
-
-                Instituições
-
-            </span>
-
-            <strong
-                id="totalRelatorioInstituicoes"
-                class="dashboard-card-number">
-
-                0
-
-            </strong>
-
-            <span class="dashboard-card-description">
-
-                Selecionadas
-
-            </span>
-
-        </div>
-
-    </article>
-
-</section>
-
-
-<!-- ==========================================
-     TABELA
-========================================== -->
-
-<section class="dashboard-panel">
-
-    <div class="dashboard-panel-header">
-
-        <div>
-
-            <span class="dashboard-panel-eyebrow">
-
-                Visualização
-
-            </span>
-
-            <h2>
-
-                Dados do relatório
-
-            </h2>
-
-            <p
-                id="quantidadeRegistrosRelatorio"
-                class="relatorio-quantidade">
-
-                0 registros encontrados
-
+            <p id="descricaoFiltrosRelatorio">
+                Exibindo todos os registros disponíveis.
             </p>
 
-        </div>
+            <button
+                type="button"
+                id="btnAplicarFiltrosRelatorio"
+                class="btn btn-primary"
+            >
+                <i class="fa-solid fa-filter"></i>
 
+                Aplicar filtros
+            </button>
+
+        </footer>
+
+    </section>
+
+
+    <!-- =================================================
+         FEEDBACK
+    ================================================== -->
+
+    <div
+        id="feedbackRelatorios"
+        class="mensagem-feedback"
+        role="status"
+        aria-live="polite"
+        hidden
+    >
+        <i class="fa-solid fa-circle-info"></i>
+
+        <span id="textoFeedbackRelatorios"></span>
     </div>
 
-    <table>
 
-        <thead>
+    <!-- =================================================
+         GRÁFICOS
+    ================================================== -->
 
-            <tr>
+    <section class="relatorios-grid-graficos">
 
-                <th>ID</th>
+        <article class="painel-relatorio">
 
-                <th>Nome</th>
+            <header class="painel-relatorio-cabecalho">
 
-                <th>CPF</th>
+                <div class="painel-relatorio-titulo">
 
-                <th>Instituição</th>
+                    <span class="painel-relatorio-icone">
+                        <i class="fa-solid fa-chart-pie"></i>
+                    </span>
 
-                <th>Benefício</th>
+                    <div>
 
-                <th>Status</th>
+                        <span class="painel-relatorio-subtitulo">
+                            Distribuição
+                        </span>
 
-            </tr>
+                        <h2>
+                            Beneficiários por benefício
+                        </h2>
 
-        </thead>
+                    </div>
 
-        <tbody id="tabelaRelatorios">
+                </div>
 
-            <tr>
-
-                <td colspan="6">
-
-                    Nenhum dado carregado.
-
-                </td>
-
-            </tr>
-
-        </tbody>
-
-    </table>
-
-</section>
+            </header>
 
 
-<!-- ==========================================
-     EXPORTAÇÃO
-========================================== -->
+            <div class="grafico-relatorio-container">
 
-<section class="dashboard-panel">
+                <canvas
+                    id="graficoRelatorioBeneficios"
+                    aria-label="Gráfico de beneficiários por benefício"
+                ></canvas>
 
-    <div class="dashboard-panel-header">
+                <div
+                    id="estadoVazioGraficoBeneficios"
+                    class="estado-grafico-vazio"
+                    hidden
+                >
+                    <i class="fa-solid fa-chart-pie"></i>
 
-        <div>
+                    <strong>
+                        Sem dados para exibir
+                    </strong>
 
-            <span class="dashboard-panel-eyebrow">
+                    <span>
+                        Altere os filtros para visualizar o gráfico.
+                    </span>
+                </div>
 
-                Exportação
+            </div>
 
+        </article>
+
+
+        <article class="painel-relatorio">
+
+            <header class="painel-relatorio-cabecalho">
+
+                <div class="painel-relatorio-titulo">
+
+                    <span class="painel-relatorio-icone">
+                        <i class="fa-solid fa-chart-bar"></i>
+                    </span>
+
+                    <div>
+
+                        <span class="painel-relatorio-subtitulo">
+                            Comparativo
+                        </span>
+
+                        <h2>
+                            Beneficiários por instituição
+                        </h2>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+            <div class="grafico-relatorio-container">
+
+                <canvas
+                    id="graficoRelatorioInstituicoes"
+                    aria-label="Gráfico de beneficiários por instituição"
+                ></canvas>
+
+                <div
+                    id="estadoVazioGraficoInstituicoes"
+                    class="estado-grafico-vazio"
+                    hidden
+                >
+                    <i class="fa-solid fa-chart-column"></i>
+
+                    <strong>
+                        Sem dados para exibir
+                    </strong>
+
+                    <span>
+                        Nenhuma instituição encontrada nos filtros selecionados.
+                    </span>
+                </div>
+
+            </div>
+
+        </article>
+
+    </section>
+
+
+    <!-- =================================================
+         TABELA
+    ================================================== -->
+
+    <section class="painel-listagem painel-tabela-relatorio">
+
+        <header class="painel-relatorio-cabecalho">
+
+            <div class="painel-relatorio-titulo">
+
+                <span class="painel-relatorio-icone">
+                    <i class="fa-solid fa-table-list"></i>
+                </span>
+
+                <div>
+
+                    <span class="painel-relatorio-subtitulo">
+                        Visualização detalhada
+                    </span>
+
+                    <h2>
+                        Dados do relatório
+                    </h2>
+
+                    <p
+                        id="quantidadeRegistrosRelatorio"
+                        class="relatorio-quantidade"
+                    >
+                        0 registros encontrados
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <label
+                for="quantidadePorPaginaRelatorio"
+                class="quantidade-pagina"
+            >
+                <span>
+                    Exibir
+                </span>
+
+                <select
+                    id="quantidadePorPaginaRelatorio"
+                    name="quantidadePorPaginaRelatorio"
+                >
+                    <option value="10">
+                        10
+                    </option>
+
+                    <option value="20">
+                        20
+                    </option>
+
+                    <option value="50">
+                        50
+                    </option>
+                </select>
+
+                <span>
+                    por página
+                </span>
+
+            </label>
+
+        </header>
+
+
+        <div class="tabela-container">
+
+            <table class="tabela-dados tabela-relatorios">
+
+                <thead>
+
+                    <tr>
+
+                        <th
+                            class="coluna-ordenavel"
+                            data-ordenar-relatorio="id"
+                        >
+                            <button
+                                type="button"
+                                class="botao-ordenacao"
+                            >
+                                ID
+
+                                <i class="fa-solid fa-sort"></i>
+                            </button>
+                        </th>
+
+
+                        <th
+                            class="coluna-ordenavel"
+                            data-ordenar-relatorio="nomeCompleto"
+                        >
+                            <button
+                                type="button"
+                                class="botao-ordenacao"
+                            >
+                                Beneficiário
+
+                                <i class="fa-solid fa-sort"></i>
+                            </button>
+                        </th>
+
+
+                        <th>
+                            CPF
+                        </th>
+
+
+                        <th
+                            class="coluna-ordenavel"
+                            data-ordenar-relatorio="instituicao"
+                        >
+                            <button
+                                type="button"
+                                class="botao-ordenacao"
+                            >
+                                Instituição
+
+                                <i class="fa-solid fa-sort"></i>
+                            </button>
+                        </th>
+
+
+                        <th
+                            class="coluna-ordenavel"
+                            data-ordenar-relatorio="tipoBeneficio"
+                        >
+                            <button
+                                type="button"
+                                class="botao-ordenacao"
+                            >
+                                Benefício
+
+                                <i class="fa-solid fa-sort"></i>
+                            </button>
+                        </th>
+
+
+                        <th
+                            class="coluna-ordenavel"
+                            data-ordenar-relatorio="ativo"
+                        >
+                            <button
+                                type="button"
+                                class="botao-ordenacao"
+                            >
+                                Status
+
+                                <i class="fa-solid fa-sort"></i>
+                            </button>
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="tabelaRelatorios">
+
+                    <tr>
+
+                        <td colspan="6">
+
+                            <div class="estado-tabela">
+
+                                <i class="fa-solid fa-spinner fa-spin"></i>
+
+                                <strong>
+                                    Carregando relatório...
+                                </strong>
+
+                                <span>
+                                    Aguarde enquanto buscamos os dados.
+                                </span>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <footer class="rodape-listagem">
+
+            <span id="intervaloPaginacaoRelatorio">
+                Exibindo 0 de 0 registros
             </span>
 
-            <h2>
 
-                Gerar Arquivos
+            <nav
+                class="paginacao"
+                aria-label="Paginação do relatório"
+            >
 
-            </h2>
+                <button
+                    type="button"
+                    id="btnPrimeiraPaginaRelatorio"
+                    class="btn-paginacao"
+                    title="Primeira página"
+                    aria-label="Primeira página"
+                    disabled
+                >
+                    <i class="fa-solid fa-angles-left"></i>
+                </button>
+
+
+                <button
+                    type="button"
+                    id="btnPaginaAnteriorRelatorio"
+                    class="btn-paginacao"
+                    title="Página anterior"
+                    aria-label="Página anterior"
+                    disabled
+                >
+                    <i class="fa-solid fa-angle-left"></i>
+                </button>
+
+
+                <div
+                    id="numerosPaginacaoRelatorio"
+                    class="numeros-paginacao"
+                ></div>
+
+
+                <button
+                    type="button"
+                    id="btnProximaPaginaRelatorio"
+                    class="btn-paginacao"
+                    title="Próxima página"
+                    aria-label="Próxima página"
+                    disabled
+                >
+                    <i class="fa-solid fa-angle-right"></i>
+                </button>
+
+
+                <button
+                    type="button"
+                    id="btnUltimaPaginaRelatorio"
+                    class="btn-paginacao"
+                    title="Última página"
+                    aria-label="Última página"
+                    disabled
+                >
+                    <i class="fa-solid fa-angles-right"></i>
+                </button>
+
+            </nav>
+
+        </footer>
+
+    </section>
+
+
+    <!-- =================================================
+         EXPORTAÇÃO
+    ================================================== -->
+
+    <section class="painel-relatorio painel-exportacao-relatorio">
+
+        <header class="painel-relatorio-cabecalho">
+
+            <div class="painel-relatorio-titulo">
+
+                <span class="painel-relatorio-icone">
+                    <i class="fa-solid fa-file-export"></i>
+                </span>
+
+                <div>
+
+                    <span class="painel-relatorio-subtitulo">
+                        Exportação
+                    </span>
+
+                    <h2>
+                        Gerar arquivos
+                    </h2>
+
+                    <p>
+                        Exporte os resultados atuais nos formatos disponíveis.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <div class="opcoes-exportacao-relatorio">
+
+            <button
+                type="button"
+                id="btnPdf"
+                class="card-exportacao card-exportacao-pdf"
+            >
+
+                <span class="card-exportacao-icone">
+                    <i class="fa-solid fa-file-pdf"></i>
+                </span>
+
+                <span class="card-exportacao-conteudo">
+
+                    <strong>
+                        Exportar PDF
+                    </strong>
+
+                    <small>
+                        Relatório formatado para impressão
+                    </small>
+
+                </span>
+
+                <i class="fa-solid fa-arrow-down card-exportacao-seta"></i>
+
+            </button>
+
+
+            <button
+                type="button"
+                id="btnExcel"
+                class="card-exportacao card-exportacao-excel"
+            >
+
+                <span class="card-exportacao-icone">
+                    <i class="fa-solid fa-file-excel"></i>
+                </span>
+
+                <span class="card-exportacao-conteudo">
+
+                    <strong>
+                        Exportar Excel
+                    </strong>
+
+                    <small>
+                        Planilha para análise dos dados
+                    </small>
+
+                </span>
+
+                <i class="fa-solid fa-arrow-down card-exportacao-seta"></i>
+
+            </button>
+
+
+            <button
+                type="button"
+                id="btnCsv"
+                class="card-exportacao card-exportacao-csv"
+            >
+
+                <span class="card-exportacao-icone">
+                    <i class="fa-solid fa-file-csv"></i>
+                </span>
+
+                <span class="card-exportacao-conteudo">
+
+                    <strong>
+                        Exportar CSV
+                    </strong>
+
+                    <small>
+                        Arquivo leve e compatível
+                    </small>
+
+                </span>
+
+                <i class="fa-solid fa-arrow-down card-exportacao-seta"></i>
+
+            </button>
+
+
+            <button
+                type="button"
+                id="btnImprimirRelatorio"
+                class="card-exportacao card-exportacao-impressao"
+            >
+
+                <span class="card-exportacao-icone">
+                    <i class="fa-solid fa-print"></i>
+                </span>
+
+                <span class="card-exportacao-conteudo">
+
+                    <strong>
+                        Imprimir relatório
+                    </strong>
+
+                    <small>
+                        Visualização pronta para impressão
+                    </small>
+
+                </span>
+
+                <i class="fa-solid fa-arrow-right card-exportacao-seta"></i>
+
+            </button>
 
         </div>
 
-    </div>
-
-    <div class="dashboard-actions">
-
-        <button
-            id="btnPdf"
-            class="btn btn-danger">
-
-            <i class="fa-solid fa-file-pdf"></i>
-
-            PDF
-
-        </button>
-
-        <button
-            id="btnExcel"
-            class="btn btn-success">
-
-            <i class="fa-solid fa-file-excel"></i>
-
-            Excel
-
-        </button>
-
-        <button
-            id="btnCsv"
-            class="btn btn-info">
-
-            <i class="fa-solid fa-file-csv"></i>
-
-            CSV
-
-        </button>
-
-    </div>
+    </section>
 
 </section>

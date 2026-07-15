@@ -1,0 +1,544 @@
+/* =====================================================
+   SOLIDARE - RELATÓRIOS
+   Estilos específicos da página de relatórios
+===================================================== */
+
+.pagina-relatorios{
+    display:flex;
+    flex-direction:column;
+    gap:24px;
+}
+
+/* =====================================================
+   CABEÇALHO
+===================================================== */
+
+.pagina-relatorios .cabecalho-pagina-acoes{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+}
+
+/* =====================================================
+   CARDS DE RESUMO
+===================================================== */
+
+.cards-resumo-relatorios{
+    grid-template-columns:repeat(4,minmax(0,1fr));
+}
+
+.cards-resumo-relatorios .card-resumo{
+    cursor:default;
+    overflow:hidden;
+}
+
+.cards-resumo-relatorios .card-resumo::before{
+    content:"";
+    position:absolute;
+    inset:0 auto 0 0;
+    width:4px;
+    background:#8b0015;
+}
+
+.cards-resumo-relatorios .card-resumo:nth-child(2)::before{
+    background:#0d6efd;
+}
+
+.cards-resumo-relatorios .card-resumo:nth-child(3)::before{
+    background:#198754;
+}
+
+.cards-resumo-relatorios .card-resumo:nth-child(4)::before{
+    background:#dc3545;
+}
+
+.cards-resumo-relatorios .card-resumo:nth-child(2) .card-resumo-icone{
+    background:#eaf2ff;
+    color:#0d6efd;
+}
+
+.cards-resumo-relatorios .card-resumo:nth-child(3) .card-resumo-icone{
+    background:#e8f7ef;
+    color:#198754;
+}
+
+.cards-resumo-relatorios .card-resumo:nth-child(4) .card-resumo-icone{
+    background:#fdecef;
+    color:#dc3545;
+}
+
+.cards-resumo-relatorios .card-resumo-conteudo small{
+    color:#8a94a4;
+    font-size:12px;
+    line-height:1.4;
+}
+
+/* =====================================================
+   PAINÉIS
+===================================================== */
+
+.painel-relatorio{
+    overflow:hidden;
+    background:#fff;
+    border:1px solid #e8eaf0;
+    border-radius:18px;
+    box-shadow:0 8px 28px rgba(15,23,42,.07);
+}
+
+.painel-relatorio-cabecalho{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:20px;
+    padding:20px 22px;
+    border-bottom:1px solid #eceef2;
+}
+
+.painel-relatorio-titulo{
+    display:flex;
+    align-items:flex-start;
+    gap:14px;
+    min-width:0;
+}
+
+.painel-relatorio-icone{
+    width:44px;
+    height:44px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+    border-radius:12px;
+    background:#f7e7ea;
+    color:#8b0015;
+    font-size:18px;
+}
+
+.painel-relatorio-subtitulo{
+    display:block;
+    margin-bottom:4px;
+    color:#8b0015;
+    font-size:12px;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.8px;
+}
+
+.painel-relatorio h2{
+    margin:0;
+    color:#1f2937;
+    font-size:20px;
+    line-height:1.3;
+}
+
+.painel-relatorio-cabecalho p{
+    margin:6px 0 0;
+    color:#7b8492;
+    font-size:13px;
+    line-height:1.5;
+}
+
+/* =====================================================
+   FILTROS
+===================================================== */
+
+.painel-filtros-relatorio{
+    background:linear-gradient(180deg,#fff 0%,#fcfcfd 100%);
+}
+
+.filtros-relatorio-grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:18px;
+    padding:22px;
+}
+
+.painel-relatorio-rodape{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:18px;
+    padding:16px 22px;
+    background:#fafbfc;
+    border-top:1px solid #eceef2;
+}
+
+.painel-relatorio-rodape p{
+    margin:0;
+    color:#6b7280;
+    font-size:13px;
+}
+
+/* =====================================================
+   GRÁFICOS
+===================================================== */
+
+.relatorios-grid-graficos{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:22px;
+}
+
+.grafico-relatorio-container{
+    position:relative;
+    min-height:340px;
+    padding:20px;
+}
+
+.grafico-relatorio-container canvas{
+    width:100% !important;
+    height:300px !important;
+}
+
+.estado-grafico-vazio{
+    position:absolute;
+    inset:20px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    text-align:center;
+    border:1px dashed #d8dce2;
+    border-radius:14px;
+    background:#fafbfc;
+}
+
+.estado-grafico-vazio i{
+    color:#8b0015;
+    font-size:28px;
+}
+
+.estado-grafico-vazio strong{
+    color:#374151;
+}
+
+.estado-grafico-vazio span{
+    max-width:340px;
+    color:#8a94a4;
+    font-size:13px;
+    line-height:1.5;
+}
+
+/* =====================================================
+   TABELA
+===================================================== */
+
+.painel-tabela-relatorio .painel-relatorio-cabecalho{
+    align-items:center;
+}
+
+.tabela-relatorios{
+    min-width:920px;
+}
+
+.tabela-relatorios td{
+    vertical-align:middle;
+}
+
+.relatorio-quantidade{
+    margin-top:5px !important;
+    color:#7b8492 !important;
+    font-size:13px !important;
+}
+
+/* =====================================================
+   EXPORTAÇÃO
+===================================================== */
+
+.painel-exportacao-relatorio{
+    margin-bottom:10px;
+}
+
+.opcoes-exportacao-relatorio{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:16px;
+    padding:22px;
+}
+
+.card-exportacao{
+    min-height:118px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    width:100%;
+    padding:18px;
+    text-align:left;
+    background:#fff;
+    color:#1f2937;
+    border:1px solid #e4e7eb;
+    border-radius:15px;
+    box-shadow:0 6px 18px rgba(15,23,42,.05);
+}
+
+.card-exportacao:hover{
+    transform:translateY(-3px);
+    box-shadow:0 12px 26px rgba(15,23,42,.11);
+    opacity:1;
+}
+
+.card-exportacao-icone{
+    width:48px;
+    height:48px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+    border-radius:13px;
+    font-size:21px;
+}
+
+.card-exportacao-conteudo{
+    min-width:0;
+    display:flex;
+    flex:1;
+    flex-direction:column;
+    gap:5px;
+}
+
+.card-exportacao-conteudo strong{
+    font-size:15px;
+}
+
+.card-exportacao-conteudo small{
+    color:#7b8492;
+    font-size:12px;
+    line-height:1.4;
+}
+
+.card-exportacao-seta{
+    color:#9aa3af;
+    font-size:13px;
+}
+
+.card-exportacao-pdf{
+    border-color:#f4c6ce;
+}
+
+.card-exportacao-pdf .card-exportacao-icone{
+    background:#fdecef;
+    color:#dc3545;
+}
+
+.card-exportacao-pdf:hover{
+    border-color:#dc3545;
+}
+
+.card-exportacao-excel{
+    border-color:#b9e2ca;
+}
+
+.card-exportacao-excel .card-exportacao-icone{
+    background:#e8f7ef;
+    color:#198754;
+}
+
+.card-exportacao-excel:hover{
+    border-color:#198754;
+}
+
+.card-exportacao-csv{
+    border-color:#b9d5f7;
+}
+
+.card-exportacao-csv .card-exportacao-icone{
+    background:#eaf2ff;
+    color:#0d6efd;
+}
+
+.card-exportacao-csv:hover{
+    border-color:#0d6efd;
+}
+
+.card-exportacao-impressao{
+    border-color:#dddfe4;
+}
+
+.card-exportacao-impressao .card-exportacao-icone{
+    background:#f1f3f5;
+    color:#4b5563;
+}
+
+.card-exportacao-impressao:hover{
+    border-color:#6c757d;
+}
+
+/* =====================================================
+   ANIMAÇÕES
+===================================================== */
+
+.pagina-relatorios .card-resumo,
+.pagina-relatorios .painel-relatorio,
+.pagina-relatorios .painel-listagem{
+    animation:relatorioAparecer .35s ease both;
+}
+
+.pagina-relatorios .card-resumo:nth-child(2){
+    animation-delay:.05s;
+}
+
+.pagina-relatorios .card-resumo:nth-child(3){
+    animation-delay:.10s;
+}
+
+.pagina-relatorios .card-resumo:nth-child(4){
+    animation-delay:.15s;
+}
+
+@keyframes relatorioAparecer{
+    from{
+        opacity:0;
+        transform:translateY(10px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+/* =====================================================
+   IMPRESSÃO
+===================================================== */
+
+@media print{
+
+    body{
+        padding:0 !important;
+        background:#fff !important;
+    }
+
+    .sidebar,
+    .topbar,
+    .cabecalho-pagina-acoes,
+    .painel-filtros-relatorio,
+    .painel-exportacao-relatorio,
+    .paginacao,
+    .quantidade-pagina,
+    #feedbackRelatorios{
+        display:none !important;
+    }
+
+    .pagina-relatorios{
+        gap:16px;
+    }
+
+    .cards-resumo-relatorios{
+        grid-template-columns:repeat(4,1fr);
+    }
+
+    .card-resumo,
+    .painel-relatorio,
+    .painel-listagem{
+        box-shadow:none !important;
+        break-inside:avoid;
+    }
+
+    .relatorios-grid-graficos{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .tabela-container{
+        overflow:visible;
+    }
+
+    .tabela-relatorios{
+        min-width:0;
+        font-size:10px;
+    }
+
+    .tabela-relatorios th,
+    .tabela-relatorios td{
+        padding:8px;
+    }
+
+}
+
+/* =====================================================
+   RESPONSIVIDADE
+===================================================== */
+
+@media (max-width:1200px){
+
+    .cards-resumo-relatorios{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+
+    .opcoes-exportacao-relatorio{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+
+}
+
+@media (max-width:980px){
+
+    .filtros-relatorio-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+
+    .relatorios-grid-graficos{
+        grid-template-columns:1fr;
+    }
+
+}
+
+@media (max-width:760px){
+
+    .painel-relatorio-cabecalho{
+        align-items:stretch;
+        flex-direction:column;
+    }
+
+    .painel-relatorio-cabecalho > .btn,
+    .painel-relatorio-cabecalho > .quantidade-pagina{
+        align-self:flex-start;
+    }
+
+    .painel-relatorio-rodape{
+        align-items:stretch;
+        flex-direction:column;
+    }
+
+    .painel-relatorio-rodape .btn{
+        width:100%;
+    }
+
+}
+
+@media (max-width:620px){
+
+    .cards-resumo-relatorios{
+        grid-template-columns:1fr;
+    }
+
+    .filtros-relatorio-grid{
+        grid-template-columns:1fr;
+        padding:16px;
+    }
+
+    .painel-relatorio-cabecalho,
+    .painel-relatorio-rodape{
+        padding:16px;
+    }
+
+    .grafico-relatorio-container{
+        min-height:300px;
+        padding:14px;
+    }
+
+    .grafico-relatorio-container canvas{
+        height:270px !important;
+    }
+
+    .opcoes-exportacao-relatorio{
+        grid-template-columns:1fr;
+        padding:16px;
+    }
+
+    .card-exportacao{
+        min-height:100px;
+    }
+
+}

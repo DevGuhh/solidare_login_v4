@@ -2,8 +2,7 @@
 // IMPORTAÇÕES DA CAMADA DE API
 // =====================================================
 
-// Essas funções são responsáveis apenas por conversar
-// com o backend por meio das requisições HTTP.
+// Essas funções realizam as requisições HTTP para o backend.
 import {
     listarInstituicoes,
     buscarInstituicao,
@@ -15,119 +14,194 @@ import {
 
 
 // =====================================================
-// IMPORTAÇÕES DA INTERFACE
+// ESTADO PRINCIPAL DA TELA
 // =====================================================
 
-// Responsável por montar as linhas da tabela.
-import {
-    renderizarTabelaInstituicoes
-} from "./instituicoes/instituicoesTabela.js";
+// ID da instituição que está sendo editada.
+// Quando for null, o formulário estará cadastrando.
+let instituicaoEditandoId = null;
 
-// Responsável por abrir, fechar, limpar e alterar
-// o título do modal.
-import {
-    abrirModal,
-    fecharModal,
-    limparFormulario,
-    alterarTitulo
-} from "./instituicoes/instituicoesModal.js";
+// Lista original recebida do backend.
+let todasInstituicoes = [];
 
-// Responsável por filtrar a lista de instituições
-// conforme o texto digitado na pesquisa.
-import {
-    filtrarInstituicoes
-} from "./instituicoes/instituicoesPesquisa.js";
+// Lista depois de aplicar pesquisa e filtro por status.
+let instituicoesFiltradas = [];
 
+// Lista depois de aplicar a ordenação.
+let instituicoesOrdenadas = [];
 
-// =====================================================
-// ESTADO DO MÓDULO
-// =====================================================
+// IDs selecionados na tabela.
+let instituicoesSelecionadas = new Set();
 
-// Guarda o ID da instituição que está sendo editada.
-// Quando for null, significa que estamos cadastrando.
-let instituicaoEditando = null;
+// Filtro de status atual.
+let filtroStatusAtual = "TODOS";
 
-// Guarda todas as instituições carregadas da API.
-// Essa lista é usada também na pesquisa.
-let listaInstituicoes = [];
+// Campo usado atualmente na ordenação.
+let campoOrdenacaoAtual = "nome";
 
-// Guarda as referências dos elementos HTML da tela.
-let elementos = {};
+// Direção atual da ordenação.
+let direcaoOrdenacaoAtual = "asc";
 
-// Guarda as referências dos campos do formulário.
-let campos = {};
+// Página atual da tabela.
+let paginaAtual = 1;
 
-// Controla os eventos registrados pelo módulo.
-// Quando a página for aberta novamente, os eventos
-// antigos serão cancelados antes de registrar novos.
+// Quantidade de registros exibidos por página.
+let quantidadePorPagina = 10;
+
+// Controlador usado para cancelar eventos antigos da SPA.
 let controladorEventos = null;
 
+// Guarda todos os elementos principais do HTML.
+let elementos = {};
+
+// Guarda todos os campos do formulário.
+let campos = {};
+
 
 // =====================================================
-// CAPTURAR ELEMENTOS DA TELA
+// CAPTURAR ELEMENTOS DO HTML
 // =====================================================
 
 function capturarElementosDaTela() {
-
-    // Como a aplicação é uma SPA, o HTML da página
-    // é recriado sempre que a rota é aberta.
-    //
-    // Por isso, precisamos buscar novamente todos
-    // os elementos usando document.getElementById().
-
     elementos = {
-        tabela: document.getElementById("tabelaInstituicoes"),
-
-        modal: document.getElementById("modalInstituicao"),
-
-        formulario: document.getElementById("formInstituicao"),
-
-        tituloModal: document.getElementById("tituloModalInstituicao"),
-
+        // Cabeçalho e ações principais
         btnNova: document.getElementById("btnNovaInstituicao"),
-
         btnAtualizar: document.getElementById("btnAtualizar"),
 
-        btnFecharModal: document.getElementById("btnFecharModal"),
+        // Pesquisa
+        pesquisa: document.getElementById("pesquisaInstituicao"),
+        btnLimparPesquisa: document.getElementById(
+            "btnLimparPesquisaInstituicao"
+        ),
 
-        pesquisa: document.getElementById("pesquisaInstituicao")
+        // Contadores
+        contadorTodas: document.getElementById(
+            "contadorTodasInstituicoes"
+        ),
+        contadorAtivas: document.getElementById(
+            "contadorInstituicoesAtivas"
+        ),
+        contadorPendentes: document.getElementById(
+            "contadorInstituicoesPendentes"
+        ),
+
+        // Resultado do filtro
+        resultadoFiltro: document.getElementById(
+            "resultadoFiltroInstituicoes"
+        ),
+
+        // Tabela
+        tabela: document.getElementById("tabelaInstituicoes"),
+        selecionarTodas: document.getElementById(
+            "selecionarTodasInstituicoes"
+        ),
+
+        // Paginação
+        quantidadePorPagina: document.getElementById(
+            "quantidadePorPaginaInstituicoes"
+        ),
+        intervaloPaginacao: document.getElementById(
+            "intervaloPaginacaoInstituicoes"
+        ),
+        numerosPaginacao: document.getElementById(
+            "numerosPaginacaoInstituicoes"
+        ),
+        btnPrimeiraPagina: document.getElementById(
+            "btnPrimeiraPaginaInstituicoes"
+        ),
+        btnPaginaAnterior: document.getElementById(
+            "btnPaginaAnteriorInstituicoes"
+        ),
+        btnProximaPagina: document.getElementById(
+            "btnProximaPaginaInstituicoes"
+        ),
+        btnUltimaPagina: document.getElementById(
+            "btnUltimaPaginaInstituicoes"
+        ),
+
+        // Barra de seleção
+        barraSelecao: document.getElementById(
+            "barraSelecaoInstituicoes"
+        ),
+        quantidadeSelecionadas: document.getElementById(
+            "quantidadeInstituicoesSelecionadas"
+        ),
+        btnLimparSelecao: document.getElementById(
+            "btnLimparSelecaoInstituicoes"
+        ),
+        btnAtivarSelecionadas: document.getElementById(
+            "btnAtivarInstituicoesSelecionadas"
+        ),
+        btnInativarSelecionadas: document.getElementById(
+            "btnInativarInstituicoesSelecionadas"
+        ),
+        btnExcluirSelecionadas: document.getElementById(
+            "btnExcluirInstituicoesSelecionadas"
+        ),
+
+        // Feedback da página
+        feedback: document.getElementById("feedbackInstituicoes"),
+        textoFeedback: document.getElementById(
+            "textoFeedbackInstituicoes"
+        ),
+
+        // Modal
+        modal: document.getElementById("modalInstituicao"),
+        formulario: document.getElementById("formInstituicao"),
+        tituloModal: document.getElementById(
+            "tituloModalInstituicao"
+        ),
+        btnFecharModal: document.getElementById("btnFecharModal"),
+        btnCancelarModal: document.getElementById(
+            "btnCancelarInstituicao"
+        ),
+
+        // Botão de salvar
+        btnSalvar: document.getElementById("btnSalvarInstituicao"),
+        conteudoBtnSalvar: document.getElementById(
+            "conteudoBtnSalvarInstituicao"
+        ),
+        carregamentoBtnSalvar: document.getElementById(
+            "carregamentoBtnSalvarInstituicao"
+        ),
+
+        // Feedback interno do modal
+        feedbackModal: document.getElementById(
+            "feedbackModalInstituicao"
+        ),
+        textoFeedbackModal: document.getElementById(
+            "textoFeedbackModalInstituicao"
+        )
     };
 
     campos = {
+        id: document.getElementById("instituicaoId"),
         nome: document.getElementById("nome"),
-
         responsavel: document.getElementById("responsavel"),
-
         email: document.getElementById("email"),
-
         telefone: document.getElementById("telefone"),
-
         tipo: document.getElementById("tipo"),
-
         endereco: document.getElementById("endereco"),
-
         cidade: document.getElementById("cidade")
     };
-
 }
 
 
 // =====================================================
-// VALIDAR ESTRUTURA DA PÁGINA
+// VALIDAR ESTRUTURA DO HTML
 // =====================================================
 
 function validarElementosObrigatorios() {
-
-    // Esses elementos precisam existir para que
-    // a tela de Instituições funcione corretamente.
-
-    const elementosObrigatorios = [
-        elementos.tabela,
-        elementos.modal,
-        elementos.formulario,
+    const obrigatorios = [
         elementos.btnNova,
         elementos.btnAtualizar,
+        elementos.tabela,
+        elementos.pesquisa,
+        elementos.modal,
+        elementos.formulario,
         elementos.btnFecharModal,
+        elementos.btnCancelarModal,
+        elementos.btnSalvar,
         campos.nome,
         campos.responsavel,
         campos.email,
@@ -137,238 +211,1022 @@ function validarElementosObrigatorios() {
         campos.cidade
     ];
 
-    const algumElementoNaoEncontrado =
-        elementosObrigatorios.some((elemento) => !elemento);
+    const existeElementoAusente = obrigatorios.some(
+        (elemento) => !elemento
+    );
 
-    if (algumElementoNaoEncontrado) {
-
+    if (existeElementoAusente) {
         throw new Error(
             "A página de Instituições não possui todos os elementos HTML obrigatórios."
         );
-
     }
-
 }
 
 
 // =====================================================
-// CARREGAR INSTITUIÇÕES
+// FUNÇÕES UTILITÁRIAS
+// =====================================================
+
+// Normaliza textos para facilitar pesquisa e ordenação.
+function normalizarTexto(valor) {
+    return String(valor ?? "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+}
+
+// Escapa caracteres especiais antes de inserir dados no HTML.
+// Isso reduz o risco de injeção de código na tabela.
+function escaparHTML(valor) {
+    return String(valor ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+// Converte o status da instituição para o padrão usado na tela.
+function obterStatusInstituicao(instituicao) {
+
+    return (
+        instituicao.statusOk ??
+        instituicao.status ??
+        "PENDENTE"
+    );
+}
+
+// Retorna um texto mais amigável para o tipo.
+function formatarTipo(tipo) {
+    const tipos = {
+        ONG: "ONG",
+        IGREJA: "Igreja",
+        ASSOCIACAO: "Associação",
+        OUTRO: "Outro"
+    };
+
+    return tipos[tipo] ?? tipo ?? "Não informado";
+}
+
+// Formata o telefone para exibição.
+function formatarTelefone(valor) {
+    const numeros = String(valor ?? "").replace(/\D/g, "");
+
+    if (numeros.length === 11) {
+        return numeros.replace(
+            /^(\d{2})(\d{5})(\d{4})$/,
+            "($1) $2-$3"
+        );
+    }
+
+    if (numeros.length === 10) {
+        return numeros.replace(
+            /^(\d{2})(\d{4})(\d{4})$/,
+            "($1) $2-$3"
+        );
+    }
+
+    return valor || "Não informado";
+}
+
+
+// =====================================================
+// FEEDBACK PROFISSIONAL
+// =====================================================
+
+function exibirFeedback(
+    mensagem,
+    tipo = "info",
+    duracao = 4000
+) {
+    if (!elementos.feedback || !elementos.textoFeedback) {
+        return;
+    }
+
+    elementos.textoFeedback.textContent = mensagem;
+
+    elementos.feedback.classList.remove(
+        "mensagem-sucesso",
+        "mensagem-erro",
+        "mensagem-aviso",
+        "mensagem-info"
+    );
+
+    elementos.feedback.classList.add(`mensagem-${tipo}`);
+    elementos.feedback.hidden = false;
+
+    if (duracao > 0) {
+        window.setTimeout(() => {
+            elementos.feedback.hidden = true;
+        }, duracao);
+    }
+}
+
+function exibirFeedbackModal(
+    mensagem,
+    tipo = "erro"
+) {
+    if (
+        !elementos.feedbackModal ||
+        !elementos.textoFeedbackModal
+    ) {
+        return;
+    }
+
+    elementos.textoFeedbackModal.textContent = mensagem;
+
+    elementos.feedbackModal.classList.remove(
+        "mensagem-sucesso",
+        "mensagem-erro",
+        "mensagem-aviso",
+        "mensagem-info"
+    );
+
+    elementos.feedbackModal.classList.add(
+        `mensagem-${tipo}`
+    );
+
+    elementos.feedbackModal.hidden = false;
+}
+
+function esconderFeedbackModal() {
+    if (elementos.feedbackModal) {
+        elementos.feedbackModal.hidden = true;
+    }
+}
+
+
+// =====================================================
+// ESTADO DE CARREGAMENTO
+// =====================================================
+
+function definirCarregamentoTabela(ativo) {
+    if (!ativo) {
+        return;
+    }
+
+    elementos.tabela.innerHTML = `
+        <tr class="linha-carregamento">
+            <td colspan="9">
+                <div class="estado-tabela">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+
+                    <strong>
+                        Carregando instituições...
+                    </strong>
+
+                    <span>
+                        Aguarde enquanto buscamos as informações.
+                    </span>
+                </div>
+            </td>
+        </tr>
+    `;
+}
+
+function definirCarregamentoBotaoSalvar(ativo) {
+    elementos.btnSalvar.disabled = ativo;
+
+    if (elementos.conteudoBtnSalvar) {
+        elementos.conteudoBtnSalvar.hidden = ativo;
+    }
+
+    if (elementos.carregamentoBtnSalvar) {
+        elementos.carregamentoBtnSalvar.hidden = !ativo;
+    }
+}
+
+
+// =====================================================
+// CARREGAR INSTITUIÇÕES DA API
 // =====================================================
 
 async function carregarInstituicoes() {
+    definirCarregamentoTabela(true);
+
+    elementos.btnAtualizar.disabled = true;
 
     try {
-
-        // Solicita a lista para a camada de API.
         const resposta = await listarInstituicoes();
 
-        // Converte a resposta do backend para JavaScript.
-        const dados = await resposta.json();
+        let dados = [];
 
-        // Se a resposta não for sucesso, exibe o erro.
-        if (!resposta.ok) {
-
-            alert(
-                dados.error ||
-                "Erro ao carregar instituições."
-            );
-
-            return;
-
+        try {
+            dados = await resposta.json();
+        } catch {
+            dados = [];
         }
 
-        // Salva a lista completa na memória.
-        listaInstituicoes = dados;
+        if (!resposta.ok) {
+            throw new Error(
+                dados.error ||
+                dados.erro ||
+                "Não foi possível carregar as instituições."
+            );
+        }
 
-        // Envia os dados para o arquivo responsável
-        // por renderizar a tabela.
-        renderizarTabelaInstituicoes(
-            elementos.tabela,
-            listaInstituicoes
-        );
+        todasInstituicoes = Array.isArray(dados)
+            ? dados
+            : [];
+
+        atualizarContadores();
+        aplicarFiltrosEOrdenacao();
 
     } catch (erro) {
-
         console.error(
             "Erro ao carregar instituições:",
             erro
         );
 
-        alert("Erro ao carregar instituições.");
+        todasInstituicoes = [];
+        instituicoesFiltradas = [];
+        instituicoesOrdenadas = [];
 
+        elementos.tabela.innerHTML = `
+            <tr>
+                <td colspan="9">
+                    <div class="estado-tabela estado-tabela-erro">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+
+                        <strong>
+                            Não foi possível carregar as instituições
+                        </strong>
+
+                        <span>
+                            ${escaparHTML(erro.message)}
+                        </span>
+                    </div>
+                </td>
+            </tr>
+        `;
+
+        atualizarContadores();
+        atualizarPaginacao();
+
+        exibirFeedback(
+            erro.message,
+            "erro",
+            6000
+        );
+
+    } finally {
+        elementos.btnAtualizar.disabled = false;
+    }
+}
+
+
+// =====================================================
+// CONTADORES E FILTROS
+// =====================================================
+
+function atualizarContadores() {
+    const total = todasInstituicoes.length;
+
+    const ativas = todasInstituicoes.filter(
+        (instituicao) =>
+            obterStatusInstituicao(instituicao) === "OK"
+    ).length;
+
+    const pendentes = total - ativas;
+
+    if (elementos.contadorTodas) {
+        elementos.contadorTodas.textContent = total;
     }
 
+    if (elementos.contadorAtivas) {
+        elementos.contadorAtivas.textContent = ativas;
+    }
+
+    if (elementos.contadorPendentes) {
+        elementos.contadorPendentes.textContent = pendentes;
+    }
 }
 
-
-// =====================================================
-// MONTAR DADOS DO FORMULÁRIO
-// =====================================================
-
-function montarDadosFormulario() {
-
-    // Cria o objeto que será enviado ao backend.
-    return {
-        nome: campos.nome.value.trim(),
-
-        responsavel: campos.responsavel.value.trim(),
-
-        email: campos.email.value.trim(),
-
-        telefone: campos.telefone.value.trim(),
-
-        tipo: campos.tipo.value,
-
-        endereco: campos.endereco.value.trim(),
-
-        cidade: campos.cidade.value.trim()
-    };
-
-}
-
-
-// =====================================================
-// ABRIR MODAL PARA NOVO CADASTRO
-// =====================================================
-
-function abrirModalNovaInstituicao() {
-
-    // Null significa que não estamos editando.
-    instituicaoEditando = null;
-
-    // Altera o título do modal.
-    alterarTitulo(
-        elementos.tituloModal,
-        "Nova Instituição"
+function filtrarInstituicoes() {
+    const textoPesquisa = normalizarTexto(
+        elementos.pesquisa?.value
     );
 
-    // Limpa dados que possam ter ficado de uma edição.
-    limparFormulario(elementos.formulario);
+    instituicoesFiltradas = todasInstituicoes.filter(
+        (instituicao) => {
+            const status =
+                obterStatusInstituicao(instituicao);
 
-    // Exibe o modal.
-    abrirModal(elementos.modal);
+            const atendeStatus =
+                filtroStatusAtual === "TODOS" ||
+                (
+                    filtroStatusAtual === "ATIVAS" &&
+                    status === "OK"
+                ) ||
+                (
+                    filtroStatusAtual === "PENDENTES" &&
+                    status === "PENDENTE"
+                );
 
+            if (!atendeStatus) {
+                return false;
+            }
+
+            if (!textoPesquisa) {
+                return true;
+            }
+
+            const conteudoPesquisavel = [
+                instituicao.id,
+                instituicao.nome,
+                instituicao.responsavel,
+                instituicao.email,
+                instituicao.telefone,
+                instituicao.cidade,
+                instituicao.endereco,
+                instituicao.tipo
+            ]
+                .map(normalizarTexto)
+                .join(" ");
+
+            return conteudoPesquisavel.includes(
+                textoPesquisa
+            );
+        }
+    );
 }
 
-
-// =====================================================
-// FECHAR MODAL
-// =====================================================
-
-function fecharModalInstituicao() {
-
-    // Esconde o modal.
-    fecharModal(elementos.modal);
-
-    // Limpa todos os campos.
-    limparFormulario(elementos.formulario);
-
-    // Remove o estado de edição.
-    instituicaoEditando = null;
-
-}
-
-
-// =====================================================
-// SALVAR INSTITUIÇÃO
-// =====================================================
-
-async function salvarInstituicao(event) {
-
-    // Impede o formulário de recarregar a página.
-    event.preventDefault();
-
-    const dados = montarDadosFormulario();
-
-    try {
-
-        let resposta;
-
-        // Se houver um ID armazenado, estamos editando.
-        if (instituicaoEditando !== null) {
-
-            resposta = await editarInstituicaoAPI(
-                instituicaoEditando,
-                dados
-            );
-
-        } else {
-
-            // Caso contrário, estamos cadastrando.
-            resposta = await cadastrarInstituicaoAPI(
-                dados
-            );
-
-        }
-
-        const resultado = await resposta.json();
-
-        if (!resposta.ok) {
-
-            alert(
-                resultado.error ||
-                "Erro ao salvar instituição."
-            );
-
-            return;
-
-        }
-
-        alert("Instituição salva com sucesso!");
-
-        fecharModalInstituicao();
-
-        // Aguarda a tabela ser atualizada.
-        await carregarInstituicoes();
-
-    } catch (erro) {
-
-        console.error(
-            "Erro ao salvar instituição:",
-            erro
-        );
-
-        alert("Erro ao salvar instituição.");
-
+function atualizarTextoResultado() {
+    if (!elementos.resultadoFiltro) {
+        return;
     }
 
+    const quantidade =
+        instituicoesFiltradas.length;
+
+    const termo = elementos.pesquisa?.value.trim();
+
+    let descricaoStatus =
+        "todas as instituições";
+
+    if (filtroStatusAtual === "ATIVAS") {
+        descricaoStatus =
+            "as instituições ativas";
+    }
+
+    if (filtroStatusAtual === "PENDENTES") {
+        descricaoStatus =
+            "as instituições pendentes";
+    }
+
+    if (termo) {
+        elementos.resultadoFiltro.textContent =
+            `${quantidade} resultado(s) encontrado(s) para “${termo}” em ${descricaoStatus}.`;
+
+        return;
+    }
+
+    elementos.resultadoFiltro.textContent =
+        `Exibindo ${quantidade} de ${todasInstituicoes.length} instituições.`;
 }
 
 
 // =====================================================
-// EDITAR INSTITUIÇÃO
+// ORDENAÇÃO
 // =====================================================
 
-async function editarInstituicao(id) {
+function obterValorOrdenacao(
+    instituicao,
+    campo
+) {
+    if (campo === "status") {
+        return obterStatusInstituicao(instituicao);
+    }
 
-    try {
+    return instituicao[campo] ?? "";
+}
 
-        // Busca os dados completos da instituição.
-        const resposta = await buscarInstituicao(id);
-
-        const instituicao = await resposta.json();
-
-        if (!resposta.ok) {
-
-            alert(
-                instituicao.error ||
-                "Erro ao buscar instituição."
-            );
-
-            return;
-
-        }
-
-        // Guarda o ID para o formulário saber
-        // que deverá realizar um PUT.
-        instituicaoEditando = Number(id);
-
-        alterarTitulo(
-            elementos.tituloModal,
-            "Editar Instituição"
+function ordenarInstituicoes() {
+    instituicoesOrdenadas = [
+        ...instituicoesFiltradas
+    ].sort((instituicaoA, instituicaoB) => {
+        const valorA = obterValorOrdenacao(
+            instituicaoA,
+            campoOrdenacaoAtual
         );
 
-        // Preenche o formulário com os dados recebidos.
+        const valorB = obterValorOrdenacao(
+            instituicaoB,
+            campoOrdenacaoAtual
+        );
+
+        let comparacao;
+
+        if (
+            typeof valorA === "number" &&
+            typeof valorB === "number"
+        ) {
+            comparacao = valorA - valorB;
+        } else {
+            comparacao = String(valorA).localeCompare(
+                String(valorB),
+                "pt-BR",
+                {
+                    sensitivity: "base",
+                    numeric: true
+                }
+            );
+        }
+
+        return direcaoOrdenacaoAtual === "asc"
+            ? comparacao
+            : -comparacao;
+    });
+}
+
+function atualizarIconesOrdenacao() {
+    document
+        .querySelectorAll("[data-ordenar-por]")
+        .forEach((cabecalho) => {
+            const icone =
+                cabecalho.querySelector("i");
+
+            if (!icone) {
+                return;
+            }
+
+            icone.className =
+                "fa-solid fa-sort";
+
+            const campo =
+                cabecalho.dataset.ordenarPor;
+
+            if (campo !== campoOrdenacaoAtual) {
+                return;
+            }
+
+            icone.className =
+                direcaoOrdenacaoAtual === "asc"
+                    ? "fa-solid fa-sort-up"
+                    : "fa-solid fa-sort-down";
+        });
+}
+
+function alterarOrdenacao(campo) {
+    if (campoOrdenacaoAtual === campo) {
+        direcaoOrdenacaoAtual =
+            direcaoOrdenacaoAtual === "asc"
+                ? "desc"
+                : "asc";
+    } else {
+        campoOrdenacaoAtual = campo;
+        direcaoOrdenacaoAtual = "asc";
+    }
+
+    paginaAtual = 1;
+
+    ordenarInstituicoes();
+    atualizarIconesOrdenacao();
+    renderizarTabela();
+    atualizarPaginacao();
+}
+
+
+// =====================================================
+// PAGINAÇÃO
+// =====================================================
+
+function obterTotalPaginas() {
+    return Math.max(
+        1,
+        Math.ceil(
+            instituicoesOrdenadas.length /
+            quantidadePorPagina
+        )
+    );
+}
+
+function obterInstituicoesDaPagina() {
+    const inicio =
+        (paginaAtual - 1) *
+        quantidadePorPagina;
+
+    const fim =
+        inicio +
+        quantidadePorPagina;
+
+    return instituicoesOrdenadas.slice(
+        inicio,
+        fim
+    );
+}
+
+function irParaPagina(numeroPagina) {
+    const totalPaginas =
+        obterTotalPaginas();
+
+    paginaAtual = Math.min(
+        Math.max(numeroPagina, 1),
+        totalPaginas
+    );
+
+    renderizarTabela();
+    atualizarPaginacao();
+}
+
+function criarBotaoPagina(numero) {
+    const botao =
+        document.createElement("button");
+
+    botao.type = "button";
+    botao.className = "btn-paginacao";
+    botao.textContent = numero;
+
+    if (numero === paginaAtual) {
+        botao.classList.add("ativo");
+        botao.setAttribute(
+            "aria-current",
+            "page"
+        );
+    }
+
+    botao.addEventListener(
+        "click",
+        () => irParaPagina(numero),
+        {
+            signal:
+                controladorEventos.signal
+        }
+    );
+
+    return botao;
+}
+
+function atualizarNumerosPaginacao() {
+    if (!elementos.numerosPaginacao) {
+        return;
+    }
+
+    elementos.numerosPaginacao.innerHTML = "";
+
+    const totalPaginas =
+        obterTotalPaginas();
+
+    const inicio = Math.max(
+        1,
+        paginaAtual - 2
+    );
+
+    const fim = Math.min(
+        totalPaginas,
+        paginaAtual + 2
+    );
+
+    for (
+        let numero = inicio;
+        numero <= fim;
+        numero += 1
+    ) {
+        elementos.numerosPaginacao.appendChild(
+            criarBotaoPagina(numero)
+        );
+    }
+}
+
+function atualizarPaginacao() {
+    const totalRegistros =
+        instituicoesOrdenadas.length;
+
+    const totalPaginas =
+        obterTotalPaginas();
+
+    if (paginaAtual > totalPaginas) {
+        paginaAtual = totalPaginas;
+    }
+
+    const inicio =
+        totalRegistros === 0
+            ? 0
+            : (
+                (paginaAtual - 1) *
+                quantidadePorPagina
+            ) + 1;
+
+    const fim = Math.min(
+        paginaAtual * quantidadePorPagina,
+        totalRegistros
+    );
+
+    if (elementos.intervaloPaginacao) {
+        elementos.intervaloPaginacao.textContent =
+            totalRegistros === 0
+                ? "Nenhuma instituição encontrada"
+                : `Exibindo ${inicio}–${fim} de ${totalRegistros} instituições`;
+    }
+
+    elementos.btnPrimeiraPagina.disabled =
+        paginaAtual <= 1 ||
+        totalRegistros === 0;
+
+    elementos.btnPaginaAnterior.disabled =
+        paginaAtual <= 1 ||
+        totalRegistros === 0;
+
+    elementos.btnProximaPagina.disabled =
+        paginaAtual >= totalPaginas ||
+        totalRegistros === 0;
+
+    elementos.btnUltimaPagina.disabled =
+        paginaAtual >= totalPaginas ||
+        totalRegistros === 0;
+
+    atualizarNumerosPaginacao();
+}
+
+
+// =====================================================
+// RENDERIZAÇÃO DA TABELA
+// =====================================================
+
+function criarLinhaInstituicao(instituicao) {
+    const id = Number(instituicao.id);
+
+    const status =
+        obterStatusInstituicao(instituicao);
+
+    const estaAtiva =
+        status === "OK";
+
+    const estaSelecionada =
+        instituicoesSelecionadas.has(id);
+
+    const linha =
+        document.createElement("tr");
+
+    linha.dataset.id = id;
+
+    linha.innerHTML = `
+        <td class="coluna-selecao">
+            <input
+                type="checkbox"
+                class="checkbox-instituicao"
+                data-id="${id}"
+                aria-label="Selecionar ${escaparHTML(instituicao.nome)}"
+                ${estaSelecionada ? "checked" : ""}
+            >
+        </td>
+
+        <td>
+            <span class="identificador-registro">
+                #${id}
+            </span>
+        </td>
+
+        <td>
+            <div class="celula-principal">
+                <span class="avatar-tabela">
+                    <i class="fa-solid fa-building"></i>
+                </span>
+
+                <div>
+                    <strong>
+                        ${escaparHTML(instituicao.nome)}
+                    </strong>
+
+                    <small>
+                        ${escaparHTML(instituicao.endereco || "Endereço não informado")}
+                    </small>
+                </div>
+            </div>
+        </td>
+
+        <td>
+            ${escaparHTML(instituicao.responsavel || "Não informado")}
+        </td>
+
+        <td>
+            <div class="celula-contato">
+                <span>
+                    <i class="fa-regular fa-envelope"></i>
+                    ${escaparHTML(instituicao.email || "Não informado")}
+                </span>
+
+                <small>
+                    <i class="fa-solid fa-phone"></i>
+                    ${escaparHTML(formatarTelefone(instituicao.telefone))}
+                </small>
+            </div>
+        </td>
+
+        <td>
+            ${escaparHTML(instituicao.cidade || "Não informada")}
+        </td>
+
+        <td>
+            <span class="badge badge-neutro">
+                ${escaparHTML(formatarTipo(instituicao.tipo))}
+            </span>
+        </td>
+
+        <td>
+            <button
+                type="button"
+                class="badge-status btnStatusInstituicao ${
+                    estaAtiva
+                        ? "status-ativo"
+                        : "status-pendente"
+                }"
+                data-id="${id}"
+                data-status="${status}"
+                title="${
+                    estaAtiva
+                        ? "Clique para tornar pendente"
+                        : "Clique para ativar"
+                }"
+            >
+                <i class="fa-solid ${
+                    estaAtiva
+                        ? "fa-circle-check"
+                        : "fa-clock"
+                }"></i>
+
+                ${
+                    estaAtiva
+                        ? "Ativa"
+                        : "Pendente"
+                }
+            </button>
+        </td>
+
+        <td class="coluna-acoes">
+            <div class="acoes-tabela">
+                <button
+                    type="button"
+                    class="btn-acao btnEditarInstituicao"
+                    data-id="${id}"
+                    title="Editar instituição"
+                    aria-label="Editar ${escaparHTML(instituicao.nome)}"
+                >
+                    <i class="fa-solid fa-pen"></i>
+                </button>
+
+                <button
+                    type="button"
+                    class="btn-acao btn-acao-perigo btnExcluirInstituicao"
+                    data-id="${id}"
+                    title="Excluir instituição"
+                    aria-label="Excluir ${escaparHTML(instituicao.nome)}"
+                >
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        </td>
+    `;
+
+    return linha;
+}
+
+function renderizarTabela() {
+    elementos.tabela.innerHTML = "";
+
+    const instituicoesPagina =
+        obterInstituicoesDaPagina();
+
+    if (instituicoesPagina.length === 0) {
+        elementos.tabela.innerHTML = `
+            <tr>
+                <td colspan="9">
+                    <div class="estado-tabela">
+                        <i class="fa-solid fa-building-circle-xmark"></i>
+
+                        <strong>
+                            Nenhuma instituição encontrada
+                        </strong>
+
+                        <span>
+                            Tente alterar os filtros ou o termo pesquisado.
+                        </span>
+                    </div>
+                </td>
+            </tr>
+        `;
+
+        atualizarCheckboxSelecionarTodas();
+
+        return;
+    }
+
+    const fragmento =
+        document.createDocumentFragment();
+
+    instituicoesPagina.forEach(
+        (instituicao) => {
+            fragmento.appendChild(
+                criarLinhaInstituicao(instituicao)
+            );
+        }
+    );
+
+    elementos.tabela.appendChild(fragmento);
+
+    atualizarCheckboxSelecionarTodas();
+}
+
+
+// =====================================================
+// APLICAR FILTROS, ORDENAÇÃO E RENDERIZAÇÃO
+// =====================================================
+
+function aplicarFiltrosEOrdenacao() {
+    filtrarInstituicoes();
+    ordenarInstituicoes();
+
+    const totalPaginas =
+        obterTotalPaginas();
+
+    if (paginaAtual > totalPaginas) {
+        paginaAtual = totalPaginas;
+    }
+
+    atualizarTextoResultado();
+    atualizarIconesOrdenacao();
+    renderizarTabela();
+    atualizarPaginacao();
+}
+
+
+// =====================================================
+// SELEÇÃO EM MASSA
+// =====================================================
+
+function obterIdsDaPaginaAtual() {
+    return obterInstituicoesDaPagina().map(
+        (instituicao) =>
+            Number(instituicao.id)
+    );
+}
+
+function atualizarCheckboxSelecionarTodas() {
+    if (!elementos.selecionarTodas) {
+        return;
+    }
+
+    const idsPagina =
+        obterIdsDaPaginaAtual();
+
+    const quantidadeSelecionadaPagina =
+        idsPagina.filter(
+            (id) =>
+                instituicoesSelecionadas.has(id)
+        ).length;
+
+    elementos.selecionarTodas.checked =
+        idsPagina.length > 0 &&
+        quantidadeSelecionadaPagina ===
+            idsPagina.length;
+
+    elementos.selecionarTodas.indeterminate =
+        quantidadeSelecionadaPagina > 0 &&
+        quantidadeSelecionadaPagina <
+            idsPagina.length;
+}
+
+function atualizarBarraSelecao() {
+    const quantidade =
+        instituicoesSelecionadas.size;
+
+    elementos.barraSelecao.hidden =
+        quantidade === 0;
+
+    elementos.quantidadeSelecionadas.textContent =
+        quantidade === 1
+            ? "1 instituição selecionada"
+            : `${quantidade} instituições selecionadas`;
+
+    atualizarCheckboxSelecionarTodas();
+}
+
+function alternarSelecaoInstituicao(
+    id,
+    selecionada
+) {
+    const idNumerico = Number(id);
+
+    if (selecionada) {
+        instituicoesSelecionadas.add(
+            idNumerico
+        );
+    } else {
+        instituicoesSelecionadas.delete(
+            idNumerico
+        );
+    }
+
+    atualizarBarraSelecao();
+}
+
+function selecionarTodasDaPagina(
+    selecionada
+) {
+    const idsPagina =
+        obterIdsDaPaginaAtual();
+
+    idsPagina.forEach((id) => {
+        if (selecionada) {
+            instituicoesSelecionadas.add(id);
+        } else {
+            instituicoesSelecionadas.delete(id);
+        }
+    });
+
+    renderizarTabela();
+    atualizarBarraSelecao();
+}
+
+function limparSelecao() {
+    instituicoesSelecionadas.clear();
+
+    renderizarTabela();
+    atualizarBarraSelecao();
+}
+
+
+// =====================================================
+// MODAL
+// =====================================================
+
+function abrirModal() {
+    elementos.modal.hidden = false;
+
+    document.body.classList.add(
+        "modal-aberto"
+    );
+
+    window.setTimeout(() => {
+        campos.nome.focus();
+    }, 50);
+}
+
+function fecharModal() {
+    elementos.modal.hidden = true;
+
+    document.body.classList.remove(
+        "modal-aberto"
+    );
+
+    elementos.formulario.reset();
+
+    if (campos.id) {
+        campos.id.value = "";
+    }
+
+    instituicaoEditandoId = null;
+
+    esconderFeedbackModal();
+    definirCarregamentoBotaoSalvar(false);
+}
+
+function abrirModalNovaInstituicao() {
+    instituicaoEditandoId = null;
+
+    elementos.formulario.reset();
+
+    if (campos.id) {
+        campos.id.value = "";
+    }
+
+    elementos.tituloModal.textContent =
+        "Nova Instituição";
+
+    esconderFeedbackModal();
+    abrirModal();
+}
+
+async function abrirModalEdicao(id) {
+    esconderFeedbackModal();
+
+    try {
+        const resposta =
+            await buscarInstituicao(id);
+
+        const instituicao =
+            await resposta.json();
+
+        if (!resposta.ok) {
+            throw new Error(
+                instituicao.error ||
+                instituicao.erro ||
+                "Não foi possível carregar a instituição."
+            );
+        }
+
+        instituicaoEditandoId =
+            Number(id);
+
+        if (campos.id) {
+            campos.id.value =
+                instituicaoEditandoId;
+        }
+
+        elementos.tituloModal.textContent =
+            "Editar Instituição";
+
         campos.nome.value =
             instituicao.nome ?? "";
 
@@ -379,7 +1237,9 @@ async function editarInstituicao(id) {
             instituicao.email ?? "";
 
         campos.telefone.value =
-            instituicao.telefone ?? "";
+            formatarTelefone(
+                instituicao.telefone ?? ""
+            );
 
         campos.tipo.value =
             instituicao.tipo ?? "";
@@ -390,69 +1250,180 @@ async function editarInstituicao(id) {
         campos.cidade.value =
             instituicao.cidade ?? "";
 
-        abrirModal(elementos.modal);
+        abrirModal();
 
     } catch (erro) {
-
         console.error(
-            "Erro ao carregar instituição:",
+            "Erro ao buscar instituição:",
             erro
         );
 
-        alert("Erro ao carregar instituição.");
-
+        exibirFeedback(
+            erro.message,
+            "erro",
+            6000
+        );
     }
-
 }
 
 
 // =====================================================
-// EXCLUIR INSTITUIÇÃO
+// FORMULÁRIO
 // =====================================================
 
-async function excluirInstituicao(id) {
+function limparNumeros(valor) {
+    return String(valor ?? "")
+        .replace(/\D/g, "");
+}
 
-    const confirmar = confirm(
-        "Deseja realmente excluir esta instituição?"
-    );
+function montarDadosFormulario() {
+    return {
+        nome: campos.nome.value.trim(),
+        responsavel:
+            campos.responsavel.value.trim(),
+        email:
+            campos.email.value.trim(),
+        telefone:
+            limparNumeros(campos.telefone.value),
+        tipo:
+            campos.tipo.value,
+        endereco:
+            campos.endereco.value.trim(),
+        cidade:
+            campos.cidade.value.trim()
+    };
+}
 
-    if (!confirmar) {
+function validarFormulario(dados) {
+    if (dados.nome.length < 3) {
+        return "Informe um nome com pelo menos 3 caracteres.";
+    }
+
+    if (dados.responsavel.length < 3) {
+        return "Informe o nome do responsável.";
+    }
+
+    if (!dados.email) {
+        return "Informe o e-mail da instituição.";
+    }
+
+    if (
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+            dados.email
+        )
+    ) {
+        return "Informe um endereço de e-mail válido.";
+    }
+
+    if (
+        dados.telefone.length < 10 ||
+        dados.telefone.length > 11
+    ) {
+        return "O telefone deve conter 10 ou 11 números.";
+    }
+
+    if (!dados.tipo) {
+        return "Selecione o tipo da instituição.";
+    }
+
+    if (dados.endereco.length < 3) {
+        return "Informe o endereço da instituição.";
+    }
+
+    if (dados.cidade.length < 2) {
+        return "Informe a cidade da instituição.";
+    }
+
+    return null;
+}
+
+async function salvarInstituicao(event) {
+    event.preventDefault();
+
+    esconderFeedbackModal();
+
+    const dados =
+        montarDadosFormulario();
+
+    const erroValidacao =
+        validarFormulario(dados);
+
+    if (erroValidacao) {
+        exibirFeedbackModal(
+            erroValidacao,
+            "erro"
+        );
+
         return;
     }
 
+    definirCarregamentoBotaoSalvar(true);
+
     try {
+        let resposta;
 
-        const resposta =
-            await excluirInstituicaoAPI(id);
-
-        if (!resposta.ok) {
-
-            const erro = await resposta.json();
-
-            alert(
-                erro.error ||
-                "Erro ao excluir instituição."
-            );
-
-            return;
-
+        if (instituicaoEditandoId !== null) {
+            resposta =
+                await editarInstituicaoAPI(
+                    instituicaoEditandoId,
+                    dados
+                );
+        } else {
+            resposta =
+                await cadastrarInstituicaoAPI(
+                    dados
+                );
         }
 
-        alert("Instituição excluída com sucesso!");
+        let resultado = {};
+
+        try {
+            resultado =
+                await resposta.json();
+        } catch {
+            resultado = {};
+        }
+
+        if (!resposta.ok) {
+            const primeiraIssue =
+                resultado.issues?.[0]?.message;
+
+            throw new Error(
+                primeiraIssue ||
+                resultado.error ||
+                resultado.erro ||
+                "Não foi possível salvar a instituição."
+            );
+        }
+
+        const estavaEditando =
+            instituicaoEditandoId !== null;
+
+        fecharModal();
 
         await carregarInstituicoes();
 
-    } catch (erro) {
+        exibirFeedback(
+            estavaEditando
+                ? "Instituição atualizada com sucesso."
+                : "Instituição cadastrada com sucesso.",
+            "sucesso"
+        );
 
+    } catch (erro) {
         console.error(
-            "Erro ao excluir instituição:",
+            "Erro ao salvar instituição:",
             erro
         );
 
-        alert("Erro ao excluir instituição.");
+        exibirFeedbackModal(
+            erro.message,
+            "erro"
+        );
 
+    } finally {
+        definirCarregamentoBotaoSalvar(false);
     }
-
 }
 
 
@@ -460,135 +1431,379 @@ async function excluirInstituicao(id) {
 // ALTERAR STATUS
 // =====================================================
 
-async function alterarStatusInstituicao(botao) {
-
-    // Dados armazenados no botão da tabela.
-    const id = botao.dataset.id;
-
-    const statusAtual =
-        botao.dataset.status;
-
-    // Alterna entre OK e PENDENTE.
+async function alterarStatus(
+    id,
+    statusAtual,
+    exibirMensagem = true
+) {
     const novoStatus =
         statusAtual === "OK"
             ? "PENDENTE"
             : "OK";
 
+    const resposta =
+        await alterarStatusInstituicaoAPI(
+            id,
+            novoStatus
+        );
+
+    let resultado = {};
+
     try {
+        resultado = await resposta.json();
+    } catch {
+        resultado = {};
+    }
 
-        const resposta =
-            await alterarStatusInstituicaoAPI(
-                id,
-                novoStatus
-            );
+    if (!resposta.ok) {
+        throw new Error(
+            resultado.error ||
+            resultado.erro ||
+            "Não foi possível alterar o status."
+        );
+    }
 
-        const resultado = await resposta.json();
+    if (exibirMensagem) {
+        exibirFeedback(
+            novoStatus === "OK"
+                ? "Instituição ativada com sucesso."
+                : "Instituição marcada como pendente.",
+            "sucesso"
+        );
+    }
+}
 
-        if (!resposta.ok) {
+async function alterarStatusIndividual(
+    botao
+) {
+    botao.disabled = true;
 
-            alert(
-                resultado.error ||
-                resultado.erro ||
-                "Erro ao atualizar status."
-            );
-
-            return;
-
-        }
-
-        alert("Status atualizado com sucesso!");
+    try {
+        await alterarStatus(
+            botao.dataset.id,
+            botao.dataset.status
+        );
 
         await carregarInstituicoes();
 
     } catch (erro) {
-
         console.error(
-            "Erro ao atualizar status:",
+            "Erro ao alterar status:",
             erro
         );
 
-        alert("Erro ao atualizar status.");
+        exibirFeedback(
+            erro.message,
+            "erro",
+            6000
+        );
 
+    } finally {
+        botao.disabled = false;
     }
-
 }
 
+async function alterarStatusSelecionadas(
+    novoStatus
+) {
+    const ids = [
+        ...instituicoesSelecionadas
+    ];
 
-// =====================================================
-// PESQUISAR INSTITUIÇÃO
-// =====================================================
-
-function pesquisarInstituicao() {
-
-    // O campo é opcional. Caso ele não exista,
-    // a função simplesmente não executa a pesquisa.
-    if (!elementos.pesquisa) {
+    if (ids.length === 0) {
         return;
     }
 
-    const resultado = filtrarInstituicoes(
-        listaInstituicoes,
-        elementos.pesquisa.value
-    );
+    try {
+        const instituicoesPorId =
+            new Map(
+                todasInstituicoes.map(
+                    (instituicao) => [
+                        Number(instituicao.id),
+                        instituicao
+                    ]
+                )
+            );
 
-    renderizarTabelaInstituicoes(
-        elementos.tabela,
-        resultado
-    );
+        for (const id of ids) {
+            const instituicao =
+                instituicoesPorId.get(id);
 
+            if (!instituicao) {
+                continue;
+            }
+
+            const statusAtual =
+                obterStatusInstituicao(
+                    instituicao
+                );
+
+            if (statusAtual === novoStatus) {
+                continue;
+            }
+
+            await alterarStatus(
+                id,
+                statusAtual,
+                false
+            );
+        }
+
+        limparSelecao();
+        await carregarInstituicoes();
+
+        exibirFeedback(
+            novoStatus === "OK"
+                ? "Instituições selecionadas ativadas com sucesso."
+                : "Instituições selecionadas marcadas como pendentes.",
+            "sucesso"
+        );
+
+    } catch (erro) {
+        console.error(
+            "Erro ao alterar instituições selecionadas:",
+            erro
+        );
+
+        exibirFeedback(
+            erro.message,
+            "erro",
+            6000
+        );
+    }
 }
 
 
 // =====================================================
-// CLIQUES DA TABELA
+// EXCLUSÃO
 // =====================================================
 
-function tratarCliqueDaTabela(event) {
+async function excluirInstituicao(id) {
+    const instituicao =
+        todasInstituicoes.find(
+            (item) =>
+                Number(item.id) === Number(id)
+        );
 
-    // Procura o botão Editar mais próximo
-    // do local clicado.
-    const botaoEditar = event.target.closest(
-        ".btnEditarInstituicao"
+    const nome =
+        instituicao?.nome ||
+        "esta instituição";
+
+    const confirmou = window.confirm(
+        `Deseja realmente excluir ${nome}?`
     );
 
-    if (botaoEditar) {
+    if (!confirmou) {
+        return;
+    }
 
-        editarInstituicao(
+    try {
+        const resposta =
+            await excluirInstituicaoAPI(id);
+
+        let resultado = {};
+
+        try {
+            resultado =
+                await resposta.json();
+        } catch {
+            resultado = {};
+        }
+
+        if (!resposta.ok) {
+            throw new Error(
+                resultado.error ||
+                resultado.erro ||
+                "Não foi possível excluir a instituição."
+            );
+        }
+
+        instituicoesSelecionadas.delete(
+            Number(id)
+        );
+
+        await carregarInstituicoes();
+        atualizarBarraSelecao();
+
+        exibirFeedback(
+            "Instituição excluída com sucesso.",
+            "sucesso"
+        );
+
+    } catch (erro) {
+        console.error(
+            "Erro ao excluir instituição:",
+            erro
+        );
+
+        exibirFeedback(
+            erro.message,
+            "erro",
+            6000
+        );
+    }
+}
+
+async function excluirSelecionadas() {
+    const ids = [
+        ...instituicoesSelecionadas
+    ];
+
+    if (ids.length === 0) {
+        return;
+    }
+
+    const confirmou = window.confirm(
+        `Deseja realmente excluir ${ids.length} instituição(ões) selecionada(s)?`
+    );
+
+    if (!confirmou) {
+        return;
+    }
+
+    try {
+        for (const id of ids) {
+            const resposta =
+                await excluirInstituicaoAPI(id);
+
+            if (!resposta.ok) {
+                let erro = {};
+
+                try {
+                    erro = await resposta.json();
+                } catch {
+                    erro = {};
+                }
+
+                throw new Error(
+                    erro.error ||
+                    erro.erro ||
+                    `Não foi possível excluir a instituição #${id}.`
+                );
+            }
+        }
+
+        limparSelecao();
+        await carregarInstituicoes();
+
+        exibirFeedback(
+            "Instituições selecionadas excluídas com sucesso.",
+            "sucesso"
+        );
+
+    } catch (erro) {
+        console.error(
+            "Erro ao excluir instituições selecionadas:",
+            erro
+        );
+
+        exibirFeedback(
+            erro.message,
+            "erro",
+            6000
+        );
+    }
+}
+
+
+// =====================================================
+// MÁSCARA DE TELEFONE
+// =====================================================
+
+function aplicarMascaraTelefone(event) {
+    const numeros =
+        limparNumeros(event.target.value)
+            .slice(0, 11);
+
+    if (numeros.length <= 2) {
+        event.target.value =
+            numeros.length > 0
+                ? `(${numeros}`
+                : "";
+
+        return;
+    }
+
+    if (numeros.length <= 6) {
+        event.target.value =
+            `(${numeros.slice(0, 2)}) ${numeros.slice(2)}`;
+
+        return;
+    }
+
+    if (numeros.length <= 10) {
+        event.target.value =
+            `(${numeros.slice(0, 2)}) ` +
+            `${numeros.slice(2, 6)}-` +
+            `${numeros.slice(6)}`;
+
+        return;
+    }
+
+    event.target.value =
+        `(${numeros.slice(0, 2)}) ` +
+        `${numeros.slice(2, 7)}-` +
+        `${numeros.slice(7)}`;
+}
+
+
+// =====================================================
+// EVENTOS DA TABELA
+// =====================================================
+
+function tratarCliqueTabela(event) {
+    const botaoEditar =
+        event.target.closest(
+            ".btnEditarInstituicao"
+        );
+
+    if (botaoEditar) {
+        abrirModalEdicao(
             botaoEditar.dataset.id
         );
 
         return;
-
     }
 
-    // Procura o botão Excluir.
-    const botaoExcluir = event.target.closest(
-        ".btnExcluirInstituicao"
-    );
+    const botaoExcluir =
+        event.target.closest(
+            ".btnExcluirInstituicao"
+        );
 
     if (botaoExcluir) {
-
         excluirInstituicao(
             botaoExcluir.dataset.id
         );
 
         return;
-
     }
 
-    // Procura o botão de Status.
-    const botaoStatus = event.target.closest(
-        ".btnStatusInstituicao"
-    );
-
-    if (botaoStatus) {
-
-        alterarStatusInstituicao(
-            botaoStatus
+    const botaoStatus =
+        event.target.closest(
+            ".btnStatusInstituicao"
         );
 
+    if (botaoStatus) {
+        alterarStatusIndividual(
+            botaoStatus
+        );
+    }
+}
+
+function tratarAlteracaoTabela(event) {
+    const checkbox =
+        event.target.closest(
+            ".checkbox-instituicao"
+        );
+
+    if (!checkbox) {
+        return;
     }
 
+    alternarSelecaoInstituicao(
+        checkbox.dataset.id,
+        checkbox.checked
+    );
 }
 
 
@@ -597,69 +1812,270 @@ function tratarCliqueDaTabela(event) {
 // =====================================================
 
 function configurarEventos() {
-
-    // Cancela os eventos registrados em uma
-    // inicialização anterior da SPA.
     if (controladorEventos) {
         controladorEventos.abort();
     }
 
-    controladorEventos = new AbortController();
+    controladorEventos =
+        new AbortController();
 
-    const opcoesEvento = {
-        signal: controladorEventos.signal
+    const opcoes = {
+        signal:
+            controladorEventos.signal
     };
 
-    // Atualizar lista.
-    elementos.btnAtualizar.addEventListener(
-        "click",
-        carregarInstituicoes,
-        opcoesEvento
-    );
-
-    // Abrir modal de nova instituição.
+    // Abrir cadastro.
     elementos.btnNova.addEventListener(
         "click",
         abrirModalNovaInstituicao,
-        opcoesEvento
+        opcoes
     );
 
-    // Fechar modal.
+    // Atualizar dados.
+    elementos.btnAtualizar.addEventListener(
+        "click",
+        carregarInstituicoes,
+        opcoes
+    );
+
+    // Pesquisa.
+    elementos.pesquisa.addEventListener(
+        "input",
+        () => {
+            paginaAtual = 1;
+
+            elementos.btnLimparPesquisa.hidden =
+                !elementos.pesquisa.value;
+
+            aplicarFiltrosEOrdenacao();
+        },
+        opcoes
+    );
+
+    // Limpar pesquisa.
+    elementos.btnLimparPesquisa?.addEventListener(
+        "click",
+        () => {
+            elementos.pesquisa.value = "";
+            elementos.btnLimparPesquisa.hidden = true;
+
+            paginaAtual = 1;
+
+            aplicarFiltrosEOrdenacao();
+
+            elementos.pesquisa.focus();
+        },
+        opcoes
+    );
+
+    // Cards de filtro.
+    document
+        .querySelectorAll("[data-filtro-status]")
+        .forEach((card) => {
+            card.addEventListener(
+                "click",
+                () => {
+                    filtroStatusAtual =
+                        card.dataset.filtroStatus;
+
+                    paginaAtual = 1;
+
+                    document
+                        .querySelectorAll(
+                            "[data-filtro-status]"
+                        )
+                        .forEach((item) => {
+                            item.classList.remove(
+                                "card-resumo-selecionado"
+                            );
+                        });
+
+                    card.classList.add(
+                        "card-resumo-selecionado"
+                    );
+
+                    aplicarFiltrosEOrdenacao();
+                },
+                opcoes
+            );
+        });
+
+    // Ordenação.
+    document
+        .querySelectorAll("[data-ordenar-por]")
+        .forEach((cabecalho) => {
+            cabecalho.addEventListener(
+                "click",
+                () => {
+                    alterarOrdenacao(
+                        cabecalho.dataset.ordenarPor
+                    );
+                },
+                opcoes
+            );
+        });
+
+    // Quantidade por página.
+    elementos.quantidadePorPagina
+        ?.addEventListener(
+            "change",
+            () => {
+                quantidadePorPagina =
+                    Number(
+                        elementos.quantidadePorPagina.value
+                    ) || 10;
+
+                paginaAtual = 1;
+
+                renderizarTabela();
+                atualizarPaginacao();
+            },
+            opcoes
+        );
+
+    // Navegação da paginação.
+    elementos.btnPrimeiraPagina
+        ?.addEventListener(
+            "click",
+            () => irParaPagina(1),
+            opcoes
+        );
+
+    elementos.btnPaginaAnterior
+        ?.addEventListener(
+            "click",
+            () => irParaPagina(
+                paginaAtual - 1
+            ),
+            opcoes
+        );
+
+    elementos.btnProximaPagina
+        ?.addEventListener(
+            "click",
+            () => irParaPagina(
+                paginaAtual + 1
+            ),
+            opcoes
+        );
+
+    elementos.btnUltimaPagina
+        ?.addEventListener(
+            "click",
+            () => irParaPagina(
+                obterTotalPaginas()
+            ),
+            opcoes
+        );
+
+    // Seleção.
+    elementos.selecionarTodas
+        ?.addEventListener(
+            "change",
+            (event) => {
+                selecionarTodasDaPagina(
+                    event.target.checked
+                );
+            },
+            opcoes
+        );
+
+    elementos.btnLimparSelecao
+        ?.addEventListener(
+            "click",
+            limparSelecao,
+            opcoes
+        );
+
+    elementos.btnAtivarSelecionadas
+        ?.addEventListener(
+            "click",
+            () =>
+                alterarStatusSelecionadas(
+                    "OK"
+                ),
+            opcoes
+        );
+
+    elementos.btnInativarSelecionadas
+        ?.addEventListener(
+            "click",
+            () =>
+                alterarStatusSelecionadas(
+                    "PENDENTE"
+                ),
+            opcoes
+        );
+
+    elementos.btnExcluirSelecionadas
+        ?.addEventListener(
+            "click",
+            excluirSelecionadas,
+            opcoes
+        );
+
+    // Tabela.
+    elementos.tabela.addEventListener(
+        "click",
+        tratarCliqueTabela,
+        opcoes
+    );
+
+    elementos.tabela.addEventListener(
+        "change",
+        tratarAlteracaoTabela,
+        opcoes
+    );
+
+    // Modal.
     elementos.btnFecharModal.addEventListener(
         "click",
-        fecharModalInstituicao,
-        opcoesEvento
+        fecharModal,
+        opcoes
     );
 
-    // Salvar formulário.
+    elementos.btnCancelarModal.addEventListener(
+        "click",
+        fecharModal,
+        opcoes
+    );
+
+    document
+        .querySelector(
+            "[data-fechar-modal-instituicao]"
+        )
+        ?.addEventListener(
+            "click",
+            fecharModal,
+            opcoes
+        );
+
     elementos.formulario.addEventListener(
         "submit",
         salvarInstituicao,
-        opcoesEvento
+        opcoes
     );
 
-    // Pesquisa em tempo real.
-    if (elementos.pesquisa) {
-
-        elementos.pesquisa.addEventListener(
-            "input",
-            pesquisarInstituicao,
-            opcoesEvento
-        );
-
-    }
-
-    // Os botões de editar, excluir e status
-    // ficam dentro da tabela.
-    //
-    // Assim não precisamos registrar o evento
-    // no documento inteiro.
-    elementos.tabela.addEventListener(
-        "click",
-        tratarCliqueDaTabela,
-        opcoesEvento
+    // Máscara de telefone.
+    campos.telefone.addEventListener(
+        "input",
+        aplicarMascaraTelefone,
+        opcoes
     );
 
+    // Tecla Escape fecha o modal.
+    document.addEventListener(
+        "keydown",
+        (event) => {
+            if (
+                event.key === "Escape" &&
+                !elementos.modal.hidden
+            ) {
+                fecharModal();
+            }
+        },
+        opcoes
+    );
 }
 
 
@@ -668,34 +2084,63 @@ function configurarEventos() {
 // =====================================================
 
 export async function inicializarInstituicoes() {
-
     try {
+        // Reinicia os estados sempre que a rota
+        // de Instituições for aberta na SPA.
+        instituicaoEditandoId = null;
 
-        // Reinicia os estados ao entrar na tela.
-        instituicaoEditando = null;
-        listaInstituicoes = [];
+        todasInstituicoes = [];
+        instituicoesFiltradas = [];
+        instituicoesOrdenadas = [];
 
-        // Busca os elementos que acabaram de ser
-        // inseridos no HTML pela SPA.
+        instituicoesSelecionadas =
+            new Set();
+
+        filtroStatusAtual = "TODOS";
+        campoOrdenacaoAtual = "nome";
+        direcaoOrdenacaoAtual = "asc";
+
+        paginaAtual = 1;
+        quantidadePorPagina = 10;
+
+        // Como o HTML da SPA é recriado,
+        // buscamos novamente todos os elementos.
         capturarElementosDaTela();
 
         validarElementosObrigatorios();
-
         configurarEventos();
+
+        atualizarBarraSelecao();
 
         await carregarInstituicoes();
 
     } catch (erro) {
-
         console.error(
             "Erro ao inicializar Instituições:",
             erro
         );
 
-        alert(
-            "Não foi possível inicializar a tela de Instituições."
-        );
+        if (
+            elementos.tabela &&
+            elementos.tabela.isConnected
+        ) {
+            elementos.tabela.innerHTML = `
+                <tr>
+                    <td colspan="9">
+                        <div class="estado-tabela estado-tabela-erro">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
 
+                            <strong>
+                                Não foi possível iniciar a tela
+                            </strong>
+
+                            <span>
+                                ${escaparHTML(erro.message)}
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
     }
-
 }

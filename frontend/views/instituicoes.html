@@ -1,152 +1,910 @@
-<h1>Instituições</h1>
+<!-- =====================================================
+     PÁGINA DE INSTITUIÇÕES
+====================================================== -->
 
-<div style="margin-bottom:20px;">
+<section class="pagina-conteudo pagina-instituicoes">
 
-    <button
-        id="btnNovaInstituicao"
-        class="btn btn-primary">
+    <!-- =================================================
+         CABEÇALHO DA PÁGINA
+    ================================================== -->
 
-        Nova Instituição
+    <header class="cabecalho-pagina">
 
-    </button>
+        <div class="cabecalho-pagina-texto">
 
-    <button
-        id="btnAtualizar"
-        class="btn btn-info">
+            <span class="cabecalho-pagina-icone">
+                <i class="fa-solid fa-building"></i>
+            </span>
 
-        Atualizar Lista
+            <div>
+                <h1>Instituições</h1>
 
-    </button>
+                <p>
+                    Cadastre, consulte e gerencie as instituições parceiras.
+                </p>
+            </div>
 
-</div>
+        </div>
 
-<table border="1" width="100%" cellspacing="0" cellpadding="10">
+        <button
+            type="button"
+            id="btnNovaInstituicao"
+            class="btn btn-primary"
+        >
+            <i class="fa-solid fa-plus"></i>
 
-    <thead>
+            <span>Nova Instituição</span>
+        </button>
 
-        <tr>
-            <th>ID</th>
-            <th>Nome</th>
-            <th>Responsável</th>
-            <th>Email</th>
-            <th>Cidade</th>
-            <th>Status</th>
-            <th>Ações</th>
-        </tr>
+    </header>
 
-    </thead>
 
-    <tbody id="tabelaInstituicoes">
+    <!-- =================================================
+         CARDS DE RESUMO
+    ================================================== -->
 
-    </tbody>
+    <section
+        class="cards-resumo"
+        aria-label="Resumo das instituições"
+    >
 
-</table>
+        <article
+            class="card-resumo card-resumo-selecionado"
+            data-filtro-status="TODOS"
+        >
+            <div class="card-resumo-icone">
+                <i class="fa-solid fa-building"></i>
+            </div>
 
-<!-- MODAL -->
+            <div class="card-resumo-conteudo">
+                <span class="card-resumo-label">
+                    Todas
+                </span>
 
-<div id="modalInstituicao"
-     style="
-        display:none;
-        position:fixed;
-        top:0;
-        left:0;
-        width:100%;
-        height:100%;
-        background:rgba(0,0,0,.4);
-     ">
+                <strong id="contadorTodasInstituicoes">
+                    0
+                </strong>
+            </div>
+        </article>
 
-    <div style="
-        width:600px;
-        margin:60px auto;
-        background:white;
-        padding:30px;
-        border-radius:10px;
-    ">
 
-        <h2>Nova Instituição</h2>
+        <article
+            class="card-resumo"
+            data-filtro-status="ATIVAS"
+        >
+            <div class="card-resumo-icone">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
 
-        <!-- FORMULÁRIO -->
+            <div class="card-resumo-conteudo">
+                <span class="card-resumo-label">
+                    Ativas
+                </span>
 
-        <form id="formInstituicao">
+                <strong id="contadorInstituicoesAtivas">
+                    0
+                </strong>
+            </div>
+        </article>
 
-            <label>Nome</label><br>
-            <input
-                type="text"
-                id="nome"
-                required
-            ><br><br>
 
-            <label>Responsável</label><br>
-            <input
-                type="text"
-                id="responsavel"
-                required
-            ><br><br>
+        <article
+            class="card-resumo"
+            data-filtro-status="PENDENTES"
+        >
+            <div class="card-resumo-icone">
+                <i class="fa-solid fa-clock"></i>
+            </div>
 
-            <label>Email</label><br>
-            <input
-                type="email"
-                id="email"
-                required
-            ><br><br>
+            <div class="card-resumo-conteudo">
+                <span class="card-resumo-label">
+                    Pendentes
+                </span>
 
-            <label>Telefone</label><br>
-            <input
-                type="text"
-                id="telefone"
-                required
-            ><br><br>
+                <strong id="contadorInstituicoesPendentes">
+                    0
+                </strong>
+            </div>
+        </article>
 
-            <label>Tipo</label><br>
+    </section>
 
-            <select
-                id="tipo"
-                required>
 
-                <option value="">Selecione</option>
-                <option value="ONG">ONG</option>
-                <option value="IGREJA">IGREJA</option>
-                <option value="ASSOCIACAO">ASSOCIAÇÃO</option>
-                <option value="OUTRO">OUTRO</option>
+    <!-- =================================================
+         ÁREA PRINCIPAL
+    ================================================== -->
 
-            </select>
+    <section class="painel-listagem">
 
-            <br><br>
+        <!-- Barra de ferramentas -->
 
-            <label>Endereço</label><br>
-            <input
-                type="text"
-                id="endereco"
-                required
-            ><br><br>
+        <div class="barra-ferramentas">
 
-            <label>Cidade</label><br>
-            <input
-                type="text"
-                id="cidade"
-                required
-            ><br><br>
+            <div class="campo-pesquisa">
+
+                <i class="fa-solid fa-magnifying-glass"></i>
+
+                <input
+                    type="search"
+                    id="pesquisaInstituicao"
+                    name="pesquisaInstituicao"
+                    placeholder="Pesquisar por nome, responsável, e-mail ou cidade"
+                    autocomplete="off"
+                    aria-label="Pesquisar instituições"
+                >
+
+                <button
+                    type="button"
+                    id="btnLimparPesquisaInstituicao"
+                    class="btn-limpar-pesquisa"
+                    aria-label="Limpar pesquisa"
+                    title="Limpar pesquisa"
+                    hidden
+                >
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+            </div>
+
+
+            <div class="barra-ferramentas-acoes">
+
+                <button
+                    type="button"
+                    id="btnAtualizar"
+                    class="btn btn-secondary"
+                >
+                    <i class="fa-solid fa-rotate"></i>
+
+                    <span>Atualizar</span>
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- Informações do resultado -->
+
+        <div class="resultado-listagem">
+
+            <p id="resultadoFiltroInstituicoes">
+                Exibindo todas as instituições.
+            </p>
+
+            <label
+                for="quantidadePorPaginaInstituicoes"
+                class="quantidade-pagina"
+            >
+                <span>Exibir</span>
+
+                <select
+                    id="quantidadePorPaginaInstituicoes"
+                    name="quantidadePorPaginaInstituicoes"
+                >
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                </select>
+
+                <span>por página</span>
+            </label>
+
+        </div>
+
+
+        <!-- Mensagem de feedback -->
+
+        <div
+            id="feedbackInstituicoes"
+            class="mensagem-feedback"
+            role="status"
+            aria-live="polite"
+            hidden
+        >
+            <i class="fa-solid fa-circle-info"></i>
+
+            <span id="textoFeedbackInstituicoes"></span>
+        </div>
+
+
+        <!-- =================================================
+             TABELA
+        ================================================== -->
+
+        <div class="tabela-container">
+
+            <table class="tabela-dados tabela-instituicoes">
+
+                <thead>
+
+                    <tr>
+
+                        <th class="coluna-selecao">
+
+                            <input
+                                type="checkbox"
+                                id="selecionarTodasInstituicoes"
+                                aria-label="Selecionar todas as instituições"
+                            >
+
+                        </th>
+
+                        <th
+                            class="coluna-ordenavel"
+                            data-ordenar-por="id"
+                        >
+                            <button
+                                type="button"
+                                class="botao-ordenacao"
+                            >
+                                ID
+
+                                <i class="fa-solid fa-sort"></i>
+                            </button>
+                        </th>
+
+                        <th
+                            class="coluna-ordenavel"
+                            data-ordenar-por="nome"
+                        >
+                            <button
+                                type="button"
+                                class="botao-ordenacao"
+                            >
+                                Instituição
+
+                                <i class="fa-solid fa-sort"></i>
+                            </button>
+                        </th>
+
+                        <th
+                            class="coluna-ordenavel"
+                            data-ordenar-por="responsavel"
+                        >
+                            <button
+                                type="button"
+                                class="botao-ordenacao"
+                            >
+                                Responsável
+
+                                <i class="fa-solid fa-sort"></i>
+                            </button>
+                        </th>
+
+                        <th>Contato</th>
+
+                        <th
+                            class="coluna-ordenavel"
+                            data-ordenar-por="cidade"
+                        >
+                            <button
+                                type="button"
+                                class="botao-ordenacao"
+                            >
+                                Cidade
+
+                                <i class="fa-solid fa-sort"></i>
+                            </button>
+                        </th>
+
+                        <th>Tipo</th>
+
+                        <th
+                            class="coluna-ordenavel"
+                            data-ordenar-por="status"
+                        >
+                            <button
+                                type="button"
+                                class="botao-ordenacao"
+                            >
+                                Status
+
+                                <i class="fa-solid fa-sort"></i>
+                            </button>
+                        </th>
+
+                        <th class="coluna-acoes">
+                            Ações
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <!-- O JavaScript adicionará as linhas aqui -->
+
+                <tbody id="tabelaInstituicoes">
+
+                    <tr class="linha-carregamento">
+
+                        <td colspan="9">
+
+                            <div class="estado-tabela">
+
+                                <i class="fa-solid fa-spinner fa-spin"></i>
+
+                                <strong>
+                                    Carregando instituições...
+                                </strong>
+
+                                <span>
+                                    Aguarde enquanto buscamos as informações.
+                                </span>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- =================================================
+             PAGINAÇÃO
+        ================================================== -->
+
+        <footer class="rodape-listagem">
+
+            <span id="intervaloPaginacaoInstituicoes">
+                Exibindo 0 de 0 instituições
+            </span>
+
+
+            <nav
+                class="paginacao"
+                aria-label="Paginação das instituições"
+            >
+
+                <button
+                    type="button"
+                    id="btnPrimeiraPaginaInstituicoes"
+                    class="btn-paginacao"
+                    aria-label="Primeira página"
+                    title="Primeira página"
+                    disabled
+                >
+                    <i class="fa-solid fa-angles-left"></i>
+                </button>
+
+
+                <button
+                    type="button"
+                    id="btnPaginaAnteriorInstituicoes"
+                    class="btn-paginacao"
+                    aria-label="Página anterior"
+                    title="Página anterior"
+                    disabled
+                >
+                    <i class="fa-solid fa-angle-left"></i>
+                </button>
+
+
+                <div
+                    id="numerosPaginacaoInstituicoes"
+                    class="numeros-paginacao"
+                ></div>
+
+
+                <button
+                    type="button"
+                    id="btnProximaPaginaInstituicoes"
+                    class="btn-paginacao"
+                    aria-label="Próxima página"
+                    title="Próxima página"
+                    disabled
+                >
+                    <i class="fa-solid fa-angle-right"></i>
+                </button>
+
+
+                <button
+                    type="button"
+                    id="btnUltimaPaginaInstituicoes"
+                    class="btn-paginacao"
+                    aria-label="Última página"
+                    title="Última página"
+                    disabled
+                >
+                    <i class="fa-solid fa-angles-right"></i>
+                </button>
+
+            </nav>
+
+        </footer>
+
+    </section>
+
+
+    <!-- =================================================
+         BARRA DE SELEÇÃO EM MASSA
+    ================================================== -->
+
+    <div
+        id="barraSelecaoInstituicoes"
+        class="barra-selecao"
+        hidden
+    >
+
+        <div class="barra-selecao-informacao">
+
+            <i class="fa-solid fa-square-check"></i>
+
+            <strong id="quantidadeInstituicoesSelecionadas">
+                0 instituições selecionadas
+            </strong>
+
+        </div>
+
+
+        <div class="barra-selecao-acoes">
 
             <button
-                type="submit"
-                class="btn btn-success">
+                type="button"
+                id="btnLimparSelecaoInstituicoes"
+                class="btn btn-secondary"
+            >
+                <i class="fa-solid fa-xmark"></i>
 
-                Salvar
-
+                Limpar seleção
             </button>
+
+
+            <button
+                type="button"
+                id="btnAtivarInstituicoesSelecionadas"
+                class="btn btn-secondary"
+            >
+                <i class="fa-solid fa-circle-check"></i>
+
+                Ativar
+            </button>
+
+
+            <button
+                type="button"
+                id="btnInativarInstituicoesSelecionadas"
+                class="btn btn-secondary"
+            >
+                <i class="fa-solid fa-circle-pause"></i>
+
+                Inativar
+            </button>
+
+
+            <button
+                type="button"
+                id="btnExcluirInstituicoesSelecionadas"
+                class="btn btn-danger"
+            >
+                <i class="fa-solid fa-trash"></i>
+
+                Excluir
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     MODAL DE CADASTRO E EDIÇÃO
+====================================================== -->
+
+<div
+    id="modalInstituicao"
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="tituloModalInstituicao"
+    hidden
+>
+
+    <div
+        class="modal-overlay"
+        data-fechar-modal-instituicao
+    ></div>
+
+
+    <section class="modal-conteudo modal-conteudo-grande">
+
+        <!-- Cabeçalho do modal -->
+
+        <header class="modal-cabecalho">
+
+            <div class="modal-cabecalho-texto">
+
+                <span class="modal-icone">
+                    <i class="fa-solid fa-building"></i>
+                </span>
+
+                <div>
+
+                    <h2 id="tituloModalInstituicao">
+                        Nova Instituição
+                    </h2>
+
+                    <p>
+                        Preencha os dados da instituição parceira.
+                    </p>
+
+                </div>
+
+            </div>
+
 
             <button
                 type="button"
                 id="btnFecharModal"
-                class="btn btn-secondary">
-
-                Cancelar
-
+                class="btn-fechar-modal"
+                aria-label="Fechar janela"
+                title="Fechar"
+            >
+                <i class="fa-solid fa-xmark"></i>
             </button>
+
+        </header>
+
+
+        <!-- Formulário -->
+
+        <form
+            id="formInstituicao"
+            class="formulario"
+            novalidate
+        >
+
+            <div class="modal-corpo">
+
+                <input
+                    type="hidden"
+                    id="instituicaoId"
+                    name="instituicaoId"
+                >
+
+
+                <!-- Dados principais -->
+
+                <fieldset class="formulario-secao">
+
+                    <legend>
+
+                        <i class="fa-solid fa-building"></i>
+
+                        Dados da instituição
+
+                    </legend>
+
+
+                    <div class="formulario-grid formulario-grid-2">
+
+                        <div class="campo-formulario campo-formulario-largo">
+
+                            <label for="nome">
+                                Nome da instituição
+                                <span aria-hidden="true">*</span>
+                            </label>
+
+                            <div class="input-com-icone">
+
+                                <i class="fa-solid fa-building"></i>
+
+                                <input
+                                    type="text"
+                                    id="nome"
+                                    name="nome"
+                                    placeholder="Ex.: Instituto Solidare"
+                                    minlength="3"
+                                    maxlength="150"
+                                    autocomplete="organization"
+                                    required
+                                >
+
+                            </div>
+
+                            <small class="mensagem-campo"></small>
+
+                        </div>
+
+
+                        <div class="campo-formulario">
+
+                            <label for="tipo">
+                                Tipo
+                                <span aria-hidden="true">*</span>
+                            </label>
+
+                            <div class="input-com-icone">
+
+                                <i class="fa-solid fa-layer-group"></i>
+
+                                <select
+                                    id="tipo"
+                                    name="tipo"
+                                    required
+                                >
+                                    <option value="">
+                                        Selecione
+                                    </option>
+
+                                    <option value="ONG">
+                                        ONG
+                                    </option>
+
+                                    <option value="IGREJA">
+                                        Igreja
+                                    </option>
+
+                                    <option value="ASSOCIACAO">
+                                        Associação
+                                    </option>
+
+                                    <option value="OUTRO">
+                                        Outro
+                                    </option>
+                                </select>
+
+                            </div>
+
+                            <small class="mensagem-campo"></small>
+
+                        </div>
+
+
+                        <div class="campo-formulario campo-formulario-largo">
+
+                            <label for="responsavel">
+                                Responsável
+                                <span aria-hidden="true">*</span>
+                            </label>
+
+                            <div class="input-com-icone">
+
+                                <i class="fa-solid fa-user"></i>
+
+                                <input
+                                    type="text"
+                                    id="responsavel"
+                                    name="responsavel"
+                                    placeholder="Nome completo do responsável"
+                                    minlength="3"
+                                    maxlength="150"
+                                    autocomplete="name"
+                                    required
+                                >
+
+                            </div>
+
+                            <small class="mensagem-campo"></small>
+
+                        </div>
+
+                    </div>
+
+                </fieldset>
+
+
+                <!-- Contato -->
+
+                <fieldset class="formulario-secao">
+
+                    <legend>
+
+                        <i class="fa-solid fa-address-book"></i>
+
+                        Informações de contato
+
+                    </legend>
+
+
+                    <div class="formulario-grid formulario-grid-2">
+
+                        <div class="campo-formulario">
+
+                            <label for="email">
+                                E-mail
+                                <span aria-hidden="true">*</span>
+                            </label>
+
+                            <div class="input-com-icone">
+
+                                <i class="fa-solid fa-envelope"></i>
+
+                                <input
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    placeholder="contato@instituicao.org"
+                                    maxlength="150"
+                                    autocomplete="email"
+                                    required
+                                >
+
+                            </div>
+
+                            <small class="mensagem-campo"></small>
+
+                        </div>
+
+
+                        <div class="campo-formulario">
+
+                            <label for="telefone">
+                                Telefone
+                                <span aria-hidden="true">*</span>
+                            </label>
+
+                            <div class="input-com-icone">
+
+                                <i class="fa-solid fa-phone"></i>
+
+                                <input
+                                    type="tel"
+                                    id="telefone"
+                                    name="telefone"
+                                    placeholder="(11) 99999-9999"
+                                    maxlength="15"
+                                    inputmode="numeric"
+                                    autocomplete="tel"
+                                    required
+                                >
+
+                            </div>
+
+                            <small class="mensagem-campo"></small>
+
+                        </div>
+
+                    </div>
+
+                </fieldset>
+
+
+                <!-- Localização -->
+
+                <fieldset class="formulario-secao">
+
+                    <legend>
+
+                        <i class="fa-solid fa-location-dot"></i>
+
+                        Localização
+
+                    </legend>
+
+
+                    <div class="formulario-grid formulario-grid-2">
+
+                        <div class="campo-formulario campo-formulario-largo">
+
+                            <label for="endereco">
+                                Endereço
+                                <span aria-hidden="true">*</span>
+                            </label>
+
+                            <div class="input-com-icone">
+
+                                <i class="fa-solid fa-road"></i>
+
+                                <input
+                                    type="text"
+                                    id="endereco"
+                                    name="endereco"
+                                    placeholder="Rua, número e complemento"
+                                    minlength="3"
+                                    maxlength="200"
+                                    autocomplete="street-address"
+                                    required
+                                >
+
+                            </div>
+
+                            <small class="mensagem-campo"></small>
+
+                        </div>
+
+
+                        <div class="campo-formulario">
+
+                            <label for="cidade">
+                                Cidade
+                                <span aria-hidden="true">*</span>
+                            </label>
+
+                            <div class="input-com-icone">
+
+                                <i class="fa-solid fa-city"></i>
+
+                                <input
+                                    type="text"
+                                    id="cidade"
+                                    name="cidade"
+                                    placeholder="Nome da cidade"
+                                    minlength="2"
+                                    maxlength="100"
+                                    autocomplete="address-level2"
+                                    required
+                                >
+
+                            </div>
+
+                            <small class="mensagem-campo"></small>
+
+                        </div>
+
+                    </div>
+
+                </fieldset>
+
+
+                <!-- Mensagem interna do modal -->
+
+                <div
+                    id="feedbackModalInstituicao"
+                    class="mensagem-feedback"
+                    role="status"
+                    aria-live="polite"
+                    hidden
+                >
+                    <i class="fa-solid fa-circle-info"></i>
+
+                    <span id="textoFeedbackModalInstituicao"></span>
+                </div>
+
+            </div>
+
+
+            <!-- Rodapé do modal -->
+
+            <footer class="modal-rodape">
+
+                <button
+                    type="button"
+                    id="btnCancelarInstituicao"
+                    class="btn btn-secondary"
+                >
+                    Cancelar
+                </button>
+
+
+                <button
+                    type="submit"
+                    id="btnSalvarInstituicao"
+                    class="btn btn-primary"
+                >
+
+                    <span id="conteudoBtnSalvarInstituicao">
+
+                        <i class="fa-solid fa-floppy-disk"></i>
+
+                        Salvar instituição
+
+                    </span>
+
+
+                    <span
+                        id="carregamentoBtnSalvarInstituicao"
+                        hidden
+                    >
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+
+                        Salvando...
+                    </span>
+
+                </button>
+
+            </footer>
+
         </form>
 
-    </div>
+    </section>
 
 </div>
-
-<script src="../js/instituicoes.js"></script>
