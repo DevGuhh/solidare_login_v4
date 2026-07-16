@@ -11,6 +11,7 @@ model Usuario {
   nome          String
   email         String               @unique
   senhaHash     String
+  senhaProvisoria Boolean            @default(false)
   role          RoleUsuario          @default(INSTITUICAO)
   ativo         Boolean              @default(true)
   criadoEm      DateTime             @default(now())

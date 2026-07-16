@@ -122,6 +122,7 @@ class InstituicaoController {
           nome: data.responsavel,
           email: data.email,
           senhaHash,
+          senhaProvisoria: true,
           role: "INSTITUICAO",
           instituicao: {
             create: {

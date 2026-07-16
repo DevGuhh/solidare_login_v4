@@ -1,6 +1,7 @@
 import { prisma } from "../config/db.js";
 import bcrypt from "bcrypt";
 import { generateToken } from "../utils/generateToken.js";
+import { error } from "node:console";
 
 // ======================================================
 // CADASTRAR USUÁRIO
@@ -248,16 +249,12 @@ const login = async (req, res) => {
       data: {
         usuario: {
           id: usuario.id,
-
           nome: usuario.nome,
-
           email: usuario.email,
-
           role: usuario.role,
-
           ativo: usuario.ativo,
-
           instituicaoId: usuario.instituicaoId,
+          senhaProvisoria: usuario.senhaProvisoria
         },
 
         /*
@@ -311,8 +308,45 @@ const logout = async (req, res) => {
   }
 };
 
+const changePassword = async (req, res) => {
+  try {
+    const { senhaAtual, novaSenha } = req.body;
+
+    if (!senhaAtual || !novaSenha) {
+      return res.status(400).json({error: "Senha atual e nova senha são obrigatórias."})
+    }
+    if (novaSenha.length < 6 ) {
+      return res.status(400).json({ error: "A nova senha deve ter pelo menos 6 caracteres."})
+    }
+    const usuario = await prisma.usuario.findUnique({
+      where: {
+        id: req.user.id
+      }
+    })
+
+    const senhaValida = await bcrypt.compare(senhaAtual, usuario.senhaHash);
+    if (!senhaValida) {
+      return res.status(401).json({ error: "Senha atual incorreta."})
+    }
+
+    const novaSenhaHash = await bcrypt.hash(novaSenha, 10);
+
+    await prisma.usuario.update({
+      where: { id: req.user.id},
+      data: { senhaHash: novaSenhaHash, senhaProvisoria: false }
+    })
+
+    return res.status(200).json({
+      mensagem: "Senha alterada com sucesso."
+    })
+   } catch (error) {
+    console.error("Erro ao trocar senha:", erro);
+    return res.status(500).json({ error: "Erro interno ao trocar senha."})
+  }
+}
+
 // ======================================================
 // EXPORTA OS CONTROLLERS
 // ======================================================
 
-export { register, login, logout };
+export { register, login, logout, changePassword };

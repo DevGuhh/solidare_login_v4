@@ -1,5 +1,5 @@
 import express from "express";
-import { register, login, logout } from "../controllers/authController.js";
+import { register, login, logout, changePassword } from "../controllers/authController.js";
 import { protect } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
@@ -14,5 +14,6 @@ router.get("/me", protect, (req, res) => {
     usuario: req.user,
   });
 });
+router.patch("/change-password", protect, changePassword)
 
 export default router;
