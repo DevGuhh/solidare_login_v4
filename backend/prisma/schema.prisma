@@ -48,6 +48,7 @@ model Beneficiario {
   nomeCompleto           String
   cpf                    String              @unique
   dataNascimento         DateTime
+  composicaoFamiliar     Int                 @default(1)
   logradouro             String
   numero                 String
   complemento            String?

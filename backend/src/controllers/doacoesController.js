@@ -3,6 +3,7 @@ import { criarDoacaoSchema } from "../validators/doacaoValidator.js";
 import { startOfMonth, endOfMonth } from "date-fns";
 import { z, ZodError } from "zod";
 import { gerarCodigoDoacao } from "../utils/generateCode.js";
+import { calcularQuantidadeCestas } from "../utils/generateQtdCestas.js";
 
 // =====================================================
 // SCHEMAS AUXILIARES
@@ -181,6 +182,7 @@ class DoacoesController {
           nomeCompleto: true,
           instituicaoId: true,
           ativo: true,
+          composicaoFamiliar: true,
         },
       });
 
@@ -224,6 +226,9 @@ class DoacoesController {
 
       const codigo = gerarCodigoDoacao();
 
+      const quantidade = calcularQuantidadeCestas(beneficiario.composicaoFamiliar);
+
+
       const doacao = await prisma.doacao.create({
         data: {
           codigo,
@@ -231,7 +236,7 @@ class DoacoesController {
           instituicaoId: beneficiario.instituicaoId,
           usuarioId: req.user.id,
           tipo: data.tipo,
-          quantidade: data.quantidade,
+          quantidade,
           observacoes: data.observacoes,
         },
 
