@@ -11,7 +11,7 @@ class BeneficiarioController {
   async index(req, res) {
     try {
       // Filtro base: busca somente beneficiários não deletados.
-      const where = { deletedAt: null };
+      const where = { ativo: true };
 
       // Usuário INSTITUICAO só vê os beneficiários da própria instituição.
       if (req.user.role === "INSTITUICAO") {
@@ -80,7 +80,7 @@ class BeneficiarioController {
       // Filtro base.
       const where = {
         id,
-        deletedAt: null,
+        ativo: true,
       };
 
       // Usuário que não é ADMIN só pode acessar beneficiários da própria instituição.
@@ -191,7 +191,7 @@ class BeneficiarioController {
     try {
       const where = {
         id,
-        deletedAt: null,
+        ativo: true,
       };
 
       // Instituição só pode editar seus próprios beneficiários.
@@ -250,7 +250,7 @@ class BeneficiarioController {
     try {
       const where = {
         id,
-        deletedAt: null,
+        ativo: true,
       };
 
       // Instituição só pode remover seus próprios beneficiários.
@@ -298,7 +298,7 @@ class BeneficiarioController {
     try {
       const where = {
         id,
-        deletedAt: null,
+        ativo: true,
       };
 
       // Instituição só pode alterar status dos próprios beneficiários.

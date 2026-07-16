@@ -206,6 +206,69 @@ class InstituicaoController {
 
   async updateStatus(req, res) {
     const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({
+        error: "ID inválido.",
+      });
+    }
+
+    try {
+      const where = {
+        id,
+      };
+
+      if (req.user.role !== "ADMIN") {
+        where.instituicaoId = req.user.instituicaoId;
+      }
+
+      const instituicao = await prisma.instituicaoParceira.findFirst({
+        where,
+      });
+
+      if (!instituicao) {
+        return res.status(404).json({
+          error: "Instituição não encontrada.",
+        });
+      }
+
+      const data = atualizarInstituicaoSchema.parse(req.body);
+      const { ativa } = data;
+
+      if (typeof ativa !== "boolean") {
+        return res.status(400).json({
+          error: "Status deve ser true or false",
+        });
+      }
+
+      const instituicaoAtualizada = await prisma.instituicaoParceira.update({
+        where: { id },
+        data: { ativa },
+      });
+
+      return res.status(200).json(instituicaoAtualizada);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          error: "Dados inválidos",
+          issues: error.issues.map((e) => ({
+            path: e.path.join("."),
+            message: e.message,
+          })),
+        });
+      }
+
+      console.error(`PATCH /instituicoes/${req.params.id}/status error:`, error,
+      )
+
+      return res.status(500).json({
+        error: "Erro interno do servidor",
+      })
+    }
+  }
+
+  async updateStatusDocumetacao(req, res) {
+    const id = Number(req.params.id);
     if (!Number.isInteger(id) || id <= 0) {
       return res
         .status(400)
@@ -226,7 +289,7 @@ class InstituicaoController {
       const instituicaoParceira = await prisma.instituicaoParceira.findFirst({
         where: {
           id,
-          deletedAt: null,
+          ativa: true,
         },
       });
       if (!instituicaoParceira) {
@@ -260,7 +323,7 @@ class InstituicaoController {
       const instituicao = await prisma.instituicaoParceira.findFirst({
         where: {
           id,
-          deletedAt: null,
+          ativa: true,
         },
       });
 

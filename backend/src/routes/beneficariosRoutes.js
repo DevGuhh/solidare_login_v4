@@ -9,6 +9,8 @@ router.get("/beneficiarios", protect, beneficiarioController.index)
 router.get("/beneficiarios/:id", protect, beneficiarioController.show)
 router.put("/beneficiarios/:id", protect, beneficiarioController.update)
 router.patch("/beneficiarios/:id", protect, beneficiarioController.updateStatus)
+
+//UTILIZAR ESTA ROTA APENAS EM CASOS NECESSARIOS!!!
 router.delete("/beneficiarios/:id", protect, beneficiarioController.destroy)
 
 export default router;
