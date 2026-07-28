@@ -1,17 +1,92 @@
 import express from "express";
-import instituicoesController from "../controllers/instituicoesController.js";
-import { authorize, protect } from "../middlewares/authMiddleware.js";
+
+import {
+    cadastrarInstituicao,
+    listarInstituicoes,
+    detalheDaInstituicao,
+    atualizarDadosInstituicao,
+    removeInstituicao,
+    atualizaStatus
+} from "../controllers/instituicoesController.js";
+
+import {
+    authorize,
+    protect
+} from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("/instituicoes", protect, authorize("ADMIN"), instituicoesController.index);
-router.get("/instituicoes/:id", protect, authorize("ADMIN"), instituicoesController.show)
-router.post("/instituicoes", protect, authorize("ADMIN"), instituicoesController.create);
-router.put("/instituicoes/:id", protect, authorize("ADMIN"), instituicoesController.update)
-router.patch("/instituicoes/:id", protect, authorize("ADMIN"), instituicoesController.updateStatus)
-router.patch("/instituicoes/:id/status_ok", protect, authorize("ADMIN"), instituicoesController.updateStatusDocumetacao)
 
-//UTILIZAR ESTA ROTA APENAS EM CASOS NECESSARIOS!!!
-router.delete("/instituicoes/:id", protect, authorize("ADMIN"), instituicoesController.destroy)
+// =====================================================
+// LISTAR INSTITUIÇÕES
+// =====================================================
+
+router.get(
+    "/instituicoes",
+    protect,
+    authorize("ADMIN"),
+    listarInstituicoes
+);
+
+
+// =====================================================
+// BUSCAR INSTITUIÇÃO PELO ID
+// =====================================================
+
+router.get(
+    "/instituicoes/:id",
+    protect,
+    authorize("ADMIN"),
+    detalheDaInstituicao
+);
+
+
+// =====================================================
+// CADASTRAR INSTITUIÇÃO
+// =====================================================
+
+router.post(
+    "/instituicoes",
+    protect,
+    authorize("ADMIN"),
+    cadastrarInstituicao
+);
+
+
+// =====================================================
+// ATUALIZAR INSTITUIÇÃO
+// =====================================================
+
+router.put(
+    "/instituicoes/:id",
+    protect,
+    authorize("ADMIN"),
+    atualizarDadosInstituicao
+);
+
+
+// =====================================================
+// ALTERAR STATUS
+// =====================================================
+
+router.patch(
+    "/instituicoes/:id/status_ok",
+    protect,
+    authorize("ADMIN"),
+    atualizaStatus
+);
+
+
+// =====================================================
+// EXCLUIR INSTITUIÇÃO
+// =====================================================
+
+router.delete(
+    "/instituicoes/:id",
+    protect,
+    authorize("ADMIN"),
+    removeInstituicao
+);
+
 
 export default router;

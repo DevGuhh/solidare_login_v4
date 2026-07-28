@@ -31,7 +31,7 @@ const protect = async (req, res, next) => {
         // Busca o usuário no banco
         const usuario = await prisma.usuario.findUnique({
             where: {
-                id: decoded.id
+                id: decoded.id,
             },
             select: {
                 id: true,
@@ -40,8 +40,9 @@ const protect = async (req, res, next) => {
                 role: true,
                 ativo: true,
                 instituicaoId: true,
-            }
-        });
+                senhaProvisoria: true,
+            },
+         });
 
         // Usuário não encontrado
         if (!usuario) {

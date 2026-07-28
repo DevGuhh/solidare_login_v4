@@ -171,7 +171,17 @@ function capturarElementosDaTela() {
         ),
         textoFeedbackModal: document.getElementById(
             "textoFeedbackModalInstituicao"
-        )
+        ),
+
+        // Modal de Credenciais
+        modalCredenciais: document.getElementById("modalCredenciais"),
+        credencialEmail: document.getElementById("credencialEmail"),
+        credencialSenha: document.getElementById("credencialSenha"),
+        btnCopiarCredenciais: document.getElementById("btnCopiarCredenciais"),
+        btnFecharCredenciais: document.getElementById("btnFecharCredenciais"),
+        btnFecharCredenciais2: document.getElementById("btnFecharCredenciais2"),
+        overlayCredenciais: document.getElementById("fecharModalCredenciaisOverlay")
+
     };
 
     campos = {
@@ -403,65 +413,88 @@ function definirCarregamentoBotaoSalvar(ativo) {
 // =====================================================
 
 async function carregarInstituicoes() {
+
     definirCarregamentoTabela(true);
 
     elementos.btnAtualizar.disabled = true;
 
     try {
-        const resposta = await listarInstituicoes();
 
-        let dados = [];
+        const resposta =
+            await listarInstituicoes();
+
+        let dados = {};
 
         try {
             dados = await resposta.json();
         } catch {
-            dados = [];
+            dados = {};
         }
+
+        console.log("Resposta da API:", dados);
 
         if (!resposta.ok) {
             throw new Error(
                 dados.error ||
                 dados.erro ||
+                dados.message ||
                 "Não foi possível carregar as instituições."
             );
         }
 
-        todasInstituicoes = Array.isArray(dados)
-            ? dados
-            : [];
+        // O backend retorna:
+        // {
+        //     dados: [...],
+        //     paginacao: {...}
+        // }
+        //
+        // Também mantemos compatibilidade com outros formatos
+        // para evitar que a tela fique vazia caso a API seja alterada.
+        if (Array.isArray(dados)) {
+
+            todasInstituicoes = dados;
+
+        } else if (Array.isArray(dados.dados)) {
+
+            todasInstituicoes = dados.dados;
+
+        } else if (Array.isArray(dados.instituicoes)) {
+
+            todasInstituicoes = dados.instituicoes;
+
+        } else if (Array.isArray(dados.data)) {
+
+            todasInstituicoes = dados.data;
+
+        } else if (Array.isArray(dados.resultados)) {
+
+            todasInstituicoes = dados.resultados;
+
+        } else {
+
+            todasInstituicoes = [];
+        }
+
+        console.log("Instituições carregadas:", todasInstituicoes);
 
         atualizarContadores();
+
         aplicarFiltrosEOrdenacao();
 
     } catch (erro) {
-        console.error(
-            "Erro ao carregar instituições:",
-            erro
-        );
+
+        console.error(erro);
 
         todasInstituicoes = [];
+
         instituicoesFiltradas = [];
+
         instituicoesOrdenadas = [];
 
-        elementos.tabela.innerHTML = `
-            <tr>
-                <td colspan="9">
-                    <div class="estado-tabela estado-tabela-erro">
-                        <i class="fa-solid fa-triangle-exclamation"></i>
-
-                        <strong>
-                            Não foi possível carregar as instituições
-                        </strong>
-
-                        <span>
-                            ${escaparHTML(erro.message)}
-                        </span>
-                    </div>
-                </td>
-            </tr>
-        `;
-
         atualizarContadores();
+
+        renderizarTabela();
+
         atualizarPaginacao();
 
         exibirFeedback(
@@ -471,8 +504,11 @@ async function carregarInstituicoes() {
         );
 
     } finally {
+
         elementos.btnAtualizar.disabled = false;
+
     }
+
 }
 
 
@@ -1399,9 +1435,22 @@ async function salvarInstituicao(event) {
         const estavaEditando =
             instituicaoEditandoId !== null;
 
+        const credenciais =
+            resultado.credenciais;
+
         fecharModal();
 
         await carregarInstituicoes();
+
+        if (
+            !estavaEditando &&
+            credenciais
+        ) {
+            abrirModalCredenciais(
+                credenciais.email,
+                credenciais.senhaTemporaria
+            );
+        }
 
         exibirFeedback(
             estavaEditando
@@ -1424,6 +1473,65 @@ async function salvarInstituicao(event) {
     } finally {
         definirCarregamentoBotaoSalvar(false);
     }
+}
+
+function mostrarCredenciaisInstituicao(email, senha) {
+
+    const texto = `
+Credenciais da Instituição
+
+Email:
+${email}
+
+Senha Temporária:
+${senha}
+`;
+
+    const copiar = async () => {
+        try {
+            await navigator.clipboard.writeText(texto);
+            alert("Credenciais copiadas com sucesso!");
+        } catch {
+            console.log(texto);
+        }
+    };
+
+    const desejaCopiar = confirm(
+`Instituição cadastrada com sucesso!
+
+Email:
+${email}
+
+Senha Temporária:
+${senha}
+
+Clique em OK para copiar as credenciais.`
+    );
+
+    if (desejaCopiar) {
+        copiar();
+    }
+}
+
+// =====================================================
+// MODAL DE CREDENCIAIS
+// =====================================================
+
+function abrirModalCredenciais(email, senha) {
+
+    elementos.credencialEmail.value = email;
+    elementos.credencialSenha.value = senha;
+
+    elementos.modalCredenciais.hidden = false;
+
+    document.body.classList.add("modal-aberto");
+}
+
+function fecharModalCredenciais() {
+
+    elementos.modalCredenciais.hidden = true;
+
+    document.body.classList.remove("modal-aberto");
 }
 
 
@@ -2053,6 +2161,44 @@ function configurarEventos() {
     elementos.formulario.addEventListener(
         "submit",
         salvarInstituicao,
+        opcoes
+    );
+
+    elementos.btnFecharCredenciais.addEventListener(
+        "click",
+        fecharModalCredenciais,
+        opcoes
+    );
+
+    elementos.btnFecharCredenciais2.addEventListener(
+        "click",
+        fecharModalCredenciais,
+        opcoes
+    );
+
+    elementos.overlayCredenciais.addEventListener(
+        "click",
+        fecharModalCredenciais,
+        opcoes
+    );
+
+    elementos.btnCopiarCredenciais.addEventListener(
+        "click",
+        async () => {
+
+            const texto =
+    `Email: ${elementos.credencialEmail.value}
+
+    Senha: ${elementos.credencialSenha.value}`;
+
+            await navigator.clipboard.writeText(texto);
+
+            exibirFeedback(
+                "Credenciais copiadas com sucesso.",
+                "sucesso"
+            );
+
+        },
         opcoes
     );
 

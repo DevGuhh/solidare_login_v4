@@ -1,119 +1,242 @@
 // ==========================================
+// IMPORTAÇÕES
+// ==========================================
+
+import {
+    salvarToken,
+    obterEmailLembrado,
+    salvarEmailLembrado,
+    removerEmailLembrado
+} from "./auth.js";
+
+
+// ==========================================
 // CONFIGURAÇÃO DA API
 // ==========================================
 
 const API_URL = "http://localhost:3000";
-const LOGIN_URL = `${API_URL}/auth/login`;
+
+const LOGIN_URL =
+    `${API_URL}/auth/login`;
+
+const RECUPERAR_SENHA_URL =
+    `${API_URL}/auth/recuperar-senha`;
 
 
 // ==========================================
-// ELEMENTOS DA TELA
+// ELEMENTOS DA TELA DE LOGIN
 // ==========================================
 
-const form = document.getElementById("loginForm");
+const form =
+    document.getElementById("loginForm");
 
-const email = document.getElementById("email");
-const senha = document.getElementById("senha");
+const email =
+    document.getElementById("email");
 
-const btnEntrar = document.getElementById("btnEntrar");
+const senha =
+    document.getElementById("senha");
 
-const conteudoBotao = document.getElementById("conteudoBotao");
-const carregamentoBotao = document.getElementById("carregamentoBotao");
+const erroEmail =
+    document.getElementById("erroEmail");
 
-const mensagem = document.getElementById("mensagemLogin");
+const erroSenha =
+    document.getElementById("erroSenha");
 
-const btnMostrarSenha = document.getElementById("btnMostrarSenha");
-const iconeSenha = document.getElementById("iconeMostrarSenha");
+const btnEntrar =
+    document.getElementById("btnEntrar");
 
-const lembrarAcesso = document.getElementById("lembrarAcesso");
+const conteudoBotao =
+    document.getElementById("conteudoBotao");
+
+const carregamentoBotao =
+    document.getElementById("carregamentoBotao");
+
+const mensagem =
+    document.getElementById("mensagemLogin");
+
+const btnMostrarSenha =
+    document.getElementById("btnMostrarSenha");
+
+const iconeSenha =
+    document.getElementById("iconeMostrarSenha");
+
+const lembrarAcesso =
+    document.getElementById("lembrarAcesso");
 
 
 // ==========================================
-// CARREGA O E-MAIL LEMBRADO
+// ELEMENTOS DA RECUPERAÇÃO DE SENHA
 // ==========================================
 
-const emailSalvo = localStorage.getItem("emailLembrado");
+const btnEsqueciSenha =
+    document.getElementById("btnEsqueciSenha");
 
-if (emailSalvo) {
+const modalRecuperarSenha =
+    document.getElementById("modalRecuperarSenha");
 
-    email.value = emailSalvo;
+const fecharModalSenha =
+    document.getElementById("fecharModalSenha");
 
-    lembrarAcesso.checked = true;
+const formRecuperarSenha =
+    document.getElementById("formRecuperarSenha");
 
-}
+const emailRecuperacao =
+    document.getElementById("emailRecuperacao");
+
+const resultadoRecuperacao =
+    document.getElementById("resultadoRecuperacao");
+
+const btnEnviarRecuperacao =
+    formRecuperarSenha?.querySelector(
+        'button[type="submit"]'
+    );
 
 
 // ==========================================
-// MOSTRAR / OCULTAR SENHA
+// VALIDAR ELEMENTOS OBRIGATÓRIOS
 // ==========================================
 
-btnMostrarSenha.addEventListener("click", () => {
+function validarElementosDaTela() {
 
-    const senhaEstaOculta = senha.type === "password";
+    const elementosObrigatorios = {
+        form,
+        email,
+        senha,
+        erroEmail,
+        erroSenha,
+        btnEntrar,
+        conteudoBotao,
+        carregamentoBotao,
+        mensagem,
+        btnMostrarSenha,
+        iconeSenha,
+        lembrarAcesso,
+        btnEsqueciSenha,
+        modalRecuperarSenha,
+        fecharModalSenha,
+        formRecuperarSenha,
+        emailRecuperacao,
+        resultadoRecuperacao,
+        btnEnviarRecuperacao
+    };
 
-    if (senhaEstaOculta) {
+    const elementosAusentes =
+        Object.entries(elementosObrigatorios)
+            .filter(([, elemento]) => !elemento)
+            .map(([nome]) => nome);
 
-        senha.type = "text";
+    if (elementosAusentes.length > 0) {
 
-        iconeSenha.classList.remove("fa-eye");
-        iconeSenha.classList.add("fa-eye-slash");
-
-        btnMostrarSenha.title = "Ocultar senha";
-        btnMostrarSenha.setAttribute(
-            "aria-label",
-            "Ocultar senha"
+        console.error(
+            "Elementos obrigatórios não encontrados:",
+            elementosAusentes
         );
 
-    } else {
-
-        senha.type = "password";
-
-        iconeSenha.classList.remove("fa-eye-slash");
-        iconeSenha.classList.add("fa-eye");
-
-        btnMostrarSenha.title = "Mostrar senha";
-        btnMostrarSenha.setAttribute(
-            "aria-label",
-            "Mostrar senha"
-        );
+        return false;
 
     }
 
-});
-
-
-// ==========================================
-// EXIBIR MENSAGEM
-// ==========================================
-
-function mostrarMensagem(texto, tipo = "error") {
-
-    mensagem.hidden = false;
-
-    mensagem.className = `login-message ${tipo}`;
-
-    mensagem.innerHTML = texto;
+    return true;
 
 }
 
 
 // ==========================================
-// LIMPAR MENSAGEM
+// EXIBIR MENSAGEM GERAL DO LOGIN
+// ==========================================
+
+function mostrarMensagem(
+    texto,
+    tipo = "error"
+) {
+
+    mensagem.hidden = false;
+
+    mensagem.className =
+        `login-message ${tipo}`;
+
+    mensagem.textContent = texto;
+
+}
+
+
+// ==========================================
+// LIMPAR MENSAGEM GERAL DO LOGIN
 // ==========================================
 
 function limparMensagem() {
 
     mensagem.hidden = true;
 
-    mensagem.innerHTML = "";
+    mensagem.textContent = "";
 
-    mensagem.className = "login-message";
+    mensagem.className =
+        "login-message";
 
 }
 
 
 // ==========================================
-// INICIAR CARREGAMENTO
+// MOSTRAR ERRO EM UM CAMPO
+// ==========================================
+
+function mostrarErroCampo(
+    campo,
+    elementoErro,
+    texto
+) {
+
+    campo.classList.add("input-error");
+
+    campo.setAttribute(
+        "aria-invalid",
+        "true"
+    );
+
+    elementoErro.textContent = texto;
+
+}
+
+
+// ==========================================
+// LIMPAR ERRO DE UM CAMPO
+// ==========================================
+
+function limparErroCampo(
+    campo,
+    elementoErro
+) {
+
+    campo.classList.remove("input-error");
+
+    campo.removeAttribute("aria-invalid");
+
+    elementoErro.textContent = "";
+
+}
+
+
+// ==========================================
+// LIMPAR TODOS OS ERROS DO LOGIN
+// ==========================================
+
+function limparErrosFormulario() {
+
+    limparErroCampo(
+        email,
+        erroEmail
+    );
+
+    limparErroCampo(
+        senha,
+        erroSenha
+    );
+
+}
+
+
+// ==========================================
+// ESTADO DE CARREGAMENTO DO LOGIN
 // ==========================================
 
 function iniciarCarregamento() {
@@ -127,10 +250,6 @@ function iniciarCarregamento() {
 }
 
 
-// ==========================================
-// FINALIZAR CARREGAMENTO
-// ==========================================
-
 function finalizarCarregamento() {
 
     btnEntrar.disabled = false;
@@ -143,7 +262,42 @@ function finalizarCarregamento() {
 
 
 // ==========================================
-// VALIDAR FORMATO DO E-MAIL
+// ESTADO DE CARREGAMENTO DA RECUPERAÇÃO
+// ==========================================
+
+function iniciarCarregamentoRecuperacao() {
+
+    btnEnviarRecuperacao.disabled = true;
+
+    btnEnviarRecuperacao.innerHTML = `
+        <i
+            class="fa-solid fa-spinner fa-spin"
+            aria-hidden="true"
+        ></i>
+
+        <span>
+            Gerando senha...
+        </span>
+    `;
+
+}
+
+
+function finalizarCarregamentoRecuperacao() {
+
+    btnEnviarRecuperacao.disabled = false;
+
+    btnEnviarRecuperacao.innerHTML = `
+        <span>
+            Gerar senha provisória
+        </span>
+    `;
+
+}
+
+
+// ==========================================
+// VALIDAR E-MAIL
 // ==========================================
 
 function emailValido(emailDigitado) {
@@ -151,38 +305,487 @@ function emailValido(emailDigitado) {
     const regexEmail =
         /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    return regexEmail.test(emailDigitado);
+    return regexEmail.test(
+        emailDigitado
+    );
 
 }
 
 
 // ==========================================
-// ENVIO DO FORMULÁRIO
+// VALIDAR FORMULÁRIO DE LOGIN
 // ==========================================
 
-form.addEventListener("submit", async (event) => {
+function validarFormulario(
+    emailDigitado,
+    senhaDigitada
+) {
 
-    event.preventDefault();
+    limparErrosFormulario();
 
-    limparMensagem();
-
-    const emailDigitado = email.value
-        .trim()
-        .toLowerCase();
-
-    const senhaDigitada = senha.value;
-
-    // ======================================
-    // VALIDAÇÃO DO E-MAIL
-    // ======================================
+    let formularioValido = true;
 
     if (!emailDigitado) {
 
-        mostrarMensagem(
-            '<i class="fa-solid fa-circle-exclamation"></i> Informe seu e-mail.'
+        mostrarErroCampo(
+            email,
+            erroEmail,
+            "Informe seu e-mail."
         );
 
-        email.focus();
+        formularioValido = false;
+
+    } else if (!emailValido(emailDigitado)) {
+
+        mostrarErroCampo(
+            email,
+            erroEmail,
+            "Informe um e-mail válido."
+        );
+
+        formularioValido = false;
+
+    }
+
+    if (!senhaDigitada) {
+
+        mostrarErroCampo(
+            senha,
+            erroSenha,
+            "Informe sua senha."
+        );
+
+        formularioValido = false;
+
+    }
+
+    if (!formularioValido) {
+
+        if (
+            email.classList.contains(
+                "input-error"
+            )
+        ) {
+
+            email.focus();
+
+        } else {
+
+            senha.focus();
+
+        }
+
+    }
+
+    return formularioValido;
+
+}
+
+
+// ==========================================
+// LER RESPOSTA DO BACKEND
+// ==========================================
+
+async function lerRespostaBackend(resposta) {
+
+    const tipoConteudo =
+        resposta.headers.get(
+            "content-type"
+        );
+
+    if (
+        tipoConteudo &&
+        tipoConteudo.includes(
+            "application/json"
+        )
+    ) {
+
+        return resposta.json();
+
+    }
+
+    const respostaTexto =
+        await resposta.text();
+
+    console.error(
+        "Resposta não JSON recebida:",
+        respostaTexto
+    );
+
+    throw new Error(
+        "O servidor retornou uma resposta inválida."
+    );
+
+}
+
+
+// ==========================================
+// CARREGAR E-MAIL LEMBRADO
+// ==========================================
+
+function carregarEmailLembrado() {
+
+    const emailSalvo =
+        obterEmailLembrado();
+
+    if (!emailSalvo) {
+        return;
+    }
+
+    email.value = emailSalvo;
+
+    lembrarAcesso.checked = true;
+
+    senha.focus();
+
+}
+
+
+// ==========================================
+// MOSTRAR OU OCULTAR SENHA
+// ==========================================
+
+function configurarVisualizacaoSenha() {
+
+    btnMostrarSenha.addEventListener(
+        "click",
+        () => {
+
+            const senhaEstaOculta =
+                senha.type === "password";
+
+            senha.type =
+                senhaEstaOculta
+                    ? "text"
+                    : "password";
+
+            iconeSenha.classList.toggle(
+                "fa-eye",
+                !senhaEstaOculta
+            );
+
+            iconeSenha.classList.toggle(
+                "fa-eye-slash",
+                senhaEstaOculta
+            );
+
+            const descricao =
+                senhaEstaOculta
+                    ? "Ocultar senha"
+                    : "Mostrar senha";
+
+            btnMostrarSenha.title =
+                descricao;
+
+            btnMostrarSenha.setAttribute(
+                "aria-label",
+                descricao
+            );
+
+        }
+    );
+
+}
+
+
+// ==========================================
+// LIMPAR ERROS DURANTE A DIGITAÇÃO
+// ==========================================
+
+function configurarLimpezaDeErros() {
+
+    email.addEventListener(
+        "input",
+        () => {
+
+            limparErroCampo(
+                email,
+                erroEmail
+            );
+
+            limparMensagem();
+
+        }
+    );
+
+    senha.addEventListener(
+        "input",
+        () => {
+
+            limparErroCampo(
+                senha,
+                erroSenha
+            );
+
+            limparMensagem();
+
+        }
+    );
+
+}
+
+
+// ==========================================
+// ABRIR MODAL DE RECUPERAÇÃO
+// ==========================================
+
+function abrirModalRecuperacao() {
+
+    limparResultadoRecuperacao();
+
+    const emailLogin =
+        email.value
+            .trim()
+            .toLowerCase();
+
+    if (emailLogin) {
+
+        emailRecuperacao.value =
+            emailLogin;
+
+    }
+
+    modalRecuperarSenha.hidden = false;
+
+    document.body.style.overflow =
+        "hidden";
+
+    window.setTimeout(
+        () => {
+
+            emailRecuperacao.focus();
+
+            emailRecuperacao.select();
+
+        },
+        50
+    );
+
+}
+
+
+// ==========================================
+// FECHAR MODAL DE RECUPERAÇÃO
+// ==========================================
+
+function fecharModalRecuperacao() {
+
+    modalRecuperarSenha.hidden = true;
+
+    document.body.style.overflow = "";
+
+    limparResultadoRecuperacao();
+
+    email.focus();
+
+}
+
+
+// ==========================================
+// LIMPAR RESULTADO DA RECUPERAÇÃO
+// ==========================================
+
+function limparResultadoRecuperacao() {
+
+    resultadoRecuperacao.hidden = true;
+
+    resultadoRecuperacao.className =
+        "login-message";
+
+    resultadoRecuperacao.textContent = "";
+
+}
+
+
+// ==========================================
+// MOSTRAR ERRO DA RECUPERAÇÃO
+// ==========================================
+
+function mostrarErroRecuperacao(texto) {
+
+    resultadoRecuperacao.hidden = false;
+
+    resultadoRecuperacao.className =
+        "login-message error";
+
+    resultadoRecuperacao.textContent =
+        texto;
+
+}
+
+
+// ==========================================
+// MOSTRAR SUCESSO DA RECUPERAÇÃO
+// ==========================================
+
+function mostrarSucessoRecuperacao(
+    mensagemResposta,
+    senhaProvisoria
+) {
+
+    resultadoRecuperacao.hidden = false;
+
+    resultadoRecuperacao.className =
+        "login-message success";
+
+    /*
+     * Todo o HTML abaixo é criado internamente.
+     * Nenhum conteúdo recebido do usuário é
+     * inserido diretamente com innerHTML.
+     */
+    resultadoRecuperacao.innerHTML = "";
+
+    const container =
+        document.createElement("div");
+
+    container.className =
+        "recovery-result";
+
+    const texto =
+        document.createElement("p");
+
+    texto.textContent =
+        mensagemResposta;
+
+    container.appendChild(texto);
+
+    if (senhaProvisoria) {
+
+        const caixaSenha =
+            document.createElement("div");
+
+        caixaSenha.className =
+            "temporary-password-box";
+
+        const tituloSenha =
+            document.createElement("span");
+
+        tituloSenha.className =
+            "temporary-password-label";
+
+        tituloSenha.textContent =
+            "Sua senha provisória";
+
+        const valorSenha =
+            document.createElement("strong");
+
+        valorSenha.className =
+            "temporary-password-value";
+
+        valorSenha.textContent =
+            senhaProvisoria;
+
+        caixaSenha.appendChild(
+            tituloSenha
+        );
+
+        caixaSenha.appendChild(
+            valorSenha
+        );
+
+        container.appendChild(
+            caixaSenha
+        );
+
+        const aviso =
+            document.createElement("small");
+
+        aviso.textContent =
+            "Use essa senha para entrar. O sistema solicitará a criação de uma nova senha.";
+
+        container.appendChild(aviso);
+
+    }
+
+    resultadoRecuperacao.appendChild(
+        container
+    );
+
+}
+
+
+// ==========================================
+// CONFIGURAR EVENTOS DO MODAL
+// ==========================================
+
+function configurarModalRecuperacao() {
+
+    btnEsqueciSenha.addEventListener(
+        "click",
+        abrirModalRecuperacao
+    );
+
+    fecharModalSenha.addEventListener(
+        "click",
+        fecharModalRecuperacao
+    );
+
+    modalRecuperarSenha.addEventListener(
+        "click",
+        (event) => {
+
+            if (
+                event.target ===
+                modalRecuperarSenha
+            ) {
+
+                fecharModalRecuperacao();
+
+            }
+
+        }
+    );
+
+    document.addEventListener(
+        "keydown",
+        (event) => {
+
+            if (
+                event.key === "Escape" &&
+                !modalRecuperarSenha.hidden
+            ) {
+
+                fecharModalRecuperacao();
+
+            }
+
+        }
+    );
+
+    emailRecuperacao.addEventListener(
+        "input",
+        limparResultadoRecuperacao
+    );
+
+}
+
+
+// ==========================================
+// ENVIAR RECUPERAÇÃO DE SENHA
+// ==========================================
+
+async function recuperarSenha(event) {
+
+    event.preventDefault();
+
+    if (btnEnviarRecuperacao.disabled) {
+        return;
+    }
+
+    limparResultadoRecuperacao();
+
+    const emailDigitado =
+        emailRecuperacao.value
+            .trim()
+            .toLowerCase();
+
+    if (!emailDigitado) {
+
+        mostrarErroRecuperacao(
+            "Informe o e-mail cadastrado."
+        );
+
+        emailRecuperacao.focus();
 
         return;
 
@@ -190,93 +793,181 @@ form.addEventListener("submit", async (event) => {
 
     if (!emailValido(emailDigitado)) {
 
-        mostrarMensagem(
-            '<i class="fa-solid fa-circle-exclamation"></i> Informe um e-mail válido.'
+        mostrarErroRecuperacao(
+            "Informe um e-mail válido."
         );
 
-        email.focus();
+        emailRecuperacao.focus();
 
         return;
 
     }
 
-    // ======================================
-    // VALIDAÇÃO DA SENHA
-    // ======================================
+    iniciarCarregamentoRecuperacao();
 
-    if (!senhaDigitada) {
+    try {
 
-        mostrarMensagem(
-            '<i class="fa-solid fa-circle-exclamation"></i> Informe sua senha.'
+        const resposta =
+            await fetch(
+                RECUPERAR_SENHA_URL,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        email: emailDigitado
+                    })
+                }
+            );
+
+        const dados =
+            await lerRespostaBackend(
+                resposta
+            );
+
+        if (!resposta.ok) {
+
+            throw new Error(
+
+                dados.error ||
+
+                dados.message ||
+
+                dados.mensagem ||
+
+                "Não foi possível recuperar a senha."
+
+            );
+
+        }
+
+        /*
+         * Aceitamos nomes diferentes temporariamente,
+         * pois isso facilita a integração durante o
+         * desenvolvimento do backend.
+         */
+        const senhaGerada =
+            dados.senhaProvisoria ||
+
+            dados.senhaTemporaria ||
+
+            dados.novaSenha ||
+
+            dados.senha ||
+
+            null;
+
+        const mensagemResposta =
+
+            dados.message ||
+
+            dados.mensagem ||
+
+            "Senha provisória gerada com sucesso.";
+
+        mostrarSucessoRecuperacao(
+            mensagemResposta,
+            senhaGerada
         );
 
-        senha.focus();
+        /*
+         * Preenche o e-mail na tela de login
+         * para facilitar o próximo acesso.
+         */
+        email.value =
+            emailDigitado;
 
+        senha.value = "";
+
+    } catch (erro) {
+
+        console.error(
+            "Erro ao recuperar senha:",
+            erro
+        );
+
+        const servidorIndisponivel =
+            erro instanceof TypeError;
+
+        mostrarErroRecuperacao(
+
+            servidorIndisponivel
+                ? "Não foi possível conectar ao servidor. Verifique se o backend está funcionando."
+                : erro.message
+
+        );
+
+    } finally {
+
+        finalizarCarregamentoRecuperacao();
+
+    }
+
+}
+
+
+// ==========================================
+// ENVIAR FORMULÁRIO DE LOGIN
+// ==========================================
+
+async function realizarLogin(event) {
+
+    event.preventDefault();
+
+    if (btnEntrar.disabled) {
         return;
+    }
 
+    limparMensagem();
+
+    const emailDigitado =
+        email.value
+            .trim()
+            .toLowerCase();
+
+    const senhaDigitada =
+        senha.value;
+
+    const formularioValido =
+        validarFormulario(
+            emailDigitado,
+            senhaDigitada
+        );
+
+    if (!formularioValido) {
+        return;
     }
 
     iniciarCarregamento();
 
     try {
 
-        // ==================================
-        // REQUISIÇÃO AO BACKEND
-        // ==================================
+        const resposta =
+            await fetch(
+                LOGIN_URL,
+                {
+                    method: "POST",
 
-        const resposta = await fetch(LOGIN_URL, {
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
 
-            method: "POST",
-
-            headers: {
-                "Content-Type": "application/json"
-            },
-
-            body: JSON.stringify({
-
-                email: emailDigitado,
-
-                senha: senhaDigitada
-
-            })
-
-        });
-
-        // ==================================
-        // TRATAMENTO SEGURO DA RESPOSTA
-        // ==================================
-
-        const tipoConteudo =
-            resposta.headers.get("content-type");
-
-        let dados = {};
-
-        if (
-            tipoConteudo &&
-            tipoConteudo.includes("application/json")
-        ) {
-
-            dados = await resposta.json();
-
-        } else {
-
-            const respostaTexto =
-                await resposta.text();
-
-            console.error(
-                "Resposta não JSON recebida do backend:",
-                respostaTexto
+                    body: JSON.stringify({
+                        email: emailDigitado,
+                        senha: senhaDigitada
+                    })
+                }
             );
 
-            throw new Error(
-                `O servidor encontrou um erro interno. Código HTTP: ${resposta.status}.`
+        const dados =
+            await lerRespostaBackend(
+                resposta
             );
-
-        }
-
-        // ==================================
-        // ERRO RETORNADO PELO BACKEND
-        // ==================================
 
         if (!resposta.ok) {
 
@@ -294,10 +985,6 @@ form.addEventListener("submit", async (event) => {
 
         }
 
-        // ==================================
-        // CONFERE SE O TOKEN EXISTE
-        // ==================================
-
         if (!dados.token) {
 
             console.error(
@@ -311,64 +998,41 @@ form.addEventListener("submit", async (event) => {
 
         }
 
-        // ==================================
-        // SALVA O TOKEN
-        // ==================================
+        salvarToken(dados.token);
 
-        /*
-         * O token agora será sempre salvo no localStorage.
-         * Dessa forma, todas as páginas do sistema encontrarão
-         * o token no mesmo lugar.
-         */
-
-        localStorage.setItem(
-            "token",
-            dados.token
-        );
-
-        /*
-         * Remove um possível token antigo salvo no sessionStorage.
-         */
         sessionStorage.removeItem("token");
-
-        // ==================================
-        // LEMBRAR APENAS O E-MAIL
-        // ==================================
 
         if (lembrarAcesso.checked) {
 
-            localStorage.setItem(
-                "emailLembrado",
+            salvarEmailLembrado(
                 emailDigitado
             );
 
         } else {
 
-            localStorage.removeItem(
-                "emailLembrado"
-            );
+            removerEmailLembrado();
 
         }
 
-        // ==================================
-        // SUCESSO
-        // ==================================
-
         mostrarMensagem(
-            '<i class="fa-solid fa-circle-check"></i> Login realizado com sucesso!',
+            "Login realizado com sucesso!",
             "success"
         );
 
-        /*
-         * Ajuste este caminho caso sua página principal
-         * tenha outro nome ou esteja em outra pasta.
-         */
-        setTimeout(() => {
+        const destino =
+            dados.senhaProvisoria
+                ? "views/alterarSenha.html"
+                : "views/dashboard.html";
 
-            window.location.href =
-                "views/dashboard.html";
+        window.setTimeout(
+            () => {
 
-        }, 800);
+                window.location.href =
+                    destino;
+
+            },
+            650
+        );
 
     } catch (erro) {
 
@@ -377,9 +1041,18 @@ form.addEventListener("submit", async (event) => {
             erro
         );
 
+        const servidorIndisponivel =
+            erro instanceof TypeError;
+
         mostrarMensagem(
-            `<i class="fa-solid fa-circle-exclamation"></i> ${erro.message}`
+
+            servidorIndisponivel
+                ? "Não foi possível conectar ao servidor. Verifique se o backend está funcionando."
+                : erro.message
+
         );
+
+        senha.select();
 
     } finally {
 
@@ -387,4 +1060,44 @@ form.addEventListener("submit", async (event) => {
 
     }
 
-});
+}
+
+
+// ==========================================
+// INICIALIZAÇÃO
+// ==========================================
+
+function inicializarLogin() {
+
+    const telaValida =
+        validarElementosDaTela();
+
+    if (!telaValida) {
+        return;
+    }
+
+    carregarEmailLembrado();
+
+    configurarVisualizacaoSenha();
+
+    configurarLimpezaDeErros();
+
+    configurarModalRecuperacao();
+
+    form.addEventListener(
+        "submit",
+        realizarLogin
+    );
+
+    formRecuperarSenha.addEventListener(
+        "submit",
+        recuperarSenha
+    );
+
+}
+
+
+document.addEventListener(
+    "DOMContentLoaded",
+    inicializarLogin
+);

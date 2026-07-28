@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Alterar Senha - Instituto Solidare</title>
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/alterarSenha.css"
+    >
+</head>
+
+<body>
+
+    <main class="password-page">
+
+        <section
+            class="password-card"
+            aria-labelledby="tituloAlterarSenha"
+        >
+
+            <div class="password-icon">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+
+            <header class="password-header">
+
+                <span class="password-badge">
+                    Primeiro acesso
+                </span>
+
+                <h1 id="tituloAlterarSenha">
+                    Crie uma nova senha
+                </h1>
+
+                <p>
+                    Por segurança, substitua a senha provisória antes de acessar o sistema.
+                </p>
+
+            </header>
+
+            <div
+                id="mensagemAlterarSenha"
+                class="password-message"
+                role="alert"
+                hidden
+            ></div>
+
+            <form
+                id="formAlterarSenha"
+                novalidate
+            >
+
+                <div class="form-group">
+
+                    <label for="senhaAtual">
+                        Senha provisória
+                    </label>
+
+                    <div class="password-field">
+
+                        <i class="fa-solid fa-key field-icon"></i>
+
+                        <input
+                            type="password"
+                            id="senhaAtual"
+                            name="senhaAtual"
+                            placeholder="Digite a senha recebida"
+                            autocomplete="current-password"
+                            required
+                        >
+
+                        <button
+                            type="button"
+                            class="toggle-password"
+                            data-target="senhaAtual"
+                            aria-label="Mostrar senha provisória"
+                            title="Mostrar senha provisória"
+                        >
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+
+                    </div>
+
+                    <small
+                        id="erroSenhaAtual"
+                        class="field-error"
+                    ></small>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="novaSenha">
+                        Nova senha
+                    </label>
+
+                    <div class="password-field">
+
+                        <i class="fa-solid fa-lock field-icon"></i>
+
+                        <input
+                            type="password"
+                            id="novaSenha"
+                            name="novaSenha"
+                            placeholder="Crie uma nova senha"
+                            autocomplete="new-password"
+                            required
+                        >
+
+                        <button
+                            type="button"
+                            class="toggle-password"
+                            data-target="novaSenha"
+                            aria-label="Mostrar nova senha"
+                            title="Mostrar nova senha"
+                        >
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+
+                    </div>
+
+                    <small
+                        id="erroNovaSenha"
+                        class="field-error"
+                    ></small>
+
+                    <div class="password-strength">
+
+                        <div class="strength-header">
+
+                            <span>Força da senha</span>
+
+                            <strong id="textoForcaSenha">
+                                Muito fraca
+                            </strong>
+
+                        </div>
+
+                        <div class="strength-track">
+                            <span id="barraForcaSenha"></span>
+                        </div>
+
+                    </div>
+
+                    <ul class="password-requirements">
+
+                        <li id="regraTamanho">
+                            <i class="fa-solid fa-circle"></i>
+                            Pelo menos 8 caracteres
+                        </li>
+
+                        <li id="regraMaiuscula">
+                            <i class="fa-solid fa-circle"></i>
+                            Uma letra maiúscula
+                        </li>
+
+                        <li id="regraMinuscula">
+                            <i class="fa-solid fa-circle"></i>
+                            Uma letra minúscula
+                        </li>
+
+                        <li id="regraNumero">
+                            <i class="fa-solid fa-circle"></i>
+                            Um número
+                        </li>
+
+                        <li id="regraEspecial">
+                            <i class="fa-solid fa-circle"></i>
+                            Um caractere especial
+                        </li>
+
+                    </ul>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="confirmarSenha">
+                        Confirmar nova senha
+                    </label>
+
+                    <div class="password-field">
+
+                        <i class="fa-solid fa-lock field-icon"></i>
+
+                        <input
+                            type="password"
+                            id="confirmarSenha"
+                            name="confirmarSenha"
+                            placeholder="Digite novamente a nova senha"
+                            autocomplete="new-password"
+                            required
+                        >
+
+                        <button
+                            type="button"
+                            class="toggle-password"
+                            data-target="confirmarSenha"
+                            aria-label="Mostrar confirmação da senha"
+                            title="Mostrar confirmação da senha"
+                        >
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+
+                    </div>
+
+                    <small
+                        id="erroConfirmarSenha"
+                        class="field-error"
+                    ></small>
+
+                </div>
+
+                <button
+                    type="submit"
+                    id="btnAlterarSenha"
+                    class="submit-button"
+                >
+
+                    <span id="conteudoBotao">
+                        <i class="fa-solid fa-check"></i>
+                        Salvar nova senha
+                    </span>
+
+                    <span
+                        id="carregamentoBotao"
+                        class="button-loading"
+                        hidden
+                    >
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        Salvando...
+                    </span>
+
+                </button>
+
+            </form>
+
+            <footer class="password-footer">
+
+                <i class="fa-solid fa-circle-info"></i>
+
+                <p>
+                    Após alterar a senha, você será direcionado automaticamente ao painel.
+                </p>
+
+            </footer>
+
+        </section>
+
+    </main>
+
+    <script
+        type="module"
+        src="../js/alterarSenha.js"
+    ></script>
+
+</body>
+
+</html>

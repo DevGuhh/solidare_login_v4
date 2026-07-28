@@ -1,18 +1,57 @@
 import express from "express";
-import authController from "../controllers/authController.js";
-import { protect } from "../middlewares/authMiddleware.js";
+
+import {
+  register,
+  login,
+  logout,
+  alterarSenha,
+  recuperarSenha,
+  redefinirSenha,
+} from "../controllers/authController.js";
+
+import {
+  protect,
+} from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/login", authController.login);
+
+// ==========================================
+// ROTAS PÚBLICAS
+// ==========================================
+
+router.post("/register", register);
+
+router.post("/login", login);
+
+/*
+ * Recuperação de senha
+ * Não exige autenticação.
+ */
+router.post("/recuperar-senha", recuperarSenha);
+router.post("/redefinir-senha", redefinirSenha);
+
+
+// ==========================================
+// ROTAS PROTEGIDAS
+// ==========================================
+
 router.use(protect);
-router.post("/logout", authController.logout);
-router.get("/me", protect, (req, res) => {
+
+router.put("/alterar-senha", alterarSenha);
+
+router.post("/logout", logout);
+
+router.get("/me", (req, res) => {
+
   res.status(200).json({
+
     mensagem: "Usuário autenticado",
+
     usuario: req.user,
+
   });
+
 });
-router.patch("/change-password", protect, authController.changePassword)
 
 export default router;

@@ -7,19 +7,24 @@ datasource db {
 }
 
 model Usuario {
-  id            Int                  @id @default(autoincrement())
-  nome          String
-  email         String               @unique
-  senhaHash     String
-  senhaProvisoria Boolean            @default(false)
-  role          RoleUsuario          @default(INSTITUICAO)
-  ativo         Boolean              @default(true)
-  criadoEm      DateTime             @default(now())
-  atualizadoEm  DateTime             @updatedAt
-  instituicaoId Int?                 @unique
-  doacoes       Doacao[]
-  instituicao   InstituicaoParceira? @relation(fields: [instituicaoId], references: [id])
+  id              Int         @id @default(autoincrement())
+  nome            String
+  email           String      @unique
+  senhaHash       String
+  role            RoleUsuario @default(INSTITUICAO)
+  ativo           Boolean     @default(true)
+  criadoEm        DateTime    @default(now())
+  atualizadoEm    DateTime    @updatedAt
+  instituicaoId   Int?        @unique
+  senhaProvisoria Boolean     @default(false)
 
+  resetTokenHash      String?
+  resetTokenExpiresAt DateTime?
+
+  doacoes     Doacao[]
+  instituicao InstituicaoParceira? @relation(fields: [instituicaoId], references: [id])
+
+  @@index([resetTokenHash])
   @@map("usuarios")
 }
 
@@ -49,7 +54,6 @@ model Beneficiario {
   nomeCompleto           String
   cpf                    String              @unique
   dataNascimento         DateTime
-  composicaoFamiliar     Int                 @default(1)
   logradouro             String
   numero                 String
   complemento            String?
@@ -69,6 +73,7 @@ model Beneficiario {
   criadoEm               DateTime            @default(now())
   atualizadoEm           DateTime            @updatedAt
   deletedAt              DateTime?
+  composicaoFamiliar     Int                 @default(1)
   instituicao            InstituicaoParceira @relation(fields: [instituicaoId], references: [id])
   doacoes                Doacao[]
 

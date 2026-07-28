@@ -45,166 +45,106 @@ let graficoBeneficios = null;
 let graficoInstituicoes = null;
 
 let controladorEventos = null;
-
 let elementos = {};
+
+// =====================================================
+// ELEMENTOS DA TELA
+// =====================================================
 
 function capturarElementos() {
     elementos = {
         tabela: document.getElementById("tabelaRelatorios"),
 
         totalBeneficiarios:
-            document.getElementById(
-                "totalRelatorioBeneficiarios"
-            ),
+            document.getElementById("totalRelatorioBeneficiarios"),
 
         totalInstituicoes:
-            document.getElementById(
-                "totalRelatorioInstituicoes"
-            ),
+            document.getElementById("totalRelatorioInstituicoes"),
 
         totalAtivos:
-            document.getElementById(
-                "totalRelatorioAtivos"
-            ),
+            document.getElementById("totalRelatorioAtivos"),
 
         totalInativos:
-            document.getElementById(
-                "totalRelatorioInativos"
-            ),
+            document.getElementById("totalRelatorioInativos"),
 
         quantidadeRegistros:
-            document.getElementById(
-                "quantidadeRegistrosRelatorio"
-            ),
+            document.getElementById("quantidadeRegistrosRelatorio"),
 
         filtroDataInicial:
-            document.getElementById(
-                "filtroDataInicial"
-            ),
+            document.getElementById("filtroDataInicial"),
 
         filtroDataFinal:
-            document.getElementById(
-                "filtroDataFinal"
-            ),
+            document.getElementById("filtroDataFinal"),
 
         filtroInstituicao:
-            document.getElementById(
-                "filtroInstituicao"
-            ),
+            document.getElementById("filtroInstituicao"),
 
         filtroBeneficio:
-            document.getElementById(
-                "filtroBeneficio"
-            ),
+            document.getElementById("filtroBeneficio"),
 
         filtroAtivo:
-            document.getElementById(
-                "filtroAtivo"
-            ),
+            document.getElementById("filtroAtivo"),
 
         pesquisa:
-            document.getElementById(
-                "pesquisaRelatorio"
-            ),
+            document.getElementById("pesquisaRelatorio"),
 
         descricaoFiltros:
-            document.getElementById(
-                "descricaoFiltrosRelatorio"
-            ),
+            document.getElementById("descricaoFiltrosRelatorio"),
 
         feedback:
-            document.getElementById(
-                "feedbackRelatorios"
-            ),
+            document.getElementById("feedbackRelatorios"),
 
         textoFeedback:
-            document.getElementById(
-                "textoFeedbackRelatorios"
-            ),
+            document.getElementById("textoFeedbackRelatorios"),
 
         btnAtualizar:
-            document.getElementById(
-                "btnAtualizarRelatorio"
-            ),
+            document.getElementById("btnAtualizarRelatorio"),
 
         btnAplicarFiltros:
-            document.getElementById(
-                "btnAplicarFiltrosRelatorio"
-            ),
+            document.getElementById("btnAplicarFiltrosRelatorio"),
 
         btnLimparFiltros:
-            document.getElementById(
-                "btnLimparFiltros"
-            ),
+            document.getElementById("btnLimparFiltros"),
 
-        btnPdf:
-            document.getElementById("btnPdf"),
-
-        btnExcel:
-            document.getElementById("btnExcel"),
-
-        btnCsv:
-            document.getElementById("btnCsv"),
+        btnPdf: document.getElementById("btnPdf"),
+        btnExcel: document.getElementById("btnExcel"),
+        btnCsv: document.getElementById("btnCsv"),
 
         btnImprimir:
-            document.getElementById(
-                "btnImprimirRelatorio"
-            ),
+            document.getElementById("btnImprimirRelatorio"),
 
         quantidadePorPagina:
-            document.getElementById(
-                "quantidadePorPaginaRelatorio"
-            ),
+            document.getElementById("quantidadePorPaginaRelatorio"),
 
         intervaloPaginacao:
-            document.getElementById(
-                "intervaloPaginacaoRelatorio"
-            ),
+            document.getElementById("intervaloPaginacaoRelatorio"),
 
         numerosPaginacao:
-            document.getElementById(
-                "numerosPaginacaoRelatorio"
-            ),
+            document.getElementById("numerosPaginacaoRelatorio"),
 
         btnPrimeiraPagina:
-            document.getElementById(
-                "btnPrimeiraPaginaRelatorio"
-            ),
+            document.getElementById("btnPrimeiraPaginaRelatorio"),
 
         btnPaginaAnterior:
-            document.getElementById(
-                "btnPaginaAnteriorRelatorio"
-            ),
+            document.getElementById("btnPaginaAnteriorRelatorio"),
 
         btnProximaPagina:
-            document.getElementById(
-                "btnProximaPaginaRelatorio"
-            ),
+            document.getElementById("btnProximaPaginaRelatorio"),
 
         btnUltimaPagina:
-            document.getElementById(
-                "btnUltimaPaginaRelatorio"
-            ),
+            document.getElementById("btnUltimaPaginaRelatorio"),
 
         graficoBeneficios:
-            document.getElementById(
-                "graficoRelatorioBeneficios"
-            ),
+            document.getElementById("graficoRelatorioBeneficios"),
 
         graficoInstituicoes:
-            document.getElementById(
-                "graficoRelatorioInstituicoes"
-            ),
+            document.getElementById("graficoRelatorioInstituicoes"),
 
         vazioGraficoBeneficios:
-            document.getElementById(
-                "estadoVazioGraficoBeneficios"
-            ),
+            document.getElementById("estadoVazioGraficoBeneficios"),
 
         vazioGraficoInstituicoes:
-            document.getElementById(
-                "estadoVazioGraficoInstituicoes"
-            )
+            document.getElementById("estadoVazioGraficoInstituicoes")
     };
 }
 
@@ -231,6 +171,10 @@ function validarElementos() {
     }
 }
 
+// =====================================================
+// UTILITÁRIOS
+// =====================================================
+
 function escaparHTML(valor) {
     return String(valor ?? "")
         .replaceAll("&", "&amp;")
@@ -240,12 +184,73 @@ function escaparHTML(valor) {
         .replaceAll("'", "&#039;");
 }
 
-function normalizarTexto(valor) {
-    return String(valor ?? "")
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase()
-        .trim();
+/**
+ * Lê JSON sem quebrar quando a resposta vier sem corpo.
+ */
+async function lerRespostaJSON(resposta) {
+    const texto = await resposta.text();
+
+    if (!texto) {
+        return {};
+    }
+
+    try {
+        return JSON.parse(texto);
+    } catch {
+        throw new Error("A API retornou uma resposta inválida.");
+    }
+}
+
+/**
+ * Extrai uma lista de diferentes formatos possíveis da API.
+ *
+ * Formatos aceitos:
+ * [
+ *   {...}
+ * ]
+ *
+ * { data: [...] }
+ * { beneficiarios: [...] }
+ * { instituicoes: [...] }
+ * { resultados: [...] }
+ * { registros: [...] }
+ */
+function extrairLista(dados, propriedades = []) {
+    if (Array.isArray(dados)) {
+        return dados;
+    }
+
+    for (const propriedade of propriedades) {
+        if (Array.isArray(dados?.[propriedade])) {
+            return dados[propriedade];
+        }
+    }
+
+    const propriedadesPadrao = [
+        "data",
+        "resultados",
+        "registros",
+        "items"
+    ];
+
+    for (const propriedade of propriedadesPadrao) {
+        if (Array.isArray(dados?.[propriedade])) {
+            return dados[propriedade];
+        }
+    }
+
+    return [];
+}
+
+function obterMensagemErro(dados, mensagemPadrao) {
+    return (
+        dados?.message ||
+        dados?.mensagem ||
+        dados?.error ||
+        dados?.erro ||
+        dados?.issues?.[0]?.message ||
+        mensagemPadrao
+    );
 }
 
 function exibirFeedback(mensagem, tipo = "info") {
@@ -260,10 +265,7 @@ function exibirFeedback(mensagem, tipo = "info") {
         "mensagem-erro"
     );
 
-    elementos.feedback.classList.add(
-        `mensagem-${tipo}`
-    );
-
+    elementos.feedback.classList.add(`mensagem-${tipo}`);
     elementos.textoFeedback.textContent = mensagem;
     elementos.feedback.hidden = false;
 
@@ -274,25 +276,18 @@ function exibirFeedback(mensagem, tipo = "info") {
     }, 4500);
 }
 
+// =====================================================
+// FILTROS
+// =====================================================
+
 function obterFiltros() {
     return {
-        dataInicial:
-            elementos.filtroDataInicial.value,
-
-        dataFinal:
-            elementos.filtroDataFinal.value,
-
-        instituicaoId:
-            elementos.filtroInstituicao.value,
-
-        tipoBeneficio:
-            elementos.filtroBeneficio.value,
-
-        ativo:
-            elementos.filtroAtivo.value,
-
-        pesquisa:
-            elementos.pesquisa?.value ?? ""
+        dataInicial: elementos.filtroDataInicial.value,
+        dataFinal: elementos.filtroDataFinal.value,
+        instituicaoId: elementos.filtroInstituicao.value,
+        tipoBeneficio: elementos.filtroBeneficio.value,
+        ativo: elementos.filtroAtivo.value,
+        pesquisa: elementos.pesquisa?.value ?? ""
     };
 }
 
@@ -312,6 +307,10 @@ function validarPeriodo(filtros) {
     return true;
 }
 
+// =====================================================
+// ORDENAÇÃO
+// =====================================================
+
 function obterValorOrdenacao(beneficiario, campo) {
     if (campo === "instituicao") {
         return beneficiario.instituicao?.nome ?? "";
@@ -325,55 +324,45 @@ function obterValorOrdenacao(beneficiario, campo) {
 }
 
 function ordenarLista() {
-    listaOrdenada = [...listaFiltrada].sort(
-        (a, b) => {
-            const valorA =
-                obterValorOrdenacao(a, campoOrdenacao);
+    listaOrdenada = [...listaFiltrada].sort((a, b) => {
+        const valorA = obterValorOrdenacao(a, campoOrdenacao);
+        const valorB = obterValorOrdenacao(b, campoOrdenacao);
 
-            const valorB =
-                obterValorOrdenacao(b, campoOrdenacao);
+        let comparacao;
 
-            let comparacao;
-
-            if (
-                typeof valorA === "number" &&
-                typeof valorB === "number"
-            ) {
-                comparacao = valorA - valorB;
-            } else {
-                comparacao =
-                    String(valorA).localeCompare(
-                        String(valorB),
-                        "pt-BR",
-                        {
-                            numeric: true,
-                            sensitivity: "base"
-                        }
-                    );
-            }
-
-            return direcaoOrdenacao === "asc"
-                ? comparacao
-                : -comparacao;
+        if (
+            typeof valorA === "number" &&
+            typeof valorB === "number"
+        ) {
+            comparacao = valorA - valorB;
+        } else {
+            comparacao = String(valorA).localeCompare(
+                String(valorB),
+                "pt-BR",
+                {
+                    numeric: true,
+                    sensitivity: "base"
+                }
+            );
         }
-    );
+
+        return direcaoOrdenacao === "asc"
+            ? comparacao
+            : -comparacao;
+    });
 }
 
 function atualizarIconesOrdenacao() {
     document
-        .querySelectorAll(
-            "[data-ordenar-relatorio]"
-        )
+        .querySelectorAll("[data-ordenar-relatorio]")
         .forEach((cabecalho) => {
-            const icone =
-                cabecalho.querySelector("i");
+            const icone = cabecalho.querySelector("i");
 
             if (!icone) {
                 return;
             }
 
-            icone.className =
-                "fa-solid fa-sort";
+            icone.className = "fa-solid fa-sort";
 
             if (
                 cabecalho.dataset.ordenarRelatorio ===
@@ -386,6 +375,10 @@ function atualizarIconesOrdenacao() {
             }
         });
 }
+
+// =====================================================
+// PAGINAÇÃO
+// =====================================================
 
 function obterTotalPaginas() {
     return Math.max(
@@ -427,8 +420,7 @@ function irParaPagina(pagina) {
 }
 
 function criarBotaoPagina(numero) {
-    const botao =
-        document.createElement("button");
+    const botao = document.createElement("button");
 
     botao.type = "button";
     botao.className = "btn-paginacao";
@@ -436,19 +428,13 @@ function criarBotaoPagina(numero) {
 
     if (numero === paginaAtual) {
         botao.classList.add("ativo");
-        botao.setAttribute(
-            "aria-current",
-            "page"
-        );
+        botao.setAttribute("aria-current", "page");
     }
 
     botao.addEventListener(
         "click",
         () => irParaPagina(numero),
-        {
-            signal:
-                controladorEventos.signal
-        }
+        { signal: controladorEventos.signal }
     );
 
     return botao;
@@ -507,6 +493,10 @@ function atualizarPaginacao() {
     if (elementos.numerosPaginacao) {
         elementos.numerosPaginacao.innerHTML = "";
 
+        if (total === 0) {
+            return;
+        }
+
         const inicioPaginas =
             Math.max(1, paginaAtual - 2);
 
@@ -528,6 +518,10 @@ function atualizarPaginacao() {
     }
 }
 
+// =====================================================
+// RESUMO
+// =====================================================
+
 function atualizarResumo() {
     const instituicoes = new Set(
         listaFiltrada
@@ -545,7 +539,7 @@ function atualizarResumo() {
 
     const ativos = listaFiltrada.filter(
         (beneficiario) =>
-            beneficiario.ativo
+            Boolean(beneficiario.ativo)
     ).length;
 
     elementos.totalBeneficiarios.textContent =
@@ -555,8 +549,7 @@ function atualizarResumo() {
         instituicoes.size;
 
     if (elementos.totalAtivos) {
-        elementos.totalAtivos.textContent =
-            ativos;
+        elementos.totalAtivos.textContent = ativos;
     }
 
     if (elementos.totalInativos) {
@@ -580,35 +573,22 @@ function atualizarDescricaoFiltros() {
     const filtros = obterFiltros();
     const ativos = [];
 
-    if (filtros.dataInicial) {
-        ativos.push("data inicial");
-    }
-
-    if (filtros.dataFinal) {
-        ativos.push("data final");
-    }
-
-    if (filtros.instituicaoId) {
-        ativos.push("instituição");
-    }
-
-    if (filtros.tipoBeneficio) {
-        ativos.push("benefício");
-    }
-
-    if (filtros.ativo) {
-        ativos.push("situação");
-    }
-
-    if (filtros.pesquisa.trim()) {
-        ativos.push("pesquisa");
-    }
+    if (filtros.dataInicial) ativos.push("data inicial");
+    if (filtros.dataFinal) ativos.push("data final");
+    if (filtros.instituicaoId) ativos.push("instituição");
+    if (filtros.tipoBeneficio) ativos.push("benefício");
+    if (filtros.ativo) ativos.push("situação");
+    if (filtros.pesquisa.trim()) ativos.push("pesquisa");
 
     elementos.descricaoFiltros.textContent =
         ativos.length === 0
             ? "Exibindo todos os registros disponíveis."
             : `${ativos.length} filtro(s) ativo(s).`;
 }
+
+// =====================================================
+// GRÁFICOS
+// =====================================================
 
 function destruirGraficos() {
     if (graficoBeneficios) {
@@ -630,8 +610,7 @@ function renderizarGraficos() {
         return;
     }
 
-    const possuiDados =
-        listaFiltrada.length > 0;
+    const possuiDados = listaFiltrada.length > 0;
 
     if (elementos.vazioGraficoBeneficios) {
         elementos.vazioGraficoBeneficios.hidden =
@@ -710,9 +689,7 @@ function renderizarGraficos() {
     if (elementos.graficoInstituicoes) {
         const entradas = Object.entries(
             instituicoes
-        ).sort(
-            (a, b) => b[1] - a[1]
-        );
+        ).sort((a, b) => b[1] - a[1]);
 
         graficoInstituicoes = new window.Chart(
             elementos.graficoInstituicoes,
@@ -751,6 +728,10 @@ function renderizarGraficos() {
     }
 }
 
+// =====================================================
+// ATUALIZAÇÃO DA TELA
+// =====================================================
+
 function atualizarTela() {
     ordenarLista();
     atualizarResumo();
@@ -774,7 +755,6 @@ function aplicarFiltros() {
         );
 
     paginaAtual = 1;
-
     atualizarTela();
 }
 
@@ -800,60 +780,93 @@ function limparFiltros() {
     );
 }
 
+// =====================================================
+// CARREGAMENTO DOS DADOS
+// =====================================================
+
 async function carregarInstituicoesFiltro() {
     const resposta =
         await listarInstituicoesRelatorio();
 
-    const dados = await resposta.json();
+    const dados = await lerRespostaJSON(resposta);
 
     if (!resposta.ok) {
         throw new Error(
-            dados.error ||
-            dados.erro ||
-            "Erro ao carregar instituições."
+            obterMensagemErro(
+                dados,
+                "Erro ao carregar instituições."
+            )
         );
     }
 
-    elementos.filtroInstituicao.innerHTML = `
-        <option value="">
-            Todas as instituições
-        </option>
-    `;
+    const instituicoes = extrairLista(
+        dados,
+        ["instituicoes"]
+    );
 
-    dados.forEach((instituicao) => {
-        const option =
-            document.createElement("option");
+    elementos.filtroInstituicao.innerHTML = "";
 
-        option.value = instituicao.id;
-        option.textContent = instituicao.nome;
+    const opcaoTodas =
+        document.createElement("option");
 
-        elementos.filtroInstituicao.appendChild(
-            option
-        );
-    });
+    opcaoTodas.value = "";
+    opcaoTodas.textContent =
+        "Todas as instituições";
+
+    elementos.filtroInstituicao.appendChild(
+        opcaoTodas
+    );
+
+    instituicoes
+        .filter(
+            (instituicao) =>
+                instituicao &&
+                instituicao.id !== undefined &&
+                instituicao.id !== null
+        )
+        .sort((a, b) =>
+            String(a.nome ?? "").localeCompare(
+                String(b.nome ?? ""),
+                "pt-BR",
+                { sensitivity: "base" }
+            )
+        )
+        .forEach((instituicao) => {
+            const option =
+                document.createElement("option");
+
+            option.value = String(instituicao.id);
+            option.textContent =
+                instituicao.nome ??
+                `Instituição ${instituicao.id}`;
+
+            elementos.filtroInstituicao.appendChild(
+                option
+            );
+        });
 }
 
 async function carregarBeneficiarios() {
     const resposta =
         await listarBeneficiariosRelatorio();
 
-    const dados = await resposta.json();
+    const dados = await lerRespostaJSON(resposta);
 
     if (!resposta.ok) {
         throw new Error(
-            dados.error ||
-            dados.erro ||
-            "Erro ao carregar beneficiários."
+            obterMensagemErro(
+                dados,
+                "Erro ao carregar beneficiários."
+            )
         );
     }
 
-    listaBeneficiarios =
-        Array.isArray(dados)
-            ? dados
-            : [];
+    listaBeneficiarios = extrairLista(
+        dados,
+        ["beneficiarios"]
+    );
 
     listaFiltrada = [...listaBeneficiarios];
-
     paginaAtual = 1;
 
     atualizarTela();
@@ -884,23 +897,25 @@ async function atualizarDados() {
 
         mostrarErro(erro.message);
 
-        elementos.tabela.innerHTML = `
-            <tr>
-                <td colspan="6">
-                    <div class="estado-tabela estado-tabela-erro">
-                        <i class="fa-solid fa-triangle-exclamation"></i>
+        if (elementos.tabela) {
+            elementos.tabela.innerHTML = `
+                <tr>
+                    <td colspan="6">
+                        <div class="estado-tabela estado-tabela-erro">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
 
-                        <strong>
-                            Não foi possível carregar o relatório
-                        </strong>
+                            <strong>
+                                Não foi possível carregar o relatório
+                            </strong>
 
-                        <span>
-                            ${escaparHTML(erro.message)}
-                        </span>
-                    </div>
-                </td>
-            </tr>
-        `;
+                            <span>
+                                ${escaparHTML(erro.message)}
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
     } finally {
         if (elementos.btnAtualizar) {
             elementos.btnAtualizar.disabled = false;
@@ -909,6 +924,10 @@ async function atualizarDados() {
         esconderLoading();
     }
 }
+
+// =====================================================
+// EXPORTAÇÃO E IMPRESSÃO
+// =====================================================
 
 function imprimirRelatorio() {
     if (!listaFiltrada.length) {
@@ -922,6 +941,10 @@ function imprimirRelatorio() {
     window.print();
 }
 
+// =====================================================
+// EVENTOS
+// =====================================================
+
 function configurarEventos() {
     if (controladorEventos) {
         controladorEventos.abort();
@@ -931,8 +954,7 @@ function configurarEventos() {
         new AbortController();
 
     const opcoes = {
-        signal:
-            controladorEventos.signal
+        signal: controladorEventos.signal
     };
 
     const camposFiltro = [
@@ -977,28 +999,19 @@ function configurarEventos() {
 
     elementos.btnCsv.addEventListener(
         "click",
-        () =>
-            exportarRelatorioCSV(
-                listaFiltrada
-            ),
+        () => exportarRelatorioCSV(listaFiltrada),
         opcoes
     );
 
     elementos.btnExcel.addEventListener(
         "click",
-        () =>
-            exportarRelatorioExcel(
-                listaFiltrada
-            ),
+        () => exportarRelatorioExcel(listaFiltrada),
         opcoes
     );
 
     elementos.btnPdf.addEventListener(
         "click",
-        () =>
-            exportarRelatorioPDF(
-                listaFiltrada
-            ),
+        () => exportarRelatorioPDF(listaFiltrada),
         opcoes
     );
 
@@ -1017,7 +1030,6 @@ function configurarEventos() {
                 ) || 10;
 
             paginaAtual = 1;
-
             renderizarPagina();
         },
         opcoes
@@ -1031,31 +1043,24 @@ function configurarEventos() {
 
     elementos.btnPaginaAnterior?.addEventListener(
         "click",
-        () =>
-            irParaPagina(paginaAtual - 1),
+        () => irParaPagina(paginaAtual - 1),
         opcoes
     );
 
     elementos.btnProximaPagina?.addEventListener(
         "click",
-        () =>
-            irParaPagina(paginaAtual + 1),
+        () => irParaPagina(paginaAtual + 1),
         opcoes
     );
 
     elementos.btnUltimaPagina?.addEventListener(
         "click",
-        () =>
-            irParaPagina(
-                obterTotalPaginas()
-            ),
+        () => irParaPagina(obterTotalPaginas()),
         opcoes
     );
 
     document
-        .querySelectorAll(
-            "[data-ordenar-relatorio]"
-        )
+        .querySelectorAll("[data-ordenar-relatorio]")
         .forEach((cabecalho) => {
             cabecalho.addEventListener(
                 "click",
@@ -1075,13 +1080,16 @@ function configurarEventos() {
                     }
 
                     paginaAtual = 1;
-
                     atualizarTela();
                 },
                 opcoes
             );
         });
 }
+
+// =====================================================
+// INICIALIZAÇÃO
+// =====================================================
 
 export async function inicializarRelatorios() {
     try {
@@ -1107,6 +1115,7 @@ export async function inicializarRelatorios() {
         );
 
         mostrarErro(
+            erro.message ||
             "Não foi possível inicializar a tela de Relatórios."
         );
     }

@@ -298,7 +298,7 @@
                                 type="button"
                                 class="botao-ordenacao"
                             >
-                                Documentação
+                                Status
 
                                 <i class="fa-solid fa-sort"></i>
                             </button>
@@ -904,6 +904,149 @@
             </footer>
 
         </form>
+
+    </section>
+
+</div>
+
+<!-- =====================================================
+     MODAL DE CREDENCIAIS
+====================================================== -->
+
+<div
+    id="modalCredenciais"
+    class="modal"
+    hidden
+>
+
+    <!-- Overlay -->
+
+    <div
+        class="modal-overlay"
+        id="fecharModalCredenciaisOverlay"
+    ></div>
+
+    <!-- Conteúdo -->
+
+    <section
+        class="modal-conteudo"
+        style="max-width:600px;"
+    >
+
+        <!-- Cabeçalho -->
+
+        <header class="modal-cabecalho">
+
+            <div class="modal-cabecalho-texto">
+
+                <span class="modal-icone">
+                    <i class="fa-solid fa-circle-check"></i>
+                </span>
+
+                <div>
+
+                    <h2>Instituição cadastrada com sucesso!</h2>
+
+                    <p>
+                        Anote estas credenciais.
+                        Elas serão exibidas apenas uma vez.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <button
+                type="button"
+                id="btnFecharCredenciais"
+                class="btn-fechar-modal"
+                title="Fechar"
+            >
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+        </header>
+
+        <!-- Corpo -->
+
+        <div class="modal-corpo">
+
+            <div class="campo-formulario">
+
+                <label>E-mail de acesso</label>
+
+                <input
+                    type="text"
+                    id="credencialEmail"
+                    readonly
+                >
+
+            </div>
+
+            <br>
+
+            <div class="campo-formulario">
+
+                <label>Senha Temporária</label>
+
+                <input
+                    type="text"
+                    id="credencialSenha"
+                    readonly
+                >
+
+            </div>
+
+            <br>
+
+            <div
+                style="
+                    background:#eef6ff;
+                    padding:15px;
+                    border-radius:10px;
+                    color:#374151;
+                "
+            >
+
+                <i class="fa-solid fa-circle-info"></i>
+
+                <strong>Atenção:</strong>
+
+                Esta senha será exibida somente agora.
+
+                Oriente a instituição a alterar a senha no primeiro acesso.
+
+            </div>
+
+        </div>
+
+        <!-- Rodapé -->
+
+        <footer class="modal-rodape">
+
+            <button
+                type="button"
+                id="btnCopiarCredenciais"
+                class="btn btn-primary"
+            >
+
+                <i class="fa-solid fa-copy"></i>
+
+                Copiar Credenciais
+
+            </button>
+
+            <button
+                type="button"
+                id="btnFecharCredenciais2"
+                class="btn btn-secondary"
+            >
+
+                Fechar
+
+            </button>
+
+        </footer>
 
     </section>
 

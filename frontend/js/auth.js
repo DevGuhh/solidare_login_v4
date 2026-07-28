@@ -254,15 +254,39 @@ export async function obterUsuarioAutenticado() {
 
         }
 
+        const usuario = dados.usuario || null;
+
+        if (!usuario) {
+            return null;
+        }
+
         /*
-         * Sua rota /auth/me retorna:
-         *
-         * {
-         *   mensagem: "...",
-         *   usuario: { ... }
-         * }
-         */
-        return dados.usuario || null;
+        * Usuários com senha provisória só podem acessar
+        * a página de alteração de senha.
+        */
+        if (usuario.senhaProvisoria) {
+
+            const paginaAtual =
+                window.location.pathname;
+
+            const estaNaPaginaAlterarSenha =
+                paginaAtual.endsWith(
+                    "/alterarSenha.html"
+                );
+
+            if (!estaNaPaginaAlterarSenha) {
+
+                window.location.replace(
+                    "/frontend/views/alterarSenha.html"
+                );
+
+                return null;
+
+            }
+
+        }
+
+        return usuario;
 
     } catch (erro) {
 
