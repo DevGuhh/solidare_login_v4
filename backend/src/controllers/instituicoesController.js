@@ -269,6 +269,8 @@ class InstituicaoController {
   }
 
   async updateStatusDocumetacao(req, res) {
+    const atualizarInstituicaoSchema = criarInstituicaoSchema.partial();
+
     const id = Number(req.params.id);
     if (!Number.isInteger(id) || id <= 0) {
       return res

@@ -1,9 +1,7 @@
 // Importa a instância do Prisma, usada para conversar com o banco de dados.
-import { prisma } from "../config/db.js";
-
+import { prisma } from "../config/db.js";                                      
 // Importa o tipo de erro do Zod, usado para tratar erros de validação.
 import { ZodError } from "zod";
-
 // Importa o schema de validação dos dados do beneficiário.
 import { criarBeneficiarioSchema } from "../validators/beneficiarioValidator.js";
 
