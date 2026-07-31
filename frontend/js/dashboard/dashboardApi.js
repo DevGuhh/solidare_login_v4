@@ -143,58 +143,24 @@ async function executarRequisicao(
 // NORMALIZAR LISTA
 // =====================================================
 
-function normalizarLista(
+function normalizarLista(dados, propriedade) {
 
-    dados,
-
-    propriedade
-
-) {
-
-    if (
-        Array.isArray(dados)
-    ) {
-
+    if (Array.isArray(dados))
         return dados;
 
-    }
-
-
-    if (
-        Array.isArray(
-            dados?.[propriedade]
-        )
-    ) {
-
+    if (Array.isArray(dados?.[propriedade]))
         return dados[propriedade];
 
-    }
+    if (Array.isArray(dados?.dados))
+        return dados.dados;
 
-
-    if (
-        Array.isArray(
-            dados?.data
-        )
-    ) {
-
+    if (Array.isArray(dados?.data))
         return dados.data;
 
-    }
-
-
-    if (
-        Array.isArray(
-            dados?.data?.[propriedade]
-        )
-    ) {
-
+    if (Array.isArray(dados?.data?.[propriedade]))
         return dados.data[propriedade];
 
-    }
-
-
     return [];
-
 }
 
 
