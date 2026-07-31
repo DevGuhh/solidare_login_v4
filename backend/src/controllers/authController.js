@@ -2,11 +2,10 @@ import { prisma } from "../config/db.js";
 import bcrypt from "bcrypt";
 import crypto from "node:crypto";
 import nodemailer from "nodemailer";
-
-import {
-  generateToken,
-} from "../utils/generateToken.js";
-
+import { generateToken } from "../utils/generateToken.js";
+import { PrismaClient } from "@prisma/client";
+import { use } from "react";
+import { sendMail } from "../config/mailer.js";
 
 // ======================================================
 // CONFIGURAÇÕES DA RECUPERAÇÃO DE SENHA
@@ -15,35 +14,27 @@ import {
 const TEMPO_EXPIRACAO_TOKEN_MINUTOS = 30;
 
 const MENSAGEM_RECUPERACAO =
-
   "Se o e-mail estiver cadastrado, você receberá um link para redefinir sua senha.";
-
 
 // ======================================================
 // ESCAPAR TEXTO PARA USO SEGURO NO HTML DO E-MAIL
 // ======================================================
 
 function escaparHtml(texto = "") {
-
   return String(texto)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
-
 }
-
 
 // ======================================================
 // CRIAR TRANSPORTADOR DE E-MAIL
 // ======================================================
 
 function criarTransportadorEmail() {
-
-  const porta = Number(
-    process.env.EMAIL_PORT || 587,
-  );
+  const porta = Number(process.env.EMAIL_PORT || 587);
 
   const configuracoesObrigatorias = [
     process.env.EMAIL_HOST,
@@ -51,87 +42,60 @@ function criarTransportadorEmail() {
     process.env.EMAIL_PASSWORD,
   ];
 
-  const configuracaoIncompleta =
-    configuracoesObrigatorias.some(
-      (valor) => !valor,
-    );
+  const configuracaoIncompleta = configuracoesObrigatorias.some(
+    (valor) => !valor,
+  );
 
   if (configuracaoIncompleta) {
-
     throw new Error(
       "As configurações de e-mail não foram definidas no arquivo .env.",
     );
-
   }
 
   return nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
 
-    host:
-      process.env.EMAIL_HOST,
+    port: porta,
 
-    port:
-      porta,
-
-    secure:
-      porta === 465,
+    secure: porta === 465,
 
     auth: {
+      user: process.env.EMAIL_USER,
 
-      user:
-        process.env.EMAIL_USER,
-
-      pass:
-        process.env.EMAIL_PASSWORD,
-
+      pass: process.env.EMAIL_PASSWORD,
     },
-
   });
-
 }
-
 
 // ======================================================
 // ENVIAR E-MAIL DE RECUPERAÇÃO
 // ======================================================
 
-async function enviarEmailRecuperacao({
-  nome,
-  email,
-  token,
-}) {
-
+async function enviarEmailRecuperacao({ nome, email, token }) {
   const frontendUrl = (
-    process.env.FRONTEND_URL ||
-    "http://localhost:5500"
+    process.env.FRONTEND_URL || "http://localhost:5500"
   ).replace(/\/$/, "");
 
   /*
    * O token original é enviado somente no link.
    * No banco será salvo apenas o hash.
    */
-  const linkRecuperacao =
-    `${frontendUrl}/views/redefinirSenha.html?token=${encodeURIComponent(token)}`;
+  const linkRecuperacao = `${frontendUrl}/views/redefinirSenha.html?token=${encodeURIComponent(token)}`;
 
-  const transportador =
-    criarTransportadorEmail();
+  const transportador = criarTransportadorEmail();
 
-  const nomeSeguro =
-    escaparHtml(nome || "Usuário");
+  const nomeSeguro = escaparHtml(nome || "Usuário");
 
   const remetente =
     process.env.EMAIL_FROM ||
     `"Instituto Solidare" <${process.env.EMAIL_USER}>`;
 
   await transportador.sendMail({
+    from: remetente,
 
-    from:
-      remetente,
+    to: email,
 
-    to:
-      email,
-
-    subject:
-      "Redefinição de senha | Instituto Solidare",
+    subject: "Redefinição de senha | Instituto Solidare",
 
     text: `
 Olá, ${nome || "usuário"}.
@@ -426,1109 +390,444 @@ Instituto Solidare
 
 </html>
     `.trim(),
-
   });
-
 }
 
+class AuthController {
+  async login(req, res) {
+    try {
+      const { email, senha, senhaHash } = req.body;
 
-// ======================================================
-// CADASTRAR USUÁRIO
-// ======================================================
+      const senhaRecebida = senha || senhaHash;
 
-const register = async (req, res) => {
+      const emailNormalizado = email ? email.trim().toLowerCase() : "";
 
-  try {
+      if (!emailNormalizado || !senhaRecebida) {
+        return res.status(400).json({
+          error: "E-mail e senha são obrigatórios.",
+        });
+      }
 
-    const {
-      nome,
-      email,
-      senha,
-      senhaHash,
-      role,
-      instituicaoId,
-    } = req.body;
-
-    const senhaRecebida =
-      senha || senhaHash;
-
-    const emailNormalizado =
-      email
-        ? email.trim().toLowerCase()
-        : "";
-
-
-    // ==================================================
-    // VALIDAÇÃO DOS CAMPOS
-    // ==================================================
-
-    if (
-      !nome ||
-      !emailNormalizado ||
-      !senhaRecebida
-    ) {
-
-      return res.status(400).json({
-
-        error:
-          "Nome, e-mail e senha são obrigatórios.",
-
-      });
-
-    }
-
-    if (
-      typeof senhaRecebida !== "string" ||
-      senhaRecebida.length < 6
-    ) {
-
-      return res.status(400).json({
-
-        error:
-          "A senha deve possuir pelo menos 6 caracteres.",
-
-      });
-
-    }
-
-
-    // ==================================================
-    // VERIFICA SE O E-MAIL JÁ EXISTE
-    // ==================================================
-
-    const usuarioExistente =
-      await prisma.usuario.findUnique({
-
-        where: {
-          email: emailNormalizado,
-        },
-
-      });
-
-    if (usuarioExistente) {
-
-      return res.status(409).json({
-
-        error:
-          "Este e-mail já está cadastrado.",
-
-      });
-
-    }
-
-
-    // ==================================================
-    // CRIPTOGRAFA A SENHA
-    // ==================================================
-
-    const senhaCriptografada =
-      await bcrypt.hash(
-        senhaRecebida,
-        10,
-      );
-
-
-    // ==================================================
-    // MONTA OS DADOS DO NOVO USUÁRIO
-    // ==================================================
-
-    const dadosNovoUsuario = {
-
-      nome:
-        nome.trim(),
-
-      email:
-        emailNormalizado,
-
-      senhaHash:
-        senhaCriptografada,
-
-    };
-
-    if (role) {
-
-      dadosNovoUsuario.role =
-        role;
-
-    }
-
-    if (
-      instituicaoId !== undefined &&
-      instituicaoId !== null &&
-      instituicaoId !== ""
-    ) {
-
-      dadosNovoUsuario.instituicaoId =
-        Number(instituicaoId);
-
-    }
-
-
-    // ==================================================
-    // CRIA O USUÁRIO
-    // ==================================================
-
-    const usuario =
-      await prisma.usuario.create({
-
-        data:
-          dadosNovoUsuario,
-
-      });
-
-
-    // ==================================================
-    // GERA O TOKEN JWT
-    // ==================================================
-
-    const token =
-      generateToken(
-        usuario.id,
-        res,
-        usuario.role,
-      );
-
-
-    // ==================================================
-    // RESPOSTA
-    // ==================================================
-
-    return res.status(201).json({
-
-      status:
-        "sucesso",
-
-      mensagem:
-        "Usuário cadastrado com sucesso.",
-
-      token,
-
-      data: {
-
-        usuario: {
-
-          id:
-            usuario.id,
-
-          nome:
-            usuario.nome,
-
-          email:
-            usuario.email,
-
-          role:
-            usuario.role,
-
-          ativo:
-            usuario.ativo,
-
-          instituicaoId:
-            usuario.instituicaoId,
-
-          senhaProvisoria:
-            usuario.senhaProvisoria,
-
-        },
-
-        token,
-
-      },
-
-    });
-
-  } catch (erro) {
-
-    console.error(
-      "Erro ao cadastrar usuário:",
-      erro,
-    );
-
-    return res.status(500).json({
-
-      error:
-        "Erro interno ao cadastrar usuário.",
-
-    });
-
-  }
-
-};
-
-
-// ======================================================
-// REALIZAR LOGIN
-// ======================================================
-
-const login = async (req, res) => {
-
-  try {
-
-    const {
-      email,
-      senha,
-      senhaHash,
-    } = req.body;
-
-    const senhaRecebida =
-      senha || senhaHash;
-
-    const emailNormalizado =
-      email
-        ? email.trim().toLowerCase()
-        : "";
-
-
-    // ==================================================
-    // VALIDAÇÃO DOS CAMPOS
-    // ==================================================
-
-    if (
-      !emailNormalizado ||
-      !senhaRecebida
-    ) {
-
-      return res.status(400).json({
-
-        error:
-          "E-mail e senha são obrigatórios.",
-
-      });
-
-    }
-
-
-    // ==================================================
-    // BUSCA O USUÁRIO
-    // ==================================================
-
-    const usuario =
-      await prisma.usuario.findUnique({
-
+      const usuario = await prisma.usuario.findUnique({
         where: {
           email: emailNormalizado,
         },
 
         select: {
-
-          id:
-            true,
-
-          nome:
-            true,
-
-          email:
-            true,
-
-          senhaHash:
-            true,
-
-          senhaProvisoria:
-            true,
-
-          role:
-            true,
-
-          ativo:
-            true,
-
-          instituicaoId:
-            true,
-
+          id: true,
+          nome: true,
+          email: true,
+          senhaHash: true,
+          senhaProvisoria: true,
+          role: true,
+          ativo: true,
+          instituicaoId: true,
         },
-
       });
 
-    if (!usuario) {
+      if (!usuario) {
+        return res.status(401).json({
+          error: "E-mail ou senha inválidos.",
+        });
+      }
 
-      return res.status(401).json({
+      if (!usuario.ativo) {
+        return res.status(403).json({
+          error: "Este usuário está inativo. Procure um administrador.",
+        });
+      }
 
-        error:
-          "E-mail ou senha inválidos.",
+      if (!usuario.senhaHash) {
+        console.error(
+          `Usuário de ID ${usuario.id} está sem senhaHash no banco.`,
+        );
 
-      });
+        return res.status(500).json({
+          error: "O usuário está sem uma senha configurada.",
+        });
+      }
 
-    }
-
-
-    // ==================================================
-    // VERIFICA SE O USUÁRIO ESTÁ ATIVO
-    // ==================================================
-
-    if (!usuario.ativo) {
-
-      return res.status(403).json({
-
-        error:
-          "Este usuário está inativo. Procure um administrador.",
-
-      });
-
-    }
-
-
-    // ==================================================
-    // CONFERE SE EXISTE SENHA NO BANCO
-    // ==================================================
-
-    if (!usuario.senhaHash) {
-
-      console.error(
-        `Usuário de ID ${usuario.id} está sem senhaHash no banco.`,
-      );
-
-      return res.status(500).json({
-
-        error:
-          "O usuário está sem uma senha configurada.",
-
-      });
-
-    }
-
-
-    // ==================================================
-    // COMPARA A SENHA DIGITADA COM O HASH
-    // ==================================================
-
-    const senhaValida =
-      await bcrypt.compare(
+      const senhaValida = await bcrypt.compare(
         senhaRecebida,
         usuario.senhaHash,
       );
 
-    if (!senhaValida) {
+      if (!senhaValida) {
+        return res.status(401).json({
+          error: "E-mail ou senha inválidos.",
+        });
+      }
 
-      return res.status(401).json({
+      const token = generateToken(usuario.id, res, usuario.role);
 
-        error:
-          "E-mail ou senha inválidos.",
-
-      });
-
-    }
-
-
-    // ==================================================
-    // GERA O TOKEN JWT
-    // ==================================================
-
-    const token =
-      generateToken(
-        usuario.id,
-        res,
-        usuario.role,
-      );
-
-
-    // ==================================================
-    // RETORNA O LOGIN
-    // ==================================================
-
-    return res.status(200).json({
-
-      status:
-        "sucesso",
-
-      mensagem:
-        "Login realizado com sucesso.",
-
-      token,
-
-      senhaProvisoria:
-        usuario.senhaProvisoria,
-
-      role:
-        usuario.role,
-
-      data: {
-
-        usuario: {
-
-          id:
-            usuario.id,
-
-          nome:
-            usuario.nome,
-
-          email:
-            usuario.email,
-
-          role:
-            usuario.role,
-
-          ativo:
-            usuario.ativo,
-
-          instituicaoId:
-            usuario.instituicaoId,
-
-          senhaProvisoria:
-            usuario.senhaProvisoria,
-
-        },
-
+      return res.status(200).json({
+        status: "sucesso",
+        mensagem: "Login realizado com sucesso.",
         token,
+        senhaProvisoria: usuario.senhaProvisoria,
+        role: usuario.role,
+        data: {
+          usuario: {
+            id: usuario.id,
+            nome: usuario.nome,
+            email: usuario.email,
+            role: usuario.role,
+            ativo: usuario.ativo,
+            instituicaoId: usuario.instituicaoId,
+            senhaProvisoria: usuario.senhaProvisoria,
+          },
+          token,
+        },
+      });
+    } catch (erro) {
+      console.error("Erro ao realizar login:", erro);
 
-      },
-
-    });
-
-  } catch (erro) {
-
-    console.error(
-      "Erro ao realizar login:",
-      erro,
-    );
-
-    return res.status(500).json({
-
-      error:
-        "Erro interno ao realizar login.",
-
-    });
-
+      return res.status(500).json({
+        error: "Erro interno ao realizar login.",
+      });
+    }
   }
 
-};
+  async logout(req, res) {
+    try {
+      res.cookie("jwt", "", {
+        httpOnly: true,
+        expires: new Date(0),
+        sameSite: "lax",
+      });
 
+      return res.status(200).json({
+        status: "sucesso",
+        mensagem: "Desconectado com sucesso.",
+      });
+    } catch (erro) {
+      console.error("Erro ao realizar logout:", erro);
 
-// ======================================================
-// REALIZAR LOGOUT
-// ======================================================
-
-const logout = async (req, res) => {
-
-  try {
-
-    res.cookie(
-      "jwt",
-      "",
-      {
-
-        httpOnly:
-          true,
-
-        expires:
-          new Date(0),
-
-        sameSite:
-          "lax",
-
-      },
-    );
-
-    return res.status(200).json({
-
-      status:
-        "sucesso",
-
-      mensagem:
-        "Desconectado com sucesso.",
-
-    });
-
-  } catch (erro) {
-
-    console.error(
-      "Erro ao realizar logout:",
-      erro,
-    );
-
-    return res.status(500).json({
-
-      error:
-        "Erro interno ao realizar logout.",
-
-    });
-
+      return res.status(500).json({
+        error: "Erro interno ao realizar logout.",
+      });
+    }
   }
 
-};
+  async alterarSenha(req, res) {
+    try {
+      const usuarioId = req.userId;
+      const { senhaAtual, novaSenha, confirmarSenha } = req.body;
 
+      if (!usuarioId) {
+        return res.status(401).json({
+          error: "Usuário não autenticado.",
+        });
+      }
 
-// ======================================================
-// ALTERAR SENHA DO USUÁRIO AUTENTICADO
-// ======================================================
+      if (!senhaAtual || !novaSenha || !confirmarSenha) {
+        return res.status(400).json({
+          error: "Preencha todos os campos.",
+        });
+      }
 
-const alterarSenha = async (req, res) => {
+      if (typeof novaSenha !== "string" || novaSenha.length < 6) {
+        return res.status(400).json({
+          error: "A nova senha deve possuir pelo menos 6 caracteres.",
+        });
+      }
 
-  try {
+      if (novaSenha !== confirmarSenha) {
+        return res.status(400).json({
+          error: "A confirmação da senha não corresponde à nova senha.",
+        });
+      }
 
-    const usuarioId =
-      req.userId;
+      if (senhaAtual === novaSenha) {
+        return res.status(400).json({
+          error: "A nova senha deve ser diferente da senha atual.",
+        });
+      }
 
-    const {
-      senhaAtual,
-      novaSenha,
-      confirmarSenha,
-    } = req.body;
-
-
-    // ==================================================
-    // VALIDAÇÕES
-    // ==================================================
-
-    if (!usuarioId) {
-
-      return res.status(401).json({
-
-        error:
-          "Usuário não autenticado.",
-
-      });
-
-    }
-
-    if (
-      !senhaAtual ||
-      !novaSenha ||
-      !confirmarSenha
-    ) {
-
-      return res.status(400).json({
-
-        error:
-          "Preencha todos os campos.",
-
-      });
-
-    }
-
-    if (
-      typeof novaSenha !== "string" ||
-      novaSenha.length < 6
-    ) {
-
-      return res.status(400).json({
-
-        error:
-          "A nova senha deve possuir pelo menos 6 caracteres.",
-
-      });
-
-    }
-
-    if (
-      novaSenha !== confirmarSenha
-    ) {
-
-      return res.status(400).json({
-
-        error:
-          "A confirmação da senha não corresponde à nova senha.",
-
-      });
-
-    }
-
-    if (
-      senhaAtual === novaSenha
-    ) {
-
-      return res.status(400).json({
-
-        error:
-          "A nova senha deve ser diferente da senha atual.",
-
-      });
-
-    }
-
-
-    // ==================================================
-    // BUSCA O USUÁRIO
-    // ==================================================
-
-    const usuario =
-      await prisma.usuario.findUnique({
-
+      const usuario = await prisma.usuario.findUnique({
         where: {
           id: Number(usuarioId),
         },
-
       });
 
-    if (!usuario) {
+      if (!usuario) {
+        return res.status(404).json({
+          error: "Usuário não encontrado.",
+        });
+      }
 
-      return res.status(404).json({
+      if (!usuario.ativo) {
+        return res.status(403).json({
+          error: "Este usuário está inativo.",
+        });
+      }
 
-        error:
-          "Usuário não encontrado.",
+      if (!usuario.senhaHash) {
+        return res.status(500).json({
+          error: "O usuário está sem uma senha configurada.",
+        });
+      }
 
-      });
-
-    }
-
-    if (!usuario.ativo) {
-
-      return res.status(403).json({
-
-        error:
-          "Este usuário está inativo.",
-
-      });
-
-    }
-
-    if (!usuario.senhaHash) {
-
-      return res.status(500).json({
-
-        error:
-          "O usuário está sem uma senha configurada.",
-
-      });
-
-    }
-
-
-    // ==================================================
-    // CONFERE A SENHA ATUAL
-    // ==================================================
-
-    const senhaAtualValida =
-      await bcrypt.compare(
+      const senhaAtualValida = await bcrypt.compare(
         senhaAtual,
         usuario.senhaHash,
       );
 
-    if (!senhaAtualValida) {
+      if (!senhaAtualValida) {
+        return res.status(401).json({
+          error: "A senha atual está incorreta.",
+        });
+      }
 
-      return res.status(401).json({
+      const novaSenhaHash = await bcrypt.hash(novaSenha, 10);
 
-        error:
-          "A senha atual está incorreta.",
-
-      });
-
-    }
-
-
-    // ==================================================
-    // CRIPTOGRAFA A NOVA SENHA
-    // ==================================================
-
-    const novaSenhaHash =
-      await bcrypt.hash(
-        novaSenha,
-        10,
-      );
-
-
-    // ==================================================
-    // ATUALIZA A SENHA
-    // ==================================================
-
-    await prisma.usuario.update({
-
-      where: {
-        id: usuario.id,
-      },
-
-      data: {
-
-        senhaHash:
-          novaSenhaHash,
-
-        senhaProvisoria:
-          false,
-
-        /*
-         * Também remove qualquer token de
-         * recuperação que ainda esteja ativo.
-         */
-        resetTokenHash:
-          null,
-
-        resetTokenExpiresAt:
-          null,
-
-      },
-
-    });
-
-    return res.status(200).json({
-
-      status:
-        "sucesso",
-
-      mensagem:
-        "Senha alterada com sucesso.",
-
-    });
-
-  } catch (erro) {
-
-    console.error(
-      "Erro ao alterar senha:",
-      erro,
-    );
-
-    return res.status(500).json({
-
-      error:
-        "Erro interno ao alterar a senha.",
-
-    });
-
-  }
-
-};
-
-
-// ======================================================
-// SOLICITAR LINK DE RECUPERAÇÃO DE SENHA
-// ======================================================
-
-const solicitarRecuperacao = async (req, res) => {
-
-  try {
-
-    const {
-      email,
-    } = req.body;
-
-
-    // ==================================================
-    // VALIDAÇÃO DO FORMATO DO E-MAIL
-    // ==================================================
-
-    if (
-      !email ||
-      typeof email !== "string"
-    ) {
-
-      return res.status(400).json({
-
-        error:
-          "Informe um e-mail válido.",
-
-      });
-
-    }
-
-    const emailNormalizado =
-      email.trim().toLowerCase();
-
-    const regexEmail =
-      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (
-      !emailNormalizado ||
-      !regexEmail.test(emailNormalizado)
-    ) {
-
-      return res.status(400).json({
-
-        error:
-          "Informe um e-mail válido.",
-
-      });
-
-    }
-
-
-    // ==================================================
-    // BUSCA O USUÁRIO
-    // ==================================================
-
-    const usuario =
-      await prisma.usuario.findUnique({
-
-        where: {
-          email: emailNormalizado,
-        },
-
-        select: {
-
-          id:
-            true,
-
-          nome:
-            true,
-
-          email:
-            true,
-
-          ativo:
-            true,
-
-        },
-
-      });
-
-    /*
-     * Retorna a mesma mensagem quando o usuário não
-     * existe ou está inativo. Isso impede que alguém
-     * descubra quais e-mails estão cadastrados.
-     */
-    if (
-      !usuario ||
-      !usuario.ativo
-    ) {
-
-      return res.status(200).json({
-
-        status:
-          "sucesso",
-
-        mensagem:
-          MENSAGEM_RECUPERACAO,
-
-      });
-
-    }
-
-
-    // ==================================================
-    // GERA TOKEN ALEATÓRIO
-    // ==================================================
-
-    const tokenOriginal =
-      crypto
-        .randomBytes(32)
-        .toString("hex");
-
-
-    // ==================================================
-    // GERA HASH DO TOKEN
-    // ==================================================
-
-    const tokenHash =
-      crypto
-        .createHash("sha256")
-        .update(tokenOriginal)
-        .digest("hex");
-
-
-    // ==================================================
-    // DEFINE O PRAZO DE VALIDADE
-    // ==================================================
-
-    const tokenExpiraEm =
-      new Date(
-        Date.now() +
-        TEMPO_EXPIRACAO_TOKEN_MINUTOS *
-        60 *
-        1000,
-      );
-
-
-    // ==================================================
-    // SALVA APENAS O HASH DO TOKEN
-    // ==================================================
-
-    await prisma.usuario.update({
-
-      where: {
-        id: usuario.id,
-      },
-
-      data: {
-
-        resetTokenHash:
-          tokenHash,
-
-        resetTokenExpiresAt:
-          tokenExpiraEm,
-
-      },
-
-    });
-
-
-    // ==================================================
-    // ENVIA O LINK POR E-MAIL
-    // ==================================================
-
-    try {
-
-      await enviarEmailRecuperacao({
-
-        nome:
-          usuario.nome,
-
-        email:
-          usuario.email,
-
-        token:
-          tokenOriginal,
-
-      });
-
-    } catch (erroEmail) {
-
-      /*
-       * Caso o envio falhe, o token é removido para
-       * que não permaneça válido sem ter sido enviado.
-       */
       await prisma.usuario.update({
-
         where: {
           id: usuario.id,
         },
 
         data: {
+          senhaHash: novaSenhaHash,
+          senhaProvisoria: false,
+          resetTokenHash: null,
+          resetTokenExpiresAt: null,
+        },
+      });
 
-          resetTokenHash:
-            null,
+      return res.status(200).json({
+        status: "sucesso",
+        mensagem: "Senha alterada com sucesso.",
+      });
+    } catch (erro) {
+      console.error("Erro ao alterar senha:", erro);
 
-          resetTokenExpiresAt:
-            null,
+      return res.status(500).json({
+        error: "Erro interno ao alterar a senha.",
+      });
+    }
+  }
+  async requestPasswordReset(req, res) {
+    const { email } = req.body;
 
+    try {
+      const user = await prisma.usuario.findUnique({
+        where: {
+          email,
+        },
+      });
+
+      if (!user) {
+        return res.status(404).json({ error: "Usuário não encontrado" });
+      }
+
+      const resetToken = crypto.randomBytes(32).toString("hex");
+      const expiresAt = new Date(Date.now() + 1000 * 60 * 15);
+
+      await prisma.resetPasswordToken.create({
+        data: { token: resetToken, usuarioId: user.id, expiresAt },
+      });
+
+      await sendMail(
+        user.email,
+        "Redefinição de senha",
+        `
+        <h2> Olá, ${user.nome}</h2>
+        <p>Você solicitou redefinição de senha. Clique no link abaixo para redefinir</p>
+        <a href="http://localhost:3000/auth/reset-password/${resetToken}">
+          Redefinir minha senha
+        </a>
+
+        <p>Esse link expira em 15 minutos.</p>
+        `,
+      );
+
+      return res.json({ message: "E-mail de redefinição enviado!" });
+    } catch (error) {
+      console.error("Erro em requestPasswordReset:", error);
+      return res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  }
+
+  async resetPassword(req, res) {
+    const { token } = req.params;
+    const { newPassword } = req.body;
+
+    try {
+      const resetToken = await prisma.resetPasswordToken.findUnique({
+        where: {
+          token,
+        },
+      });
+
+      if (!resetToken || resetToken.expiresAt < new Date()) {
+        return res.status(400).json({ error: "Token inválido ou expirado" });
+      }
+
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      await prisma.usuario.update({
+        where: { id: resetToken.usuarioId },
+        data: { senhaHash: hashedPassword },
+      });
+
+      await prisma.resetPasswordToken.delete({ where: { id: resetToken.id } });
+      return res.json({ message: "Senha redefinida com sucesso!" });
+    } catch (error) {
+      return res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  }
+}
+
+const solicitarRecuperacao = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email || typeof email !== "string") {
+      return res.status(400).json({
+        error: "Informe um e-mail válido.",
+      });
+    }
+
+    const emailNormalizado = email.trim().toLowerCase();
+
+    const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailNormalizado || !regexEmail.test(emailNormalizado)) {
+      return res.status(400).json({
+        error: "Informe um e-mail válido.",
+      });
+    }
+
+    const usuario = await prisma.usuario.findUnique({
+      where: {
+        email: emailNormalizado,
+      },
+
+      select: {
+        id: true,
+        nome: true,
+        email: true,
+        ativo: true,
+      },
+    });
+
+    if (!usuario || !usuario.ativo) {
+      return res.status(200).json({
+        status: "sucesso",
+        mensagem: MENSAGEM_RECUPERACAO,
+      });
+    }
+
+    const tokenOriginal = crypto.randomBytes(32).toString("hex");
+
+    const tokenHash = crypto
+      .createHash("sha256")
+      .update(tokenOriginal)
+      .digest("hex");
+
+    const tokenExpiraEm = new Date(
+      Date.now() + TEMPO_EXPIRACAO_TOKEN_MINUTOS * 60 * 1000,
+    );
+
+    await prisma.usuario.update({
+      where: {
+        id: usuario.id,
+      },
+
+      data: {
+        resetTokenHash: tokenHash,
+        resetTokenExpiresAt: tokenExpiraEm,
+      },
+    });
+
+    try {
+      await enviarEmailRecuperacao({
+        nome: usuario.nome,
+        email: usuario.email,
+        token: tokenOriginal,
+      });
+    } catch (erroEmail) {
+      await prisma.usuario.update({
+        where: {
+          id: usuario.id,
         },
 
+        data: {
+          resetTokenHash: null,
+          resetTokenExpiresAt: null,
+        },
       });
 
       throw erroEmail;
-
     }
 
-
-    // ==================================================
-    // RESPOSTA GENÉRICA
-    // ==================================================
-
     return res.status(200).json({
+      status: "sucesso",
 
-      status:
-        "sucesso",
-
-      mensagem:
-        MENSAGEM_RECUPERACAO,
-
+      mensagem: MENSAGEM_RECUPERACAO,
     });
-
   } catch (erro) {
-
-    console.error(
-      "Erro ao solicitar recuperação de senha:",
-      erro,
-    );
+    console.error("Erro ao solicitar recuperação de senha:", erro);
 
     return res.status(500).json({
-
       error:
         "Não foi possível enviar o link de recuperação. Tente novamente mais tarde.",
-
     });
-
   }
-
 };
 
-
-// ======================================================
-// COMPATIBILIDADE COM A ROTA ANTIGA
-// ======================================================
-
-/*
- * Mantemos o nome recuperarSenha temporariamente para
- * evitar que a rota atual pare de funcionar.
- *
- * Essa função não cria mais senha provisória. Agora ela
- * envia um link seguro por e-mail.
- */
-const recuperarSenha =
-  solicitarRecuperacao;
-
+const recuperarSenha = solicitarRecuperacao;
 
 // ======================================================
 // REDEFINIR SENHA USANDO O TOKEN DO LINK
 // ======================================================
 
 const redefinirSenha = async (req, res) => {
-
   try {
-
-    const {
-      token,
-      novaSenha,
-      confirmarSenha,
-    } = req.body;
-
+    const { token, novaSenha, confirmarSenha } = req.body;
 
     // ==================================================
     // VALIDAÇÃO DOS CAMPOS
     // ==================================================
 
-    if (
-      !token ||
-      typeof token !== "string"
-    ) {
-
+    if (!token || typeof token !== "string") {
       return res.status(400).json({
-
-        error:
-          "O link de recuperação é inválido.",
-
+        error: "O link de recuperação é inválido.",
       });
-
     }
 
-    if (
-      !novaSenha ||
-      !confirmarSenha
-    ) {
-
+    if (!novaSenha || !confirmarSenha) {
       return res.status(400).json({
-
-        error:
-          "Informe e confirme a nova senha.",
-
+        error: "Informe e confirme a nova senha.",
       });
-
     }
 
-    if (
-      typeof novaSenha !== "string" ||
-      novaSenha.length < 6
-    ) {
-
+    if (typeof novaSenha !== "string" || novaSenha.length < 6) {
       return res.status(400).json({
-
-        error:
-          "A nova senha deve possuir pelo menos 6 caracteres.",
-
+        error: "A nova senha deve possuir pelo menos 6 caracteres.",
       });
-
     }
 
-    if (
-      novaSenha !== confirmarSenha
-    ) {
-
+    if (novaSenha !== confirmarSenha) {
       return res.status(400).json({
-
-        error:
-          "A confirmação da senha não corresponde à nova senha.",
-
+        error: "A confirmação da senha não corresponde à nova senha.",
       });
-
     }
-
 
     // ==================================================
     // GERA O HASH DO TOKEN RECEBIDO
     // ==================================================
 
-    const tokenHash =
-      crypto
-        .createHash("sha256")
-        .update(token.trim())
-        .digest("hex");
-
+    const tokenHash = crypto
+      .createHash("sha256")
+      .update(token.trim())
+      .digest("hex");
 
     // ==================================================
     // CRIPTOGRAFA A NOVA SENHA
     // ==================================================
 
-    const novaSenhaHash =
-      await bcrypt.hash(
-        novaSenha,
-        10,
-      );
-
+    const novaSenhaHash = await bcrypt.hash(novaSenha, 10);
 
     // ==================================================
     // ATUALIZA SOMENTE SE O TOKEN FOR VÁLIDO
@@ -1541,106 +840,56 @@ const redefinirSenha = async (req, res) => {
      * Isso evita que o mesmo token seja utilizado duas
      * vezes simultaneamente.
      */
-    const resultado =
-      await prisma.usuario.updateMany({
+    const resultado = await prisma.usuario.updateMany({
+      where: {
+        resetTokenHash: tokenHash,
 
-        where: {
-
-          resetTokenHash:
-            tokenHash,
-
-          resetTokenExpiresAt: {
-
-            gt:
-              new Date(),
-
-          },
-
-          ativo:
-            true,
-
+        resetTokenExpiresAt: {
+          gt: new Date(),
         },
 
-        data: {
+        ativo: true,
+      },
 
-          senhaHash:
-            novaSenhaHash,
+      data: {
+        senhaHash: novaSenhaHash,
 
-          senhaProvisoria:
-            false,
+        senhaProvisoria: false,
 
-          resetTokenHash:
-            null,
+        resetTokenHash: null,
 
-          resetTokenExpiresAt:
-            null,
-
-        },
-
-      });
-
+        resetTokenExpiresAt: null,
+      },
+    });
 
     // ==================================================
     // TOKEN INVÁLIDO OU EXPIRADO
     // ==================================================
 
-    if (
-      resultado.count === 0
-    ) {
-
+    if (resultado.count === 0) {
       return res.status(400).json({
-
-        error:
-          "O link de recuperação é inválido, já foi utilizado ou expirou.",
-
+        error: "O link de recuperação é inválido, já foi utilizado ou expirou.",
       });
-
     }
-
 
     // ==================================================
     // RESPOSTA DE SUCESSO
     // ==================================================
 
     return res.status(200).json({
+      status: "sucesso",
 
-      status:
-        "sucesso",
-
-      mensagem:
-        "Senha redefinida com sucesso. Você já pode entrar no sistema.",
-
+      mensagem: "Senha redefinida com sucesso. Você já pode entrar no sistema.",
     });
-
   } catch (erro) {
-
-    console.error(
-      "Erro ao redefinir senha:",
-      erro,
-    );
+    console.error("Erro ao redefinir senha:", erro);
 
     return res.status(500).json({
-
-      error:
-        "Erro interno ao redefinir a senha.",
-
+      error: "Erro interno ao redefinir a senha.",
     });
-
   }
-
 };
 
+export default new AuthController();
 
-// ======================================================
-// EXPORTA OS CONTROLLERS
-// ======================================================
-
-export {
-  register,
-  login,
-  logout,
-  alterarSenha,
-  solicitarRecuperacao,
-  recuperarSenha,
-  redefinirSenha,
-};
+export { solicitarRecuperacao, recuperarSenha, redefinirSenha };

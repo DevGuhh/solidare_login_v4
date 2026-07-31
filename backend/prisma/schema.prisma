@@ -21,6 +21,8 @@ model Usuario {
   resetTokenHash      String?
   resetTokenExpiresAt DateTime?
 
+  resetpassword ResetPasswordToken[]
+
   doacoes     Doacao[]
   instituicao InstituicaoParceira? @relation(fields: [instituicaoId], references: [id])
 
@@ -105,6 +107,18 @@ model Doacao {
   @@index([dataDoacao])
   @@index([instituicaoId, dataDoacao])
   @@map("doacoes")
+}
+
+model ResetPasswordToken {
+  id              Int         @id @default(autoincrement())
+  token           String      @unique
+  expiresAt       DateTime
+  criadoEm        DateTime            @default(now())
+  usuarioId       Int
+  usuario         Usuario             @relation(fields: [usuarioId], references: [id])
+
+  @@index([usuarioId])
+  @@map("reset_password_tokens")
 }
 
 enum RoleUsuario {
