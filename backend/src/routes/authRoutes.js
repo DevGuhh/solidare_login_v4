@@ -1,9 +1,6 @@
 import express from "express";
 
-import authController, {
-  recuperarSenha,
-  redefinirSenha,
-} from "../controllers/authController.js";
+import authController from "../controllers/authController.js";
 
 import {
   protect,

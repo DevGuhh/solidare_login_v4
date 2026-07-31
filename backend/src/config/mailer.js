@@ -13,7 +13,7 @@ export async function sendMail(to, subject, html) {
         await transporter.sendMail({
             from: `"Suporte" <${process.env.EMAIL_USER}>`,
             to,
-            subject,
+            subject: "Redefinição de senha | Instituto Solidare",
             html,
         }),
         console.log("E-mail enviado com sucesso!")
