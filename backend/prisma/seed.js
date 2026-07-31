@@ -18,6 +18,7 @@ async function main() {
   // Limpa dados existentes (ordem importa por causa das FKs)
   await prisma.doacao.deleteMany();
   await prisma.beneficiario.deleteMany();
+  await prisma.resetPasswordToken.deleteMany();
   await prisma.usuario.deleteMany();
   await prisma.instituicaoParceira.deleteMany();
 
