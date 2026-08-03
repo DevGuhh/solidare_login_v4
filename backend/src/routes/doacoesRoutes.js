@@ -1,129 +1,21 @@
-// =====================================================
-// IMPORTAÇÕES
-// =====================================================
-
 import express from "express";
 
-import {
+import DoacoesController from "../controllers/doacoesController.js";
 
-    cadastrarDoacao,
+import { protect } from "../middlewares/authMiddleware.js";
 
-    listarDoacoes,
+const router = express.Router();
 
-    detalheDeDoacao,
+router.use(protect);
 
-    atualizarUmaDoacao,
-
-    alterarComprovanteDoacao,
-
-    cancelarDoacao
-
-} from "../controllers/doacoesController.js";
-
-import {
-
-    protect
-
-} from "../middlewares/authMiddleware.js";
-
-
-// =====================================================
-// CRIAR ROUTER
-// =====================================================
-
-const router =
-    express.Router();
-
-
-// =====================================================
-// TODAS AS ROTAS EXIGEM AUTENTICAÇÃO
-// =====================================================
-
-router.use(
-    protect
-);
-
-
-// =====================================================
-// CADASTRAR DOAÇÃO
-// =====================================================
-
-router.post(
-
-    "/doacoes",
-
-    cadastrarDoacao
-
-);
-
-
-// =====================================================
-// LISTAR DOAÇÕES
-// =====================================================
-
-router.get(
-
-    "/doacoes",
-
-    listarDoacoes
-
-);
-
-
-// =====================================================
-// BUSCAR UMA DOAÇÃO
-// =====================================================
-
-router.get(
-
-    "/doacoes/:id",
-
-    detalheDeDoacao
-
-);
-
-
-// =====================================================
-// ATUALIZAR UMA DOAÇÃO
-// =====================================================
-
-router.put(
-
-    "/doacoes/:id",
-
-    atualizarUmaDoacao
-
-);
-
-
-// =====================================================
-// ALTERAR STATUS DO COMPROVANTE
-// =====================================================
-
+router.post("/doacoes", DoacoesController.cadastrarDoacao);
+router.get("/doacoes", DoacoesController.listarDoacoes);
+router.get("/doacoes/:id", DoacoesController.detalheDeDoacao);
+router.put("/doacoes/:id", DoacoesController.atualizarUmaDoacao);
 router.patch(
-
-    "/doacoes/:id/comprovante",
-
-    alterarComprovanteDoacao
-
+  "/doacoes/:id/comprovante",
+  DoacoesController.alterarComprovanteDoacao,
 );
-
-
-// =====================================================
-// CANCELAR UMA DOAÇÃO
-// =====================================================
-
-router.delete(
-
-    "/doacoes/:id",
-
-    cancelarDoacao
-
-);
-
-
-// =====================================================
-// EXPORTAÇÃO
-// =====================================================
+router.delete("/doacoes/:id", DoacoesController.cancelarDoacao);
 
 export default router;
