@@ -14,27 +14,33 @@ function montarFiltrosInstituicoes(query) {
   const where = {
     deletedAt: null,
   };
+
   if (nome) {
     where.nome = {
       contains: nome,
       mode: "insensitive",
     };
   }
+
   if (tipo) {
     where.tipo = tipo.toUpperCase();
   }
+
   if (cidade) {
     where.cidade = {
       contains: cidade,
       mode: "insensitive",
     };
   }
+
   if (statusOk) {
     where.statusOk = statusOk.toUpperCase();
   }
+
   if (ativa !== undefined) {
     where.ativa = ativa === "true";
   }
+
   return where;
 }
 
@@ -141,6 +147,7 @@ class InstituicaoController {
           error: "Já existe um usuário cadastrado com esse e-mail.",
         });
       }
+
       const senhaGerada = createPassword();
 
       if (typeof senhaGerada !== "string" || senhaGerada.trim().length < 8) {
@@ -175,8 +182,23 @@ class InstituicaoController {
               tipo: data.tipo,
               responsavel: data.responsavel.trim(),
               telefone: data.telefone,
-              endereco: data.endereco,
+
+              // Mantém o campo legado "endereco" preenchido.
+              endereco: [
+                data.logradouro,
+                data.numero,
+                data.complemento,
+              ]
+                .filter(Boolean)
+                .join(", "),
+
+              cep: data.cep,
+              logradouro: data.logradouro,
+              numero: data.numero,
+              complemento: data.complemento || null,
+              bairro: data.bairro,
               cidade: data.cidade,
+              uf: data.uf,
             },
           },
         },
@@ -206,6 +228,7 @@ class InstituicaoController {
           })),
         });
       }
+
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === "P2002"
@@ -222,6 +245,7 @@ class InstituicaoController {
       });
     }
   }
+
   async detalheDaInstituicao(req, res) {
     const id = Number(req.params.id);
 
@@ -254,6 +278,7 @@ class InstituicaoController {
       });
     }
   }
+
   async atualizarDadosInstituicao(req, res) {
     const id = Number(req.params.id);
 
@@ -295,12 +320,43 @@ class InstituicaoController {
         dadosAtualizacao.responsavel = data.responsavel.trim();
       }
 
-      const instituicaoAtualizada = await prisma.instituicaoParceira.update({
-        where: {
-          id,
-        },
-        data: dadosAtualizacao,
-      });
+      // Mantém o campo legado "endereco" sincronizado com os campos estruturados.
+      if (
+        data.logradouro !== undefined ||
+        data.numero !== undefined ||
+        data.complemento !== undefined
+      ) {
+        const logradouro =
+          data.logradouro ??
+          instituicaoExistente.logradouro ??
+          "";
+
+        const numero =
+          data.numero ??
+          instituicaoExistente.numero ??
+          "";
+
+        const complemento =
+          data.complemento ??
+          instituicaoExistente.complemento ??
+          "";
+
+        dadosAtualizacao.endereco = [
+          logradouro,
+          numero,
+          complemento,
+        ]
+          .filter(Boolean)
+          .join(", ");
+      }
+
+      const instituicaoAtualizada =
+        await prisma.instituicaoParceira.update({
+          where: {
+            id,
+          },
+          data: dadosAtualizacao,
+        });
 
       return res.status(200).json({
         mensagem: "Instituição atualizada com sucesso.",
@@ -342,6 +398,7 @@ class InstituicaoController {
       });
     }
   }
+
   async removeInstituicao(req, res) {
     const id = Number(req.params.id);
 
@@ -395,6 +452,7 @@ class InstituicaoController {
       });
     }
   }
+
   async atualizaStatus(req, res) {
     const id = Number(req.params.id);
 
@@ -452,6 +510,7 @@ class InstituicaoController {
       });
     }
   }
+
   async listarBeneficiariosInstituicao(req, res) {
     const id = Number(req.params.id);
 
