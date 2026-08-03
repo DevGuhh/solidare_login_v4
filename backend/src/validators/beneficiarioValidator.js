@@ -90,6 +90,17 @@ export const criarBeneficiarioSchema = z.object({
         .optional()
         .or(z.literal("")),
 
+    // Quantidade total de pessoas que fazem parte da família.
+    // O valor será usado para sugerir automaticamente a quantidade da doação.
+    composicaoFamiliar: z
+        .number({
+            required_error: "Informe a composição familiar.",
+            invalid_type_error: "A composição familiar deve ser um número."
+        })
+        .int("A composição familiar deve ser um número inteiro.")
+        .min(1, "A composição familiar deve ter pelo menos 1 pessoa.")
+        .max(50, "A composição familiar deve ter no máximo 50 pessoas."),
+
     // Tipo de benefício permitido.
     tipoBeneficio: z.enum([
         "CESTA",

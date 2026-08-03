@@ -19,6 +19,8 @@ import {
 
     carregarBeneficiariosDoacao,
 
+    preencherQuantidadePorComposicaoFamiliar,
+
     encerrarModalDoacao,
 
     montarDadosFormularioDoacao
@@ -1264,6 +1266,27 @@ export function configurarEventosDoacoes({
                 carregarDoacoes
 
             });
+
+        },
+
+        opcoes
+
+    );
+
+
+    // =================================================
+    // ALTERAR BENEFICIÁRIO
+    // =================================================
+
+    campos.beneficiarioId.addEventListener(
+
+        "change",
+
+        () => {
+
+            preencherQuantidadePorComposicaoFamiliar(
+                campos
+            );
 
         },
 

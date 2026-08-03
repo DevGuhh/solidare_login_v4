@@ -729,6 +729,8 @@
         <form
             id="formBeneficiario"
             class="form-beneficiario"
+            method="post"
+            autocomplete="off"
         >
 
             <div class="modal-beneficiario-body">
@@ -857,6 +859,37 @@
                                 id="dataNascimento"
                                 required
                             >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="composicaoFamiliar">
+
+                                Composição familiar
+
+                                <span class="required">
+                                    *
+                                </span>
+
+                            </label>
+
+                            <input
+                                type="number"
+                                id="composicaoFamiliar"
+                                placeholder="Ex.: 4"
+                                min="1"
+                                max="50"
+                                step="1"
+                                value="1"
+                                inputmode="numeric"
+                                required
+                            >
+
+                            <small class="form-help">
+                                Informe o total de pessoas que fazem parte da família.
+                            </small>
 
                         </div>
 

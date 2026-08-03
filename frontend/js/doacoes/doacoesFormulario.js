@@ -387,6 +387,14 @@ export async function carregarBeneficiariosDoacao(
                             ? `${nome} — ${instituicao}`
                             : nome;
 
+                    const composicaoFamiliar =
+                        Math.max(
+                            1,
+                            Number(
+                                beneficiario.composicaoFamiliar
+                            ) || 1
+                        );
+
 
                     campos
                         .beneficiarioId
@@ -394,8 +402,11 @@ export async function carregarBeneficiariosDoacao(
                             "beforeend",
                             `
 
-                                <option value="${id}">
-                                    ${descricao}
+                                <option
+                                    value="${id}"
+                                    data-composicao-familiar="${composicaoFamiliar}"
+                                >
+                                    ${descricao} — ${composicaoFamiliar} pessoa(s)
                                 </option>
 
                             `
@@ -429,6 +440,35 @@ export async function carregarBeneficiariosDoacao(
         return [];
 
     }
+
+}
+
+
+// =====================================================
+// PREENCHER QUANTIDADE PELA COMPOSIÇÃO FAMILIAR
+// =====================================================
+
+export function preencherQuantidadePorComposicaoFamiliar(
+    campos
+) {
+
+    const opcaoSelecionada =
+        campos?.beneficiarioId
+            ?.selectedOptions
+            ?.[0];
+
+    const composicaoFamiliar =
+        Number(
+            opcaoSelecionada
+                ?.dataset
+                ?.composicaoFamiliar
+        );
+
+    campos.quantidade.value =
+        Number.isInteger(composicaoFamiliar) &&
+        composicaoFamiliar > 0
+            ? String(composicaoFamiliar)
+            : "1";
 
 }
 
