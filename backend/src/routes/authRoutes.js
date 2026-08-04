@@ -10,7 +10,7 @@ const router = express.Router();
 
 router.post("/login", authController.login);
 router.post("/request-reset", authController.requestPasswordReset);
-router.post("/reset-password/:token", authController.resetPassword);
+router.post("/reset-password", authController.resetPassword);
 
 router.use(protect);
 router.put("/alterar-senha", authController.alterarSenha);

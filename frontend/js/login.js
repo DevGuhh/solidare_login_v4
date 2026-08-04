@@ -19,8 +19,7 @@ const API_URL = "http://localhost:3000";
 const LOGIN_URL =
     `${API_URL}/auth/login`;
 
-const RECUPERAR_SENHA_URL =
-    `${API_URL}/auth/recuperar-senha`;
+const RECUPERAR_SENHA_URL = `${API_URL}/auth/request-reset`;
 
 
 // ==========================================
@@ -710,15 +709,13 @@ function mostrarSucessoRecuperacao(
 
 function configurarModalRecuperacao() {
 
-    btnEsqueciSenha.addEventListener(
-        "click",
-        abrirModalRecuperacao
-    );
+    btnEsqueciSenha.addEventListener("click", () => {
+    modalRecuperarSenha.hidden = false;
+});
 
-    fecharModalSenha.addEventListener(
-        "click",
-        fecharModalRecuperacao
-    );
+    fecharModalSenha.addEventListener("click", () => {
+    modalRecuperarSenha.hidden = true;
+});
 
     modalRecuperarSenha.addEventListener(
         "click",

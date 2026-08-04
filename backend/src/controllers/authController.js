@@ -6,6 +6,7 @@ import { generateToken } from "../utils/generateToken.js";
 import { PrismaClient } from "@prisma/client";
 import { use } from "react";
 import { sendMail } from "../config/mailer.js";
+import { resetPasswordEmail } from "../templates/resetPasswordEmail.js";
 
 class AuthController {
   async login(req, res) {
@@ -276,46 +277,32 @@ class AuthController {
       // 8. Definir expiração de 15 minutos
       const expiresAt = new Date(Date.now() + 1000 * 60 * 15);
 
-      // 9. Salvar o hash no banco
-      const resetPasswordToken = await prisma.resetPasswordToken.create({
+      await prisma.usuario.update({
+        where: {
+          id: user.id,
+        },
         data: {
-          token: tokenHash,
-          usuarioId: user.id,
-          expiresAt,
+          resetTokenHash: tokenHash,
+          resetTokenExpiresAt: expiresAt,
         },
       });
 
       try {
-        // 10. Enviar o token original por e-mail
+        const resetUrl = `http://127.0.0.1:5500/frontend/views/redefinirSenha.html?token=${resetToken}`;
+
         await sendMail(
           user.email,
           "Redefinição de senha",
-          `
-          <h2>Olá, ${user.nome}!</h2>
-
-          <p>
-            Recebemos uma solicitação para redefinir a senha
-            da sua conta no Instituto Solidare.
-          </p>
-
-          <p>
-            Acesse o link abaixo para criar uma nova senha:
-          </p>
-
-          <a href="http://localhost:3000/auth/reset-password/${resetToken}">
-            Redefinir minha senha
-          </a>
-
-          <p>
-            Esse link expira em 15 minutos.
-          </p>
-        `,
+          resetPasswordEmail(user.nome, resetUrl),
         );
       } catch (error) {
-        // 11. Se o e-mail falhar, remove o token criado
-        await prisma.resetPasswordToken.delete({
+        await prisma.usuario.update({
           where: {
-            id: resetPasswordToken.id,
+            id: user.id,
+          },
+          data: {
+            resetTokenHash: null,
+            resetTokenExpiresAt: null,
           },
         });
 
@@ -338,11 +325,12 @@ class AuthController {
   }
 
   async resetPassword(req, res) {
-    const { token } = req.params;
-    const { newPassword, confirmPassword } = req.body;
+    /*const { token } = req.params;
+    const { newPassword, confirmPassword } = req.body;*/
+
+    const { token, newPassword, confirmPassword } = req.body;
 
     try {
-
       if (!token || typeof token !== "string") {
         return res.status(400).json({
           error: "O link de recuperação é inválido.",
@@ -372,53 +360,38 @@ class AuthController {
         .update(token.trim())
         .digest("hex");
 
-      const resetToken = await prisma.resetPasswordToken.findUnique({
+      // Procura o usuário pelo hash salvo
+      const usuario = await prisma.usuario.findFirst({
         where: {
-          token: tokenHash,
+          resetTokenHash: tokenHash,
+          ativo: true,
+          resetTokenExpiresAt: {
+            gt: new Date(),
+          },
         },
       });
 
-      if (!resetToken || resetToken.expiresAt <= new Date()) {
+      if (!usuario) {
         return res.status(400).json({
           error:
             "O link de recuperação é inválido, já foi utilizado ou expirou.",
         });
       }
 
-      const usuario = await prisma.usuario.findUnique({
-        where: {
-          id: resetToken.usuarioId,
-        },
-        select: {
-          id: true,
-          ativo: true,
-        },
-      });
-
-      if (!usuario || !usuario.ativo) {
-        return res.status(400).json({
-          error: "Não foi possível redefinir a senha.",
-        });
-      }
-
       const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-      await prisma.$transaction([
-        prisma.usuario.update({
-          where: {
-            id: usuario.id,
-          },
-          data: {
-            senhaHash: hashedPassword,
-          },
-        }),
-
-        prisma.resetPasswordToken.delete({
-          where: {
-            id: resetToken.id,
-          },
-        }),
-      ]);
+      // Atualiza a senha e limpa o token
+      await prisma.usuario.update({
+        where: {
+          id: usuario.id,
+        },
+        data: {
+          senhaHash: hashedPassword,
+          senhaProvisoria: false,
+          resetTokenHash: null,
+          resetTokenExpiresAt: null,
+        },
+      });
 
       return res.status(200).json({
         message: "Senha redefinida com sucesso!",

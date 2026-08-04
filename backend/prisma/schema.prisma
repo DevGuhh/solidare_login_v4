@@ -7,24 +7,20 @@ datasource db {
 }
 
 model Usuario {
-  id              Int         @id @default(autoincrement())
-  nome            String
-  email           String      @unique
-  senhaHash       String
-  role            RoleUsuario @default(INSTITUICAO)
-  ativo           Boolean     @default(true)
-  criadoEm        DateTime    @default(now())
-  atualizadoEm    DateTime    @updatedAt
-  instituicaoId   Int?        @unique
-  senhaProvisoria Boolean     @default(false)
-
+  id                  Int                  @id @default(autoincrement())
+  nome                String
+  email               String               @unique
+  senhaHash           String
+  role                RoleUsuario          @default(INSTITUICAO)
+  ativo               Boolean              @default(true)
+  criadoEm            DateTime             @default(now())
+  atualizadoEm        DateTime             @updatedAt
+  instituicaoId       Int?                 @unique
+  senhaProvisoria     Boolean              @default(false)
   resetTokenHash      String?
   resetTokenExpiresAt DateTime?
-
-  resetpassword ResetPasswordToken[]
-
-  doacoes     Doacao[]
-  instituicao InstituicaoParceira? @relation(fields: [instituicaoId], references: [id])
+  doacoes             Doacao[]
+  instituicao         InstituicaoParceira? @relation(fields: [instituicaoId], references: [id])
 
   @@index([resetTokenHash])
   @@map("usuarios")
@@ -44,6 +40,12 @@ model InstituicaoParceira {
   atualizadoEm  DateTime          @updatedAt
   email         String            @unique
   deletedAt     DateTime?
+  cep           String?
+  logradouro    String?
+  numero        String?
+  complemento   String?
+  bairro        String?
+  uf            String?
   beneficiarios Beneficiario[]
   doacoes       Doacao[]
   usuario       Usuario?
@@ -107,18 +109,6 @@ model Doacao {
   @@index([dataDoacao])
   @@index([instituicaoId, dataDoacao])
   @@map("doacoes")
-}
-
-model ResetPasswordToken {
-  id              Int         @id @default(autoincrement())
-  token           String      @unique
-  expiresAt       DateTime
-  criadoEm        DateTime            @default(now())
-  usuarioId       Int
-  usuario         Usuario             @relation(fields: [usuarioId], references: [id])
-
-  @@index([usuarioId])
-  @@map("reset_password_tokens")
 }
 
 enum RoleUsuario {
