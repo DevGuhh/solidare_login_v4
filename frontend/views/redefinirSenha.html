@@ -1,40 +1,178 @@
 <!doctype html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Redefinir senha | Instituto Solidare</title>
-    <link rel="stylesheet" href="../css/alterarSenha.css" />
-  </head>
-  <body>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: linear-gradient(135deg, #e7425b, #a12b3d, #850013);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #1f2937;
+        }
+
+        .password-page {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .password-card {
+            width: 100%;
+            max-width: 420px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 18px;
+            padding: 40px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, .15);
+        }
+
+        .password-card h1 {
+            text-align: center;
+            color: #850013;
+            margin-bottom: 12px;
+        }
+
+        .password-card > p {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        label {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        input {
+            width: 100%;
+            height: 50px;
+            padding: 0 15px;
+            border: 2px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+            transition: .25s;
+        }
+
+        input:focus {
+            border-color: #850013;
+            box-shadow: 0 0 0 4px rgba(15, 76, 129, .15);
+        }
+
+        #mensagemRedefinirSenha {
+            padding: 12px;
+            background: #ffe8e8;
+            color: #c62828;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        #mensagemRedefinirSenha[hidden] {
+            display: none;
+        }
+
+        button {
+            height: 52px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #850013, #850013);
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: .25s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(15, 76, 129, .3);
+        }
+
+        .password-card a {
+            display: block;
+            margin-top: 24px;
+            text-align: center;
+            color: #850013;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .password-card a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 500px) {
+            .password-card {
+                padding: 30px 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
     <main class="password-page">
-      <section class="password-card">
-        <h1>Redefinir senha</h1>
-        <p>Crie uma nova senha para acessar o sistema.</p>
-        <form id="formRedefinirSenha">
-          <label
-            >Nova senha<input
-              id="novaSenha"
-              type="password"
-              minlength="6"
-              required
-              autocomplete="new-password" /></label
-          ><label
-            >Confirmar senha<input
-              id="confirmarSenha"
-              type="password"
-              minlength="6"
-              required
-              autocomplete="new-password"
-          /></label>
-          <p id="mensagemRedefinirSenha" role="alert" hidden></p>
-          <button id="btnRedefinirSenha" type="submit">
-            Salvar nova senha
-          </button>
-        </form>
-        <a href="../index.html">Voltar ao login</a>
-      </section>
+        <section class="password-card">
+            <h1>Redefinir senha</h1>
+
+            <p>Crie uma nova senha para acessar o sistema.</p>
+
+            <form id="formRedefinirSenha">
+
+                <label>
+                    Nova senha
+                    <input
+                        id="novaSenha"
+                        type="password"
+                        minlength="6"
+                        required
+                        autocomplete="new-password">
+                </label>
+
+                <label>
+                    Confirmar senha
+                    <input
+                        id="confirmarSenha"
+                        type="password"
+                        minlength="6"
+                        required
+                        autocomplete="new-password">
+                </label>
+
+                <p id="mensagemRedefinirSenha" role="alert" hidden></p>
+
+                <button id="btnRedefinirSenha" type="submit">
+                    Salvar nova senha
+                </button>
+
+            </form>
+
+            <a href="../index.html">Voltar ao login</a>
+        </section>
     </main>
+
     <script type="module" src="../js/redefinirSenha.js"></script>
-  </body>
+
+</body>
 </html>
