@@ -2,7 +2,7 @@
 // CONFIGURAÇÕES
 // ==========================================
 
-const API_URL = "http://localhost:3000";
+import { API_URL } from "../config.js";
 
 const TOKEN_KEY = "token";
 const EMAIL_LEMBRADO_KEY = "emailLembrado";

@@ -1,0 +1,1 @@
+export const API_URL = "https://solidare-system-v1.onrender.com";

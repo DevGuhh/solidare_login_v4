@@ -2,6 +2,9 @@
 // IMPORTAÇÕES DA API
 // =====================================================
 
+import { API_URL } from "./config.js";
+
+
 import {
     buscarUsuarioDashboard,
     buscarBeneficiariosDashboard,

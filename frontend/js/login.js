@@ -2,6 +2,8 @@
 // IMPORTAÇÕES
 // ==========================================
 
+import { API_URL } from "./config.js";
+
 import {
     salvarToken,
     obterEmailLembrado,
@@ -13,8 +15,6 @@ import {
 // ==========================================
 // CONFIGURAÇÃO DA API
 // ==========================================
-
-const API_URL = "http://localhost:3000";
 
 const LOGIN_URL =
     `${API_URL}/auth/login`;

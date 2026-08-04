@@ -20,8 +20,12 @@ connectDB();
 const app = express();
 
 // Configuração do CORS
-app.use(cors({
+/*app.use(cors({
     origin: "http://127.0.0.1:5500",
+    credentials: true
+}));*/
+app.use(cors({
+    origin: "https://solidare-login-v4.vercel.app/",
     credentials: true
 }));
 

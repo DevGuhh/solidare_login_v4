@@ -12,7 +12,7 @@ import {
 // CONFIGURAÇÃO DA API
 // ==========================================
 
-const API_URL = "http://localhost:3000";
+import { API_URL } from "../config.js";
 
 const ALTERAR_SENHA_URL =
     `${API_URL}/auth/alterar-senha`;
