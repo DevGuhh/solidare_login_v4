@@ -2,7 +2,7 @@
 // IMPORTAÇÕES DA API
 // =====================================================
 
-import { API_URL } from "./config.js";
+import { API_URL } from "../config.js";
 
 
 import {
