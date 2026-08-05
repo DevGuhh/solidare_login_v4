@@ -68,23 +68,19 @@ export const transporter = nodemailer.createTransport({
   port: 587,
   secure: false,
   requireTLS: true,
+  family: 4,
 
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
 
-  connectionTimeout: 15000,
-  greetingTimeout: 15000,
-  socketTimeout: 15000,
+  connectionTimeout: 30000,
+  greetingTimeout: 30000,
+  socketTimeout: 30000,
 
   logger: true,
   debug: true,
-
-  tls: {
-    servername: "smtp.gmail.com",
-    rejectUnauthorized: true,
-  },
 });
 
 export async function sendMail(to, subject, html) {
