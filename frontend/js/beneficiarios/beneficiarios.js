@@ -2854,7 +2854,7 @@ function tratarCliqueDaTabela(event) {
 // =====================================================
 // FECHAR MODAL AO CLICAR NO FUNDO
 // =====================================================
-
+/*
 function tratarCliqueForaModal(event) {
 
     if (
@@ -2867,7 +2867,7 @@ function tratarCliqueForaModal(event) {
     }
 
 }
-
+*/
 
 // =====================================================
 // FECHAR COM ESC
@@ -3072,13 +3072,13 @@ function configurarEventos() {
         opcoes
     );
 
-
+/*
     elementos.modal.addEventListener(
         "click",
         tratarCliqueForaModal,
         opcoes
     );
-
+*/
 
     document.addEventListener(
         "keydown",

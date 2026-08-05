@@ -2231,7 +2231,7 @@ function configurarEventos() {
         fecharModal,
         opcoes
     );
-
+/*
     document
         .querySelector(
             "[data-fechar-modal-instituicao]"
@@ -2241,7 +2241,7 @@ function configurarEventos() {
             fecharModal,
             opcoes
         );
-
+*/
     elementos.formulario.addEventListener(
         "submit",
         salvarInstituicao,

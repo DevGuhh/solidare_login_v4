@@ -1753,7 +1753,7 @@ export function configurarEventosDoacoes({
     // =================================================
     // CLIQUE FORA DO MODAL DO FORMULÁRIO
     // =================================================
-
+/*
     elementos.modal.addEventListener(
 
         "click",
@@ -1780,7 +1780,7 @@ export function configurarEventosDoacoes({
         opcoes
 
     );
-
+*/
 
     // =================================================
     // FECHAR MODAL DE DETALHES
