@@ -33,19 +33,19 @@ model InstituicaoParceira {
   responsavel   String
   telefone      String
   endereco      String
+  cep           String?
+  logradouro    String?
+  numero        String?
+  complemento   String?
+  bairro        String?
   cidade        String
+  uf            String?
   statusOk      StatusInstituicao @default(PENDENTE)
   ativa         Boolean           @default(true)
   criadoEm      DateTime          @default(now())
   atualizadoEm  DateTime          @updatedAt
   email         String            @unique
   deletedAt     DateTime?
-  cep           String?
-  logradouro    String?
-  numero        String?
-  complemento   String?
-  bairro        String?
-  uf            String?
   beneficiarios Beneficiario[]
   doacoes       Doacao[]
   usuario       Usuario?

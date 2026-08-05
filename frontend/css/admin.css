@@ -2382,6 +2382,35 @@ body.modal-aberto{
     border-top:1px solid #eceef2;
 }
 
+/* Grade completa do endereço da instituição */
+.formulario-grid-endereco{
+    grid-template-columns:repeat(12,minmax(0,1fr));
+}
+
+.formulario-grid-endereco .campo-cep{grid-column:span 3;}
+.formulario-grid-endereco .campo-logradouro{grid-column:span 7;}
+.formulario-grid-endereco .campo-numero{grid-column:span 2;}
+.formulario-grid-endereco .campo-complemento{
+    grid-column:span 4;
+}
+
+.formulario-grid-endereco .campo-bairro{
+    grid-column:span 3;
+}
+
+.formulario-grid-endereco .campo-cidade{
+    grid-column:span 3;
+}
+
+.formulario-grid-endereco .campo-uf{
+    grid-column:span 2;
+}
+
+.campo-uf select{
+    width:100%;
+    min-width:110px;
+}
+
 /* =====================================================
    AJUSTES DE ACESSIBILIDADE E INTERAÇÃO
 ===================================================== */
@@ -2462,6 +2491,19 @@ body.modal-aberto{
         grid-template-columns:1fr;
     }
 
+    .formulario-grid-endereco{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+
+    .formulario-grid-endereco .campo-formulario{
+        grid-column:span 1;
+    }
+
+    .formulario-grid-endereco .campo-logradouro,
+    .formulario-grid-endereco .campo-complemento{
+        grid-column:1 / -1;
+    }
+
     .campo-formulario-largo{
         grid-column:auto;
     }
@@ -2469,6 +2511,14 @@ body.modal-aberto{
 }
 
 @media (max-width:600px){
+
+    .formulario-grid-endereco{
+        grid-template-columns:1fr;
+    }
+
+    .formulario-grid-endereco .campo-formulario{
+        grid-column:1 / -1;
+    }
 
     .pagina-instituicoes{
         gap:18px;

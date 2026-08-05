@@ -191,8 +191,13 @@ function capturarElementosDaTela() {
         email: document.getElementById("email"),
         telefone: document.getElementById("telefone"),
         tipo: document.getElementById("tipo"),
-        endereco: document.getElementById("endereco"),
-        cidade: document.getElementById("cidade")
+        cep: document.getElementById("cep"),
+        logradouro: document.getElementById("logradouro"),
+        numero: document.getElementById("numero"),
+        complemento: document.getElementById("complemento"),
+        bairro: document.getElementById("bairro"),
+        cidade: document.getElementById("cidade"),
+        uf: document.getElementById("uf")
     };
 }
 
@@ -217,8 +222,12 @@ function validarElementosObrigatorios() {
         campos.email,
         campos.telefone,
         campos.tipo,
-        campos.endereco,
-        campos.cidade
+        campos.cep,
+        campos.logradouro,
+        campos.numero,
+        campos.bairro,
+        campos.cidade,
+        campos.uf
     ];
 
     const existeElementoAusente = obrigatorios.some(
@@ -1280,11 +1289,26 @@ async function abrirModalEdicao(id) {
         campos.tipo.value =
             instituicao.tipo ?? "";
 
-        campos.endereco.value =
-            instituicao.endereco ?? "";
+        campos.cep.value =
+            formatarCEP(instituicao.cep ?? "");
+
+        campos.logradouro.value =
+            instituicao.logradouro ?? instituicao.endereco ?? "";
+
+        campos.numero.value =
+            instituicao.numero ?? "";
+
+        campos.complemento.value =
+            instituicao.complemento ?? "";
+
+        campos.bairro.value =
+            instituicao.bairro ?? "";
 
         campos.cidade.value =
             instituicao.cidade ?? "";
+
+        campos.uf.value =
+            instituicao.uf ?? "";
 
         abrirModal();
 
@@ -1312,6 +1336,40 @@ function limparNumeros(valor) {
         .replace(/\D/g, "");
 }
 
+function formatarCEP(valor) {
+    const numeros = limparNumeros(valor).slice(0, 8);
+    return numeros.replace(/(\d{5})(\d)/, "$1-$2");
+}
+
+function aplicarMascaraCEP(event) {
+    event.target.value = formatarCEP(event.target.value);
+}
+
+async function preencherEnderecoPeloCEP() {
+    const cep = limparNumeros(campos.cep.value);
+
+    if (cep.length !== 8) {
+        return;
+    }
+
+    try {
+        const resposta = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const endereco = await resposta.json();
+
+        if (!resposta.ok || endereco.erro) {
+            throw new Error("CEP não encontrado.");
+        }
+
+        campos.logradouro.value = endereco.logradouro || campos.logradouro.value;
+        campos.bairro.value = endereco.bairro || campos.bairro.value;
+        campos.cidade.value = endereco.localidade || campos.cidade.value;
+        campos.uf.value = endereco.uf || campos.uf.value;
+        campos.numero.focus();
+    } catch (erro) {
+        exibirFeedbackModal(erro.message || "Não foi possível consultar o CEP.", "erro");
+    }
+}
+
 function montarDadosFormulario() {
     return {
         nome: campos.nome.value.trim(),
@@ -1323,10 +1381,20 @@ function montarDadosFormulario() {
             limparNumeros(campos.telefone.value),
         tipo:
             campos.tipo.value,
-        endereco:
-            campos.endereco.value.trim(),
+        cep:
+            limparNumeros(campos.cep.value),
+        logradouro:
+            campos.logradouro.value.trim(),
+        numero:
+            campos.numero.value.trim(),
+        complemento:
+            campos.complemento.value.trim(),
+        bairro:
+            campos.bairro.value.trim(),
         cidade:
-            campos.cidade.value.trim()
+            campos.cidade.value.trim(),
+        uf:
+            campos.uf.value
     };
 }
 
@@ -1362,12 +1430,28 @@ function validarFormulario(dados) {
         return "Selecione o tipo da instituição.";
     }
 
-    if (dados.endereco.length < 3) {
-        return "Informe o endereço da instituição.";
+    if (dados.cep.length !== 8) {
+        return "O CEP deve conter 8 números.";
+    }
+
+    if (dados.logradouro.length < 3) {
+        return "Informe o logradouro da instituição.";
+    }
+
+    if (!dados.numero) {
+        return "Informe o número do endereço.";
+    }
+
+    if (dados.bairro.length < 2) {
+        return "Informe o bairro da instituição.";
     }
 
     if (dados.cidade.length < 2) {
         return "Informe a cidade da instituição.";
+    }
+
+    if (!dados.uf) {
+        return "Selecione o estado.";
     }
 
     return null;
@@ -2206,6 +2290,18 @@ function configurarEventos() {
     campos.telefone.addEventListener(
         "input",
         aplicarMascaraTelefone,
+        opcoes
+    );
+
+    campos.cep.addEventListener(
+        "input",
+        aplicarMascaraCEP,
+        opcoes
+    );
+
+    campos.cep.addEventListener(
+        "blur",
+        preencherEnderecoPeloCEP,
         opcoes
     );
 

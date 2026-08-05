@@ -773,71 +773,82 @@
                 <fieldset class="formulario-secao">
 
                     <legend>
-
                         <i class="fa-solid fa-location-dot"></i>
-
                         Localização
-
                     </legend>
 
+                    <div class="formulario-grid formulario-grid-endereco">
 
-                    <div class="formulario-grid formulario-grid-2">
-
-                        <div class="campo-formulario campo-formulario-largo">
-
-                            <label for="endereco">
-                                Endereço
-                                <span aria-hidden="true">*</span>
-                            </label>
-
+                        <div class="campo-formulario campo-cep">
+                            <label for="cep">CEP <span aria-hidden="true">*</span></label>
                             <div class="input-com-icone">
-
-                                <i class="fa-solid fa-road"></i>
-
-                                <input
-                                    type="text"
-                                    id="endereco"
-                                    name="endereco"
-                                    placeholder="Rua, número e complemento"
-                                    minlength="3"
-                                    maxlength="200"
-                                    autocomplete="street-address"
-                                    required
-                                >
-
+                                <i class="fa-solid fa-map-location-dot"></i>
+                                <input type="text" id="cep" name="cep" placeholder="00000-000" maxlength="9" inputmode="numeric" autocomplete="postal-code" required>
                             </div>
-
                             <small class="mensagem-campo"></small>
-
                         </div>
 
-
-                        <div class="campo-formulario">
-
-                            <label for="cidade">
-                                Cidade
-                                <span aria-hidden="true">*</span>
-                            </label>
-
+                        <div class="campo-formulario campo-logradouro">
+                            <label for="logradouro">Logradouro <span aria-hidden="true">*</span></label>
                             <div class="input-com-icone">
-
-                                <i class="fa-solid fa-city"></i>
-
-                                <input
-                                    type="text"
-                                    id="cidade"
-                                    name="cidade"
-                                    placeholder="Nome da cidade"
-                                    minlength="2"
-                                    maxlength="100"
-                                    autocomplete="address-level2"
-                                    required
-                                >
-
+                                <i class="fa-solid fa-road"></i>
+                                <input type="text" id="logradouro" name="logradouro" placeholder="Rua, avenida ou travessa" maxlength="150" autocomplete="address-line1" required>
                             </div>
-
                             <small class="mensagem-campo"></small>
+                        </div>
 
+                        <div class="campo-formulario campo-numero">
+                            <label for="numero">Número <span aria-hidden="true">*</span></label>
+                            <div class="input-com-icone">
+                                <i class="fa-solid fa-hashtag"></i>
+                                <input type="text" id="numero" name="numero" placeholder="123" maxlength="20" autocomplete="address-line2" required>
+                            </div>
+                            <small class="mensagem-campo"></small>
+                        </div>
+
+                        <div class="campo-formulario campo-complemento">
+                            <label for="complemento">Complemento</label>
+                            <div class="input-com-icone">
+                                <i class="fa-solid fa-building"></i>
+                                <input type="text" id="complemento" name="complemento" placeholder="Sala, bloco, andar..." maxlength="100">
+                            </div>
+                            <small class="mensagem-campo"></small>
+                        </div>
+
+                        <div class="campo-formulario campo-bairro">
+                            <label for="bairro">Bairro <span aria-hidden="true">*</span></label>
+                            <div class="input-com-icone">
+                                <i class="fa-solid fa-location-crosshairs"></i>
+                                <input type="text" id="bairro" name="bairro" placeholder="Nome do bairro" maxlength="100" autocomplete="address-level3" required>
+                            </div>
+                            <small class="mensagem-campo"></small>
+                        </div>
+
+                        <div class="campo-formulario campo-cidade">
+                            <label for="cidade">Cidade <span aria-hidden="true">*</span></label>
+                            <div class="input-com-icone">
+                                <i class="fa-solid fa-city"></i>
+                                <input type="text" id="cidade" name="cidade" placeholder="Nome da cidade" maxlength="100" autocomplete="address-level2" required>
+                            </div>
+                            <small class="mensagem-campo"></small>
+                        </div>
+
+                        <div class="campo-formulario campo-uf">
+                            <label for="uf">Estado <span aria-hidden="true">*</span></label>
+                            <div class="input-com-icone">
+                                <i class="fa-solid fa-map"></i>
+                                <select id="uf" name="uf" autocomplete="address-level1" required>
+                                    <option value="">Selecione</option>
+                                    <option value="AC">AC</option><option value="AL">AL</option><option value="AP">AP</option><option value="AM">AM</option>
+                                    <option value="BA">BA</option><option value="CE">CE</option><option value="DF">DF</option><option value="ES">ES</option>
+                                    <option value="GO">GO</option><option value="MA">MA</option><option value="MT">MT</option><option value="MS">MS</option>
+                                    <option value="MG">MG</option><option value="PA">PA</option><option value="PB">PB</option><option value="PR">PR</option>
+                                    <option value="PE">PE</option><option value="PI">PI</option><option value="RJ">RJ</option><option value="RN">RN</option>
+                                    <option value="RS">RS</option><option value="RO">RO</option><option value="RR">RR</option><option value="SC">SC</option>
+                                    <option value="SP">SP</option><option value="SE">SE</option><option value="TO">TO</option>
+                                </select>
+                            </div>
+                            <small class="mensagem-campo"></small>
                         </div>
 
                     </div>

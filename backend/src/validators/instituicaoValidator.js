@@ -35,11 +35,34 @@ export const criarInstituicaoSchema = z.object({
       "Informe um telefone válido."
     ),
 
-  endereco: z
+  cep: z
+    .string()
+    .regex(/^\d{8}$/, "CEP deve conter exatamente 8 números."),
+
+  logradouro: z
     .string()
     .trim()
-    .min(10, "Informe um endereço completo.")
-    .max(255, "O endereço deve possuir no máximo 255 caracteres."),
+    .min(3, "Informe o logradouro.")
+    .max(150, "O logradouro deve possuir no máximo 150 caracteres."),
+
+  numero: z
+    .string()
+    .trim()
+    .min(1, "Informe o número.")
+    .max(20, "O número deve possuir no máximo 20 caracteres."),
+
+  complemento: z
+    .string()
+    .trim()
+    .max(100, "O complemento deve possuir no máximo 100 caracteres.")
+    .optional()
+    .or(z.literal("")),
+
+  bairro: z
+    .string()
+    .trim()
+    .min(2, "Informe o bairro.")
+    .max(100, "O bairro deve possuir no máximo 100 caracteres."),
 
   cidade: z
     .string()
@@ -47,6 +70,14 @@ export const criarInstituicaoSchema = z.object({
     .min(2, "Informe a cidade.")
     .max(100, "A cidade deve possuir no máximo 100 caracteres.")
     .regex(/[A-Za-zÀ-ÿ]/, "Cidade inválida."),
+
+  uf: z.enum([
+    "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA",
+    "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN",
+    "RS", "RO", "RR", "SC", "SP", "SE", "TO"
+  ], {
+    error: "Selecione o estado."
+  }),
 
   statusOk: z
   .enum(["OK", "PENDENTE"], {

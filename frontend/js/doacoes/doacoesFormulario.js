@@ -165,7 +165,7 @@ export async function carregarInstituicoesDoacao(
 
     const resposta =
         await fetch(
-            `${API_URL}/instituicoes`,
+            `${API_URL}/instituicoes?limit=100`,
             {
                 method: "GET",
 
@@ -198,11 +198,17 @@ export async function carregarInstituicoesDoacao(
     const instituicoes =
         Array.isArray(dados)
             ? dados
-            : Array.isArray(dados?.instituicoes)
-                ? dados.instituicoes
-                : Array.isArray(dados?.data)
-                    ? dados.data
-                    : [];
+            : Array.isArray(dados?.dados)
+                ? dados.dados
+                : Array.isArray(dados?.instituicoes)
+                    ? dados.instituicoes
+                    : Array.isArray(dados?.data)
+                        ? dados.data
+                        : Array.isArray(dados?.data?.instituicoes)
+                            ? dados.data.instituicoes
+                            : Array.isArray(dados?.dados?.instituicoes)
+                                ? dados.dados.instituicoes
+                                : [];
 
     elementos.selectInstituicao.innerHTML = `
 
@@ -241,13 +247,20 @@ export async function carregarInstituicoesDoacao(
                     return;
                 }
 
+                const nome =
+                    instituicao.nome ||
+                    instituicao.nomeInstituicao ||
+                    instituicao.nomeFantasia ||
+                    instituicao.razaoSocial ||
+                    `Instituição ${id}`;
+
                 elementos
                     .selectInstituicao
                     .insertAdjacentHTML(
                         "beforeend",
                         `
                             <option value="${id}">
-                                ${escaparHtml(instituicao.nome)}
+                                ${escaparHtml(nome)}
                             </option>
                         `
                     );

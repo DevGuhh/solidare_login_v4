@@ -194,14 +194,6 @@ function normalizarListaBeneficiarios(dados) {
 
     if (
         Array.isArray(
-            dados?.dados
-        )
-    ) {
-        return dados.dados;
-    }
-
-    if (
-        Array.isArray(
             dados?.data
         )
     ) {
@@ -448,11 +440,6 @@ function capturarElementosDaTela() {
                 "dataNascimento"
             ),
 
-        composicaoFamiliar:
-            document.getElementById(
-                "composicaoFamiliar"
-            ),
-
         cep:
             document.getElementById(
                 "cep"
@@ -574,7 +561,6 @@ function validarElementosObrigatorios() {
         campos.nomeCompleto,
         campos.cpf,
         campos.dataNascimento,
-        campos.composicaoFamiliar,
         campos.cep,
         campos.logradouro,
         campos.numero,
@@ -1939,41 +1925,6 @@ async function carregarBeneficiarios() {
 
 
 // =====================================================
-// NORMALIZAR LISTA DE INSTITUIÇÕES
-// =====================================================
-
-function normalizarListaInstituicoes(dados) {
-
-    if (Array.isArray(dados)) {
-        return dados;
-    }
-
-    const possiveisListas = [
-        dados?.instituicoes,
-        dados?.dados,
-        dados?.data,
-        dados?.resultado,
-        dados?.results,
-        dados?.items,
-        dados?.dados?.instituicoes,
-        dados?.data?.instituicoes,
-        dados?.resultado?.instituicoes
-    ];
-
-    for (const lista of possiveisListas) {
-
-        if (Array.isArray(lista)) {
-            return lista;
-        }
-
-    }
-
-    return [];
-
-}
-
-
-// =====================================================
 // CARREGAR INSTITUIÇÕES NO SELECT
 // =====================================================
 
@@ -1981,25 +1932,9 @@ async function carregarInstituicoesSelect() {
 
     try {
 
-        if (!elementos.selectInstituicao) {
-
-            throw new Error(
-                "O campo de instituição não foi encontrado."
-            );
-
-        }
-
-        elementos.selectInstituicao.disabled = true;
-
-        elementos.selectInstituicao.innerHTML = `
-            <option value="">
-                Carregando instituições...
-            </option>
-        `;
-
         const resposta =
             await fetch(
-                `${API_URL}/instituicoes?limit=100&_=${Date.now()}`,
+                `${API_URL}/instituicoes`,
                 {
                     method: "GET",
                     headers:
@@ -2014,11 +1949,6 @@ async function carregarInstituicoesSelect() {
                 resposta
             );
 
-        console.log(
-            "Resposta completa de /instituicoes:",
-            dados
-        );
-
         if (!resposta.ok) {
 
             throw new Error(
@@ -2031,14 +1961,17 @@ async function carregarInstituicoesSelect() {
         }
 
         const instituicoes =
-            normalizarListaInstituicoes(
-                dados
-            );
-
-        console.log(
-            "Instituições normalizadas:",
-            instituicoes
-        );
+            Array.isArray(dados)
+                ? dados
+                : Array.isArray(dados?.dados)
+                    ? dados.dados
+                    : Array.isArray(dados?.instituicoes)
+                        ? dados.instituicoes
+                        : Array.isArray(dados?.data)
+                            ? dados.data
+                            : Array.isArray(dados?.data?.instituicoes)
+                                ? dados.data.instituicoes
+                                : [];
 
         elementos.selectInstituicao.innerHTML = `
             <option value="">
@@ -2049,53 +1982,19 @@ async function carregarInstituicoesSelect() {
         instituicoes.forEach(
             (instituicao) => {
 
-                const id =
-                    instituicao?.id ??
-                    instituicao?.instituicaoId ??
-                    instituicao?.idInstituicao;
-
-                const nome =
-                    instituicao?.nome ??
-                    instituicao?.nomeInstituicao ??
-                    instituicao?.nomeFantasia ??
-                    instituicao?.razaoSocial ??
-                    instituicao?.usuario?.nome ??
-                    `Instituição ${id ?? ""}`;
-
-                if (
-                    id === undefined ||
-                    id === null ||
-                    String(id).trim() === ""
-                ) {
-                    return;
-                }
-
-                elementos.selectInstituicao
+                elementos
+                    .selectInstituicao
                     .insertAdjacentHTML(
                         "beforeend",
                         `
-                            <option value="${escaparHtml(id)}">
-                                ${escaparHtml(nome)}
+                            <option value="${Number(instituicao.id)}">
+                                ${escaparHtml(instituicao.nome)}
                             </option>
                         `
                     );
 
             }
         );
-
-        if (
-            elementos.selectInstituicao.options.length <= 1
-        ) {
-
-            elementos.selectInstituicao.innerHTML = `
-                <option value="">
-                    Nenhuma instituição disponível
-                </option>
-            `;
-
-        }
-
-        elementos.selectInstituicao.disabled = false;
 
         return true;
 
@@ -2105,18 +2004,6 @@ async function carregarInstituicoesSelect() {
             "Erro ao carregar instituições:",
             erro
         );
-
-        if (elementos.selectInstituicao) {
-
-            elementos.selectInstituicao.disabled = false;
-
-            elementos.selectInstituicao.innerHTML = `
-                <option value="">
-                    Erro ao carregar instituições
-                </option>
-            `;
-
-        }
 
         mostrarErro(
             erro.message ||
@@ -2129,6 +2016,857 @@ async function carregarInstituicoesSelect() {
 
 }
 
+
+// =====================================================
+// PREPARAR MODAL PARA CADASTRO
+// =====================================================
+
+async function abrirModalNovoBeneficiario() {
+
+    beneficiarioEditandoId =
+        null;
+
+    alterarTitulo(
+        elementos.tituloModal,
+        "Novo beneficiário"
+    );
+
+    limparFormulario(
+        elementos.formulario
+    );
+
+    if (
+        usuarioLogado.role ===
+        "ADMIN"
+    ) {
+
+        elementos.grupoInstituicao
+            .style.display =
+                "flex";
+
+        elementos.selectInstituicao
+            .required =
+                true;
+
+        const carregou =
+            await carregarInstituicoesSelect();
+
+        if (!carregou) {
+            return;
+        }
+
+    } else {
+
+        elementos.grupoInstituicao
+            .style.display =
+                "none";
+
+        elementos.selectInstituicao
+            .required =
+                false;
+
+    }
+
+    abrirModal(
+        elementos.modal
+    );
+
+    elementos.modal.setAttribute(
+        "aria-hidden",
+        "false"
+    );
+
+    setTimeout(
+        () => {
+
+            campos.nomeCompleto.focus();
+
+        },
+        50
+    );
+
+}
+
+
+// =====================================================
+// FECHAR MODAL
+// =====================================================
+
+function fecharModalBeneficiario() {
+
+    fecharModal(
+        elementos.modal
+    );
+
+    elementos.modal.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+    limparFormulario(
+        elementos.formulario
+    );
+
+    beneficiarioEditandoId =
+        null;
+
+}
+
+
+// =====================================================
+// MONTAR DADOS DO FORMULÁRIO
+// =====================================================
+
+function montarDadosFormulario() {
+
+    const dados = {
+
+        nomeCompleto:
+            campos.nomeCompleto.value
+                .trim(),
+
+        cpf:
+            campos.cpf.value
+                .replace(/\D/g, ""),
+
+        dataNascimento:
+            campos.dataNascimento.value,
+
+        logradouro:
+            campos.logradouro.value
+                .trim(),
+
+        numero:
+            campos.numero.value
+                .trim(),
+
+        complemento:
+            campos.complemento.value
+                .trim(),
+
+        cep:
+            campos.cep.value
+                .replace(/\D/g, ""),
+
+        regiao:
+            campos.regiao.value
+                .trim(),
+
+        cidade:
+            campos.cidade.value
+                .trim(),
+
+        uf:
+            campos.uf.value
+                .trim()
+                .toUpperCase(),
+
+        telefonePrincipal:
+            campos.telefonePrincipal.value
+                .replace(/\D/g, ""),
+
+        telefoneSecundario:
+            campos.telefoneSecundario.value
+                .replace(/\D/g, ""),
+
+        email:
+            campos.email.value
+                .trim(),
+
+        tipoBeneficio:
+            campos.tipoBeneficio.value,
+
+        situacaoSocioeconomica:
+            campos.situacaoSocioeconomica.value
+                .trim(),
+
+        observacoes:
+            campos.observacoes.value
+                .trim()
+
+    };
+
+    if (
+        usuarioLogado.role ===
+        "ADMIN"
+    ) {
+
+        const instituicaoId =
+            Number(
+                elementos.selectInstituicao.value
+            );
+
+        if (!instituicaoId) {
+
+            throw new Error(
+                "Selecione uma instituição."
+            );
+
+        }
+
+        dados.instituicaoId =
+            instituicaoId;
+
+    }
+
+    return dados;
+
+}
+
+
+// =====================================================
+// SALVAR BENEFICIÁRIO
+// =====================================================
+
+async function salvarBeneficiario(event) {
+
+    event.preventDefault();
+
+    let dados;
+
+    try {
+
+        dados =
+            montarDadosFormulario();
+
+    } catch (erro) {
+
+        mostrarErro(
+            erro.message
+        );
+
+        return;
+
+    }
+
+    mostrarLoading();
+
+    try {
+
+        const editando =
+            beneficiarioEditandoId !==
+            null;
+
+        const resposta =
+            editando
+                ? await editarBeneficiarioAPI(
+                    beneficiarioEditandoId,
+                    dados
+                )
+                : await cadastrarBeneficiarioAPI(
+                    dados
+                );
+
+        const resultado =
+            await lerRespostaJson(
+                resposta
+            );
+
+        if (!resposta.ok) {
+
+            throw new Error(
+                resultado.issues?.[0]?.message ||
+                resultado.error ||
+                resultado.erro ||
+                resultado.mensagem ||
+                "Erro ao salvar beneficiário."
+            );
+
+        }
+
+        mostrarSucesso(
+            editando
+                ? "Beneficiário atualizado com sucesso!"
+                : "Beneficiário cadastrado com sucesso!"
+        );
+
+        fecharModalBeneficiario();
+
+        await carregarBeneficiarios();
+
+    } catch (erro) {
+
+        console.error(
+            "Erro ao salvar beneficiário:",
+            erro
+        );
+
+        mostrarErro(
+            erro.message ||
+            "Não foi possível salvar o beneficiário."
+        );
+
+    } finally {
+
+        esconderLoading();
+
+    }
+
+}
+
+
+// =====================================================
+// PREENCHER FORMULÁRIO PARA EDIÇÃO
+// =====================================================
+
+async function editarBeneficiario(id) {
+
+    mostrarLoading();
+
+    try {
+
+        const resposta =
+            await buscarBeneficiario(id);
+
+        const beneficiario =
+            await lerRespostaJson(
+                resposta
+            );
+
+        if (!resposta.ok) {
+
+            throw new Error(
+                beneficiario.error ||
+                beneficiario.erro ||
+                beneficiario.mensagem ||
+                "Erro ao buscar beneficiário."
+            );
+
+        }
+
+        beneficiarioEditandoId =
+            Number(id);
+
+        alterarTitulo(
+            elementos.tituloModal,
+            "Editar beneficiário"
+        );
+
+
+        campos.nomeCompleto.value =
+            beneficiario.nomeCompleto ?? "";
+
+        campos.cpf.value =
+            beneficiario.cpf ?? "";
+
+        campos.dataNascimento.value =
+            beneficiario.dataNascimento
+                ? beneficiario.dataNascimento
+                    .substring(0, 10)
+                : "";
+
+        campos.cep.value =
+            beneficiario.cep ?? "";
+
+        campos.logradouro.value =
+            beneficiario.logradouro ?? "";
+
+        campos.numero.value =
+            beneficiario.numero ?? "";
+
+        campos.complemento.value =
+            beneficiario.complemento ?? "";
+
+        campos.regiao.value =
+            beneficiario.regiao ?? "";
+
+        campos.cidade.value =
+            beneficiario.cidade ?? "";
+
+        campos.uf.value =
+            beneficiario.uf ?? "";
+
+        campos.telefonePrincipal.value =
+            beneficiario.telefonePrincipal ?? "";
+
+        campos.telefoneSecundario.value =
+            beneficiario.telefoneSecundario ?? "";
+
+        campos.email.value =
+            beneficiario.email ?? "";
+
+        campos.tipoBeneficio.value =
+            beneficiario.tipoBeneficio ??
+            "CESTA";
+
+        campos.situacaoSocioeconomica.value =
+            beneficiario.situacaoSocioeconomica ??
+            "";
+
+        campos.observacoes.value =
+            beneficiario.observacoes ?? "";
+
+
+        if (
+            usuarioLogado.role ===
+            "ADMIN"
+        ) {
+
+            elementos.grupoInstituicao
+                .style.display =
+                    "flex";
+
+            elementos.selectInstituicao
+                .required =
+                    true;
+
+            const carregou =
+                await carregarInstituicoesSelect();
+
+            if (!carregou) {
+                return;
+            }
+
+            elementos.selectInstituicao.value =
+                String(
+                    beneficiario.instituicaoId ??
+                    ""
+                );
+
+        } else {
+
+            elementos.grupoInstituicao
+                .style.display =
+                    "none";
+
+            elementos.selectInstituicao
+                .required =
+                    false;
+
+        }
+
+        abrirModal(
+            elementos.modal
+        );
+
+        elementos.modal.setAttribute(
+            "aria-hidden",
+            "false"
+        );
+
+    } catch (erro) {
+
+        console.error(
+            "Erro ao editar beneficiário:",
+            erro
+        );
+
+        mostrarErro(
+            erro.message ||
+            "Não foi possível carregar o beneficiário."
+        );
+
+    } finally {
+
+        esconderLoading();
+
+    }
+
+}
+
+
+// =====================================================
+// EXCLUIR BENEFICIÁRIO
+// =====================================================
+
+async function excluirBeneficiario(id) {
+
+    const confirmou =
+        await confirmarAcao(
+            "Deseja realmente excluir este beneficiário?"
+        );
+
+    if (!confirmou) {
+        return;
+    }
+
+    mostrarLoading();
+
+    try {
+
+        const resposta =
+            await excluirBeneficiarioAPI(
+                id
+            );
+
+        const resultado =
+            await lerRespostaJson(
+                resposta
+            );
+
+        if (!resposta.ok) {
+
+            throw new Error(
+                resultado.error ||
+                resultado.erro ||
+                resultado.mensagem ||
+                "Erro ao excluir beneficiário."
+            );
+
+        }
+
+        mostrarSucesso(
+            "Beneficiário excluído com sucesso!"
+        );
+
+        beneficiariosSelecionados.clear();
+
+        await carregarBeneficiarios();
+
+    } catch (erro) {
+
+        console.error(
+            "Erro ao excluir beneficiário:",
+            erro
+        );
+
+        mostrarErro(
+            erro.message ||
+            "Não foi possível excluir o beneficiário."
+        );
+
+    } finally {
+
+        esconderLoading();
+
+    }
+
+}
+
+
+// =====================================================
+// ALTERAR STATUS
+// =====================================================
+
+async function alterarStatusBeneficiario(
+    botao
+) {
+
+    const id =
+        Number(
+            botao.dataset.id
+        );
+
+    const ativoAtual =
+        botao.dataset.ativo ===
+        "true";
+
+    const novoStatus =
+        !ativoAtual;
+
+    mostrarLoading();
+
+    try {
+
+        const resposta =
+            await alterarStatusBeneficiarioAPI(
+                id,
+                novoStatus
+            );
+
+        const resultado =
+            await lerRespostaJson(
+                resposta
+            );
+
+        if (!resposta.ok) {
+
+            throw new Error(
+                resultado.error ||
+                resultado.erro ||
+                resultado.mensagem ||
+                "Erro ao atualizar status."
+            );
+
+        }
+
+        mostrarSucesso(
+            novoStatus
+                ? "Beneficiário ativado com sucesso!"
+                : "Beneficiário inativado com sucesso!"
+        );
+
+        beneficiariosSelecionados.clear();
+
+        await carregarBeneficiarios();
+
+    } catch (erro) {
+
+        console.error(
+            "Erro ao alterar status:",
+            erro
+        );
+
+        mostrarErro(
+            erro.message ||
+            "Não foi possível atualizar o status."
+        );
+
+    } finally {
+
+        esconderLoading();
+
+    }
+
+}
+
+
+// =====================================================
+// CONSULTAR CEP
+// =====================================================
+
+async function preencherEnderecoPorCEP() {
+
+    const cep =
+        campos.cep.value
+            .replace(/\D/g, "");
+
+    if (!cep) {
+        return;
+    }
+
+    if (cep.length !== 8) {
+
+        mostrarErro(
+            "Informe um CEP válido com 8 números."
+        );
+
+        return;
+
+    }
+
+    try {
+
+        const endereco =
+            await buscarCEP(
+                cep
+            );
+
+        if (!endereco) {
+            return;
+        }
+
+        campos.logradouro.value =
+            endereco.logradouro ?? "";
+
+        campos.cidade.value =
+            endereco.localidade ?? "";
+
+        campos.uf.value =
+            endereco.uf ?? "";
+
+        if (
+            endereco.bairro &&
+            !campos.regiao.value
+        ) {
+
+            campos.regiao.value =
+                endereco.bairro;
+
+        }
+
+        campos.numero.focus();
+
+    } catch (erro) {
+
+        mostrarErro(
+            erro.message ||
+            "Não foi possível consultar o CEP."
+        );
+
+    }
+
+}
+
+// =====================================================
+// CANCELAR PESQUISA PENDENTE
+// =====================================================
+
+function cancelarPesquisaPendente() {
+
+    if (!temporizadorPesquisa) {
+        return;
+    }
+
+    clearTimeout(
+        temporizadorPesquisa
+    );
+
+    temporizadorPesquisa =
+        null;
+
+}
+
+
+// =====================================================
+// PESQUISAR BENEFICIÁRIO COM DEBOUNCE
+// =====================================================
+
+function pesquisarBeneficiario() {
+
+    cancelarPesquisaPendente();
+
+    atualizarBotaoLimparPesquisa();
+
+    temporizadorPesquisa =
+        setTimeout(
+            () => {
+
+                paginaAtual =
+                    1;
+
+                aplicarFiltrosBeneficiarios();
+
+                temporizadorPesquisa =
+                    null;
+
+            },
+            TEMPO_DEBOUNCE_PESQUISA
+        );
+
+}
+
+
+// =====================================================
+// LIMPAR PESQUISA
+// =====================================================
+
+function limparPesquisaBeneficiario() {
+
+    cancelarPesquisaPendente();
+
+    elementos.pesquisa.value =
+        "";
+
+    paginaAtual =
+        1;
+
+    elementos.pesquisa.focus();
+
+    aplicarFiltrosBeneficiarios();
+
+}
+
+
+// =====================================================
+// SELECIONAR FILTRO
+// =====================================================
+
+function selecionarFiltroStatus(event) {
+
+    const novoStatus =
+        event.currentTarget
+            .dataset
+            .filtroStatus;
+
+    if (
+        ![
+            "TODOS",
+            "ATIVOS",
+            "INATIVOS"
+        ].includes(novoStatus)
+    ) {
+        return;
+    }
+
+    filtroStatusAtual =
+        novoStatus;
+
+    paginaAtual =
+        1;
+
+    atualizarBotoesFiltro();
+
+    aplicarFiltrosBeneficiarios();
+
+}
+
+
+// =====================================================
+// TRATAR CLIQUES DA TABELA
+// =====================================================
+
+function tratarCliqueDaTabela(event) {
+
+    const checkboxBeneficiario =
+        event.target.closest(
+            ".checkboxBeneficiario"
+        );
+
+    if (checkboxBeneficiario) {
+
+        alterarSelecaoBeneficiario(
+            checkboxBeneficiario
+        );
+
+        return;
+
+    }
+    
+    const botaoEditar =
+        event.target.closest(
+            ".btnEditar"
+        );
+
+    if (botaoEditar) {
+
+        editarBeneficiario(
+            botaoEditar.dataset.id
+        );
+
+        return;
+
+    }
+
+
+    const botaoExcluir =
+        event.target.closest(
+            ".btnExcluir"
+        );
+
+    if (botaoExcluir) {
+
+        excluirBeneficiario(
+            botaoExcluir.dataset.id
+        );
+
+        return;
+
+    }
+
+
+    const botaoStatus =
+        event.target.closest(
+            ".btnStatusBeneficiario"
+        );
+
+    if (botaoStatus) {
+
+        alterarStatusBeneficiario(
+            botaoStatus
+        );
+
+    }
+
+}
+
+
+// =====================================================
+// FECHAR MODAL AO CLICAR NO FUNDO
+// =====================================================
+
+function tratarCliqueForaModal(event) {
+
+    if (
+        event.target ===
+        elementos.modal
+    ) {
+
+        fecharModalBeneficiario();
+
+    }
+
+}
 
 
 // =====================================================
@@ -2201,27 +2939,6 @@ function configurarEventos() {
     elementos.formulario.addEventListener(
         "submit",
         salvarBeneficiario,
-        opcoes
-    );
-
-
-    // Impede que Enter envie o formulário e recarregue
-    // a página enquanto o cadastro está sendo preenchido.
-    elementos.formulario.addEventListener(
-        "keydown",
-        (event) => {
-
-            if (
-                event.key === "Enter" &&
-                event.target.tagName !== "TEXTAREA"
-            ) {
-
-                event.preventDefault();
-                event.stopPropagation();
-
-            }
-
-        },
         opcoes
     );
 
