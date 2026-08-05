@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
-import dns from "node:dns";
+//import dns from "node:dns";
+import dns from "node:dns/promises";
 
 /*dns.lookup("smtp.gmail.com", { all: true }, (err, addresses) => {
   console.log("SMTP DNS:", addresses);
