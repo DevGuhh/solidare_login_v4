@@ -11,10 +11,13 @@ export const transporter = nodemailer.createTransport({
   /*host: "smtp.gmail.com",
   port: 587,
   secure: false,*/
-  host: "173.194.43.108",
+  host: "smtp.gmail.com",
   port: 587,
   secure: false,
   requireTLS: true,
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 10000,
 
   auth: {
     user: process.env.EMAIL_USER,
@@ -33,7 +36,7 @@ export async function sendMail(to, subject, html) {
     (await transporter.sendMail({
       from: `"Suporte" <${process.env.EMAIL_USER}>`,
       to,
-      subject: "Redefinição de senha | Instituto Solidare",
+      subject,
       html,
     }),
       console.log("E-mail enviado com sucesso!"));
