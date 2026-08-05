@@ -288,7 +288,7 @@ class AuthController {
       });
 
       try {
-        const resetUrl = `http://127.0.0.1:5500/frontend/views/redefinirSenha.html?token=${resetToken}`;
+        const resetUrl = `${process.env.FRONTEND_URL}/frontend/views/redefinirSenha.html?token=${resetToken}`;
 
         await sendMail(
           user.email,
