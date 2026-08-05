@@ -1683,3 +1683,86 @@
     }
 
 }
+
+
+/* =====================================================
+   CORREÇÃO GLOBAL — BREADCRUMB ALINHADO EM TODAS AS PÁGINAS
+===================================================== */
+
+.topbar-header {
+    align-items: flex-start;
+    width: auto;
+    min-width: 240px;
+}
+
+.breadcrumb {
+    width: max-content;
+    max-width: 100%;
+
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start;
+
+    gap: 7px;
+    flex-wrap: nowrap !important;
+
+    margin: 0 0 2px;
+    padding: 0;
+
+    white-space: nowrap;
+    line-height: 1;
+}
+
+.breadcrumb-inicio,
+.breadcrumb-separador,
+.breadcrumb-atual {
+    flex: 0 0 auto;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.breadcrumb-inicio {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start;
+
+    gap: 5px;
+
+    min-width: max-content;
+    padding: 3px 5px;
+}
+
+.breadcrumb-inicio i,
+.breadcrumb-inicio span,
+.breadcrumb-separador,
+.breadcrumb-atual {
+    display: inline-flex;
+    align-items: center;
+}
+
+.breadcrumb-separador {
+    justify-content: center;
+    min-width: 12px;
+}
+
+@media (max-width: 700px) {
+
+    .topbar-header {
+        min-width: 0;
+    }
+
+    .breadcrumb {
+        max-width: min(100%, 260px);
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: none;
+    }
+
+    .breadcrumb::-webkit-scrollbar {
+        display: none;
+    }
+
+}
+
