@@ -2633,3 +2633,81 @@ body.modal-aberto{
     }
 
 }
+
+/* =====================================================
+   CORREÇÃO FINAL — ALINHAMENTO DA PAGINAÇÃO DE INSTITUIÇÕES
+===================================================== */
+
+.pagina-instituicoes .paginacao {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-end;
+    gap: 6px;
+    flex-wrap: nowrap !important;
+    white-space: nowrap;
+    margin: 0;
+}
+
+.pagina-instituicoes .numeros-paginacao {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 6px;
+    flex-wrap: nowrap !important;
+    white-space: nowrap;
+}
+
+.pagina-instituicoes .btn-paginacao {
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
+    min-height: 36px;
+    padding: 0;
+
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 36px;
+}
+
+@media (max-width: 850px) {
+
+    .pagina-instituicoes .rodape-listagem {
+        align-items: stretch;
+    }
+
+    .pagina-instituicoes .paginacao {
+        width: 100%;
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding-bottom: 4px;
+    }
+
+    .pagina-instituicoes .numeros-paginacao {
+        flex: 0 0 auto;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .pagina-instituicoes .paginacao {
+        justify-content: flex-start !important;
+    }
+
+    .pagina-instituicoes .numeros-paginacao {
+        display: flex !important;
+    }
+
+    .pagina-instituicoes .btn-paginacao {
+        width: 34px;
+        min-width: 34px;
+        height: 34px;
+        min-height: 34px;
+        flex-basis: 34px;
+    }
+
+}
+

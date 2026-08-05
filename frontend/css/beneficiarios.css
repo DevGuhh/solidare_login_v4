@@ -1727,18 +1727,35 @@
 
 
 .beneficiarios-paginacao-controles {
+    width: auto;
+    max-width: 100%;
+
     display: flex;
+    flex-direction: row;
     align-items: center;
+    justify-content: flex-end;
     gap: 6px;
+    flex-wrap: nowrap;
 
     margin: 0;
+    white-space: nowrap;
 }
 
 
 .paginacao-numeros {
     display: flex;
+    flex-direction: row;
     align-items: center;
     gap: 6px;
+    flex-wrap: nowrap;
+
+    min-width: max-content;
+}
+
+
+.beneficiarios-paginacao-controles > *,
+.paginacao-numeros > * {
+    flex: 0 0 auto;
 }
 
 
@@ -1821,6 +1838,9 @@
     .beneficiarios-paginacao-controles {
         width: 100%;
         justify-content: center;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 4px;
     }
 
 }

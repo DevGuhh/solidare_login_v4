@@ -542,3 +542,108 @@
     }
 
 }
+
+/* =====================================================
+   CORREÇÃO FINAL — ALINHAMENTO DA PAGINAÇÃO DE RELATÓRIOS
+===================================================== */
+
+.pagina-relatorios .paginacao {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-end;
+    gap: 6px;
+    flex-wrap: nowrap !important;
+    white-space: nowrap;
+    margin: 0;
+}
+
+.pagina-relatorios .paginacao-numeros {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 6px;
+    flex-wrap: nowrap !important;
+    white-space: nowrap;
+}
+
+.pagina-relatorios .paginacao-botao,
+.pagina-relatorios .paginacao-numero,
+.pagina-relatorios .paginacao button {
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
+    min-height: 36px;
+    padding: 0;
+
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 36px;
+
+    border: 1px solid #dfe3e8;
+    border-radius: 8px;
+
+    background: #ffffff;
+    color: #667085;
+
+    cursor: pointer;
+
+    font-family: inherit;
+    font-size: 0.74rem;
+    font-weight: 700;
+}
+
+.pagina-relatorios .paginacao-botao:hover:not(:disabled),
+.pagina-relatorios .paginacao-numero:hover,
+.pagina-relatorios .paginacao button:hover:not(:disabled) {
+    border-color: #d9b9bf;
+
+    background: #fff5f6;
+    color: #850013;
+}
+
+.pagina-relatorios .paginacao-numero.ativo,
+.pagina-relatorios .paginacao button.ativo {
+    border-color: #850013;
+
+    background: #850013;
+    color: #ffffff;
+}
+
+.pagina-relatorios .paginacao-botao:disabled,
+.pagina-relatorios .paginacao button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+@media (max-width: 760px) {
+
+    .pagina-relatorios .paginacao {
+        width: 100%;
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding-bottom: 4px;
+    }
+
+    .pagina-relatorios .paginacao-numeros {
+        flex: 0 0 auto;
+    }
+
+}
+
+@media (max-width: 480px) {
+
+    .pagina-relatorios .paginacao-botao,
+    .pagina-relatorios .paginacao-numero,
+    .pagina-relatorios .paginacao button {
+        width: 34px;
+        min-width: 34px;
+        height: 34px;
+        min-height: 34px;
+        flex-basis: 34px;
+    }
+
+}
+
