@@ -8,7 +8,7 @@ import { connectDB, disconnectDB } from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import instituicoesRoutes from "./routes/instituicoesRoutes.js";
 import beneficariosRoutes from "./routes/beneficariosRoutes.js";
-import doacoesRoutes from "./routes/doacoesRoutes.js"
+import doacoesRoutes from "./routes/doacoesRoutes.js";
 
 // Carrega as variáveis de ambiente
 config();
@@ -24,10 +24,24 @@ const app = express();
     origin: "http://127.0.0.1:5500",
     credentials: true
 }));*/
-app.use(cors({
-    origin: "https://solidare-login-v4.vercel.app/",
-    credentials: true
-}));
+const allowedOrigins = [
+  "https://solidare-login-v4.vercel.app",
+  "https://solidare-login-v4-jihy0l9fa-devguhhs-projects.vercel.app",
+  "http://127.0.0.1:5500",
+];
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Origin não permitida"));
+      }
+    },
+    credentials: true,
+  }),
+);
 
 // Permite ler cookies
 app.use(cookieParser());
@@ -40,14 +54,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/auth", authRoutes);
 app.use("/", instituicoesRoutes);
 app.use("/", beneficariosRoutes);
-app.use("/", doacoesRoutes)
+app.use("/", doacoesRoutes);
 
 // Porta do servidor
 const PORT = process.env.PORT || 3000;
 
 // Inicia o servidor
 const server = app.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
+  console.log(`Servidor rodando na porta ${PORT}`);
 });
 
 /* ==========================================================================
@@ -55,26 +69,26 @@ const server = app.listen(PORT, () => {
    ========================================================================== */
 
 process.on("unhandledRejection", (err) => {
-    console.error("Unhandled Rejection:", err);
+  console.error("Unhandled Rejection:", err);
 
-    server.close(async () => {
-        await disconnectDB();
-        process.exit(1);
-    });
+  server.close(async () => {
+    await disconnectDB();
+    process.exit(1);
+  });
 });
 
 process.on("uncaughtException", async (err) => {
-    console.error("Uncaught Exception:", err);
+  console.error("Uncaught Exception:", err);
 
-    await disconnectDB();
-    process.exit(1);
+  await disconnectDB();
+  process.exit(1);
 });
 
 process.on("SIGTERM", async () => {
-    console.log("SIGTERM recebido. Encerrando aplicação...");
+  console.log("SIGTERM recebido. Encerrando aplicação...");
 
-    server.close(async () => {
-        await disconnectDB();
-        process.exit(0);
-    });
+  server.close(async () => {
+    await disconnectDB();
+    process.exit(0);
+  });
 });

@@ -2,7 +2,7 @@
 // CONFIGURAÇÕES
 // ==========================================
 
-import { API_URL } from "../config.js";
+import { API_URL } from "./config.js";
 
 const TOKEN_KEY = "token";
 const EMAIL_LEMBRADO_KEY = "emailLembrado";

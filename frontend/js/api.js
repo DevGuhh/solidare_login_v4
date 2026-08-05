@@ -1,4 +1,4 @@
-import { API_URL } from "../config.js";
+import { API_URL } from "./config.js";
 
 function getToken() {
     return localStorage.getItem("token");
