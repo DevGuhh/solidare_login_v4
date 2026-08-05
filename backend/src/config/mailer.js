@@ -8,14 +8,21 @@ dns.lookup("smtp.gmail.com", { all: true }, (err, addresses) => {
 
 export const transporter = nodemailer.createTransport({
   //service: "gmail",
-  host: "smtp.gmail.com",
+  /*host: "smtp.gmail.com",
+  port: 587,
+  secure: false,*/
+  host: "173.194.43.108",
   port: 587,
   secure: false,
+  requireTLS: true,
 
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+  tls: {
+    servername: "smtp.gmail.com"
+  }
 });
 
 export async function sendMail(to, subject, html) {
