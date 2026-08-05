@@ -288,8 +288,7 @@ class AuthController {
       });
 
       try {
-        const resetUrl = `${process.env.FRONTEND_URL}/frontend/views/redefinirSenha.html?token=${resetToken}`;
-
+        const resetUrl = `${process.env.FRONTEND_URL}/views/redefinirSenha.html?token=${resetToken}`;
         await sendMail(
           user.email,
           "Redefinição de senha",
