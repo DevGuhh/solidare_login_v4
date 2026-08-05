@@ -1,5 +1,11 @@
 import nodemailer from "nodemailer";
 
+import dns from "node:dns";
+
+dns.lookup("smtp.gmail.com", { all: true }, (err, addresses) => {
+  console.log("SMTP DNS:", addresses);
+});
+
 export const transporter = nodemailer.createTransport({
   //service: "gmail",
   host: "smtp.gmail.com",
