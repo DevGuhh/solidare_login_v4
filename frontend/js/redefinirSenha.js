@@ -1,4 +1,4 @@
-import { API_URL } from "../config.js";
+import { API_URL } from "./config.js";
 const form = document.getElementById("formRedefinirSenha");
 const novaSenha = document.getElementById("novaSenha");
 const confirmarSenha = document.getElementById("confirmarSenha");

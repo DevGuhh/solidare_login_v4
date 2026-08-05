@@ -325,9 +325,6 @@ class AuthController {
   }
 
   async resetPassword(req, res) {
-    /*const { token } = req.params;
-    const { newPassword, confirmPassword } = req.body;*/
-
     const { token, newPassword, confirmPassword } = req.body;
 
     try {

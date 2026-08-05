@@ -27,8 +27,8 @@ import {
     esconderLoading
 } from "../utils/loading.js";
 
-const API_URL =
-    "http://localhost:3000";
+//const API_URL = "http://localhost:3000";
+import { API_URL } from "../config.js";
 
 
 // =====================================================

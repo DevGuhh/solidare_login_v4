@@ -55,8 +55,8 @@ import {
 // CONFIGURAÇÕES
 // =====================================================
 
-const API_URL =
-    "http://localhost:3000";
+//const API_URL = "http://localhost:3000";
+import { API_URL } from "../config.js";
 
 
 // =====================================================
