@@ -599,3 +599,103 @@
   border-color: #ef4444;
   background: #fef2f2;
 }
+
+/* =====================================================
+   VISUALIZAÇÃO DO QR CODE SCANEÁVEL
+   ===================================================== */
+
+.qrcode-modal-visualizacao {
+  max-width: 500px;
+}
+
+.qrcode-visualizacao-corpo {
+  align-items: center;
+  text-align: center;
+}
+
+.qrcode-imagem-container {
+  width: 100%;
+  min-height: 330px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-sizing: border-box;
+  padding: 20px;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+
+  background: #ffffff;
+}
+
+.qrcode-imagem {
+  display: block;
+  width: min(100%, 320px);
+  height: auto;
+
+  image-rendering: pixelated;
+}
+
+.qrcode-imagem[hidden] {
+  display: none;
+}
+
+.qrcode-imagem-carregando {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.qrcode-imagem-carregando[hidden] {
+  display: none;
+}
+
+.qrcode-imagem-carregando i {
+  color: #2563eb;
+  font-size: 30px;
+}
+
+.qrcode-dados-visualizacao {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.qrcode-dados-visualizacao strong {
+  color: #111827;
+  font-size: 17px;
+}
+
+.qrcode-dados-visualizacao span {
+  color: #4b5563;
+  font-family: monospace;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.qrcode-acao-visualizar {
+  color: #2563eb;
+}
+
+@media (max-width: 520px) {
+  .qrcode-imagem-container {
+    min-height: 280px;
+    padding: 14px;
+  }
+
+  .qrcode-modal-visualizacao .qrcode-modal-rodape {
+    flex-direction: column;
+  }
+
+  .qrcode-modal-visualizacao .qrcode-botao-cancelar,
+  .qrcode-modal-visualizacao .qrcode-botao-confirmar {
+    width: 100%;
+  }
+}

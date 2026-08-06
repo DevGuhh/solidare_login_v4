@@ -6,13 +6,16 @@ import { listarBeneficiarios } from "../api/beneficiariosApi.js";
 import {
     listarQRCodes,
     criarQRCode,
-    desativarQRCode
+    desativarQRCode,
+    obterImagemQRCode
 } from "../api/qrcodeApi.js";
 
 export async function inicializarQRCode() {
     let beneficiarios = [];
     let qrcodes = [];
     let beneficiarioSelecionado = null;
+    let urlImagemAtual = null;
+    let qrCodeVisualizado = null;
 
     const btnGerar = document.getElementById("btnGerarQRCode");
     const modal = document.getElementById("modalQRCode");
@@ -33,6 +36,15 @@ export async function inicializarQRCode() {
     const qrcodesHoje = document.getElementById("qrcodesHoje");
     const campoPesquisar = document.getElementById("campoPesquisarQRCode");
     const filtroTipo = document.getElementById("filtroTipoQRCode");
+
+    const modalVisualizar = document.getElementById("modalVisualizarQRCode");
+    const btnFecharVisualizar = document.getElementById("btnFecharVisualizarQRCode");
+    const imagemQRCode = document.getElementById("imagemQRCode");
+    const imagemCarregando = document.getElementById("qrcodeImagemCarregando");
+    const visualizacaoNome = document.getElementById("visualizacaoNomeBeneficiario");
+    const visualizacaoCodigo = document.getElementById("visualizacaoCodigoQRCode");
+    const btnBaixarQRCode = document.getElementById("btnBaixarQRCode");
+    const btnImprimirQRCode = document.getElementById("btnImprimirQRCode");
 
     if (!btnGerar || !modal || !tabelaQRCodes) {
         console.warn("Elementos principais do módulo QR Code não encontrados.");
@@ -164,6 +176,16 @@ export async function inicializarQRCode() {
                     </td>
                     <td>
                         <div class="qrcode-acoes">
+                            <button
+                                type="button"
+                                class="qrcode-acao qrcode-acao-visualizar"
+                                data-acao="visualizar"
+                                data-codigo="${escaparHtml(item.codigo)}"
+                                title="Visualizar QR Code"
+                                aria-label="Visualizar QR Code"
+                            >
+                                <i class="fa-solid fa-qrcode" aria-hidden="true"></i>
+                            </button>
                             <button
                                 type="button"
                                 class="qrcode-acao"
@@ -357,6 +379,135 @@ export async function inicializarQRCode() {
         }
     }
 
+    function liberarUrlImagem() {
+        if (urlImagemAtual) {
+            URL.revokeObjectURL(urlImagemAtual);
+            urlImagemAtual = null;
+        }
+    }
+
+    function fecharVisualizacao() {
+        if (!modalVisualizar) return;
+
+        modalVisualizar.hidden = true;
+        qrCodeVisualizado = null;
+
+        if (imagemQRCode) {
+            imagemQRCode.hidden = true;
+            imagemQRCode.removeAttribute("src");
+        }
+
+        liberarUrlImagem();
+
+        if (modal.hidden) {
+            document.body.style.overflow = "";
+        }
+    }
+
+    async function visualizarQRCode(item) {
+        if (!modalVisualizar || !imagemQRCode || !imagemCarregando) {
+            alert("O modal de visualização do QR Code não foi encontrado.");
+            return;
+        }
+
+        qrCodeVisualizado = item;
+        liberarUrlImagem();
+
+        modalVisualizar.hidden = false;
+        document.body.style.overflow = "hidden";
+        imagemQRCode.hidden = true;
+        imagemCarregando.hidden = false;
+        imagemCarregando.innerHTML = `
+            <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
+            <span>Gerando imagem...</span>
+        `;
+
+        if (visualizacaoNome) {
+            visualizacaoNome.textContent = item.beneficiario?.nomeCompleto || "Beneficiário não informado";
+        }
+
+        if (visualizacaoCodigo) {
+            visualizacaoCodigo.textContent = item.codigo || "-";
+        }
+
+        try {
+            const resposta = await obterImagemQRCode(item.codigo);
+
+            if (!resposta.ok) {
+                const dados = await resposta.json().catch(() => ({}));
+                throw new Error(dados.message || "Não foi possível gerar a imagem do QR Code.");
+            }
+
+            const blob = await resposta.blob();
+            urlImagemAtual = URL.createObjectURL(blob);
+            imagemQRCode.src = urlImagemAtual;
+            imagemQRCode.hidden = false;
+            imagemCarregando.hidden = true;
+        } catch (erro) {
+            console.error("Erro ao visualizar QR Code:", erro);
+            imagemCarregando.hidden = false;
+            imagemCarregando.innerHTML = `
+                <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                <span>${escaparHtml(erro.message || "Erro ao carregar QR Code.")}</span>
+            `;
+        }
+    }
+
+    function baixarQRCode() {
+        if (!urlImagemAtual || !qrCodeVisualizado) return;
+
+        const link = document.createElement("a");
+        link.href = urlImagemAtual;
+        link.download = `qr-${qrCodeVisualizado.codigo}.png`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    }
+
+    function imprimirQRCode() {
+        if (!urlImagemAtual || !qrCodeVisualizado) return;
+
+        const nome = escaparHtml(
+            qrCodeVisualizado.beneficiario?.nomeCompleto || "Beneficiário"
+        );
+        const codigo = escaparHtml(qrCodeVisualizado.codigo || "");
+        const janela = window.open("", "_blank", "width=620,height=760");
+
+        if (!janela) {
+            alert("Permita pop-ups no navegador para imprimir o QR Code.");
+            return;
+        }
+
+        janela.document.write(`
+            <!DOCTYPE html>
+            <html lang="pt-BR">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>QR Code - ${codigo}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; text-align: center; padding: 40px; color: #111827; }
+                        img { width: 360px; max-width: 100%; }
+                        h1 { margin-bottom: 8px; font-size: 24px; }
+                        p { color: #4b5563; margin: 6px 0; }
+                        .codigo { font-family: monospace; font-size: 18px; font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    <h1>${nome}</h1>
+                    <p>Aponte a câmera para o QR Code.</p>
+                    <img src="${urlImagemAtual}" alt="QR Code">
+                    <p class="codigo">${codigo}</p>
+                </body>
+            </html>
+        `);
+        janela.document.close();
+        janela.focus();
+
+        janela.onload = () => {
+            janela.print();
+        };
+    }
+
     async function gerarQRCode() {
         if (!beneficiarioSelecionado) {
             alert("Selecione um beneficiário antes de gerar o QR Code.");
@@ -385,6 +536,13 @@ export async function inicializarQRCode() {
 
             // Atualiza imediatamente a tabela e os cards depois da criação.
             await carregarQRCodes();
+
+            const itemCriado = qrcodes.find((item) => item.codigo === qrCode.codigo) || {
+                ...qrCode,
+                beneficiario: qrCode.beneficiario || beneficiarioSelecionado
+            };
+
+            await visualizarQRCode(itemCriado);
         } catch (erro) {
             console.error("Erro ao gerar QR Code:", erro);
             alert(erro.message || "Erro ao gerar QR Code.");
@@ -433,6 +591,13 @@ export async function inicializarQRCode() {
     btnCancelar?.addEventListener("click", fecharModal);
     btnRemoverBeneficiario?.addEventListener("click", removerBeneficiario);
     btnConfirmar?.addEventListener("click", gerarQRCode);
+    btnFecharVisualizar?.addEventListener("click", fecharVisualizacao);
+    btnBaixarQRCode?.addEventListener("click", baixarQRCode);
+    btnImprimirQRCode?.addEventListener("click", imprimirQRCode);
+
+    modalVisualizar?.addEventListener("click", (event) => {
+        if (event.target === modalVisualizar) fecharVisualizacao();
+    });
 
     pesquisaBeneficiario?.addEventListener("input", () => {
         pesquisarBeneficiarios(pesquisaBeneficiario.value);
@@ -450,6 +615,11 @@ export async function inicializarQRCode() {
         const botao = event.target.closest("[data-acao]");
         if (!botao) return;
 
+        if (botao.dataset.acao === "visualizar") {
+            const item = qrcodes.find((qr) => qr.codigo === botao.dataset.codigo);
+            if (item) await visualizarQRCode(item);
+        }
+
         if (botao.dataset.acao === "copiar") {
             await copiarCodigo(botao.dataset.codigo || "");
         }
@@ -460,7 +630,14 @@ export async function inicializarQRCode() {
     });
 
     document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape" && !modal.hidden) fecharModal();
+        if (event.key !== "Escape") return;
+
+        if (modalVisualizar && !modalVisualizar.hidden) {
+            fecharVisualizacao();
+            return;
+        }
+
+        if (!modal.hidden) fecharModal();
     });
 
     await carregarQRCodes();

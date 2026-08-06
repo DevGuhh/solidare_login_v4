@@ -196,3 +196,27 @@ export async function desativarQRCode(
     );
 
 }
+
+// =====================================================
+// OBTER IMAGEM DO QR CODE
+// =====================================================
+
+export async function obterImagemQRCode(codigo) {
+
+    const valor = String(codigo ?? "").trim();
+
+    if (!valor) {
+        throw new Error("Código do QR Code é obrigatório.");
+    }
+
+    return fetch(
+        `${API_URL}/qrcodes/${encodeURIComponent(valor)}/imagem`,
+        {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${obterToken() || ""}`
+            },
+            cache: "no-store"
+        }
+    );
+}
