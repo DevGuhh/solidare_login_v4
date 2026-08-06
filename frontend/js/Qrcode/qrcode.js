@@ -2,1069 +2,467 @@
 // MÓDULO QR CODE
 // =====================================================
 
+import { listarBeneficiarios } from "../api/beneficiariosApi.js";
 import {
-    listarBeneficiarios
-} from "../api/beneficiariosApi.js";
-
-import {
-    criarQRCode
+    listarQRCodes,
+    criarQRCode,
+    desativarQRCode
 } from "../api/qrcodeApi.js";
 
-
-// =====================================================
-// INICIALIZAR MÓDULO
-// =====================================================
-
 export async function inicializarQRCode() {
-
-    // =================================================
-    // ESTADO
-    // =================================================
-
     let beneficiarios = [];
-
+    let qrcodes = [];
     let beneficiarioSelecionado = null;
 
+    const btnGerar = document.getElementById("btnGerarQRCode");
+    const modal = document.getElementById("modalQRCode");
+    const btnFechar = document.getElementById("btnFecharModalQRCode");
+    const btnCancelar = document.getElementById("btnCancelarQRCode");
+    const btnConfirmar = document.getElementById("btnConfirmarQRCode");
 
-    // =================================================
-    // ELEMENTOS PRINCIPAIS
-    // =================================================
+    const pesquisaBeneficiario = document.getElementById("pesquisaBeneficiarioQRCode");
+    const resultadosBeneficiarios = document.getElementById("resultadosBeneficiariosQRCode");
+    const beneficiarioSelecionadoElemento = document.getElementById("beneficiarioSelecionadoQRCode");
+    const nomeBeneficiario = document.getElementById("nomeBeneficiarioQRCode");
+    const dadosBeneficiario = document.getElementById("dadosBeneficiarioQRCode");
+    const btnRemoverBeneficiario = document.getElementById("btnRemoverBeneficiarioQRCode");
 
-    const btnGerar =
-        document.getElementById(
-            "btnGerarQRCode"
-        );
+    const tabelaQRCodes = document.getElementById("tabelaQRCodes");
+    const totalQRCodes = document.getElementById("totalQRCodes");
+    const qrcodesAtivos = document.getElementById("qrcodesAtivos");
+    const qrcodesHoje = document.getElementById("qrcodesHoje");
+    const campoPesquisar = document.getElementById("campoPesquisarQRCode");
+    const filtroTipo = document.getElementById("filtroTipoQRCode");
 
-    const modal =
-        document.getElementById(
-            "modalQRCode"
-        );
-
-    const btnFechar =
-        document.getElementById(
-            "btnFecharModalQRCode"
-        );
-
-    const btnCancelar =
-        document.getElementById(
-            "btnCancelarQRCode"
-        );
-
-
-    // =================================================
-    // ELEMENTOS DO BENEFICIÁRIO
-    // =================================================
-
-    const pesquisaBeneficiario =
-        document.getElementById(
-            "pesquisaBeneficiarioQRCode"
-        );
-
-    const resultadosBeneficiarios =
-        document.getElementById(
-            "resultadosBeneficiariosQRCode"
-        );
-
-    const beneficiarioSelecionadoElemento =
-        document.getElementById(
-            "beneficiarioSelecionadoQRCode"
-        );
-
-    const nomeBeneficiario =
-        document.getElementById(
-            "nomeBeneficiarioQRCode"
-        );
-
-    const dadosBeneficiario =
-        document.getElementById(
-            "dadosBeneficiarioQRCode"
-        );
-
-    const btnRemoverBeneficiario =
-        document.getElementById(
-            "btnRemoverBeneficiarioQRCode"
-        );
-
-    const btnConfirmar =
-        document.getElementById(
-            "btnConfirmarQRCode"
-        );
-
-
-    // =================================================
-    // VERIFICAR ELEMENTOS
-    // =================================================
-
-    if (
-        !btnGerar ||
-        !modal
-    ) {
-
-        console.warn(
-            "Elementos principais do módulo QR Code não encontrados."
-        );
-
+    if (!btnGerar || !modal || !tabelaQRCodes) {
+        console.warn("Elementos principais do módulo QR Code não encontrados.");
         return;
-
     }
-
-
-    // =================================================
-    // ESCAPAR HTML
-    // =================================================
 
     function escaparHtml(valor) {
-
         return String(valor ?? "")
-            .replaceAll(
-                "&",
-                "&amp;"
-            )
-            .replaceAll(
-                "<",
-                "&lt;"
-            )
-            .replaceAll(
-                ">",
-                "&gt;"
-            )
-            .replaceAll(
-                '"',
-                "&quot;"
-            )
-            .replaceAll(
-                "'",
-                "&#039;"
-            );
-
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
     }
 
-
-    // =================================================
-    // CARREGAR BENEFICIÁRIOS
-    // =================================================
-
-    async function carregarBeneficiarios() {
-
-        try {
-
-            console.log(
-                "Carregando beneficiários..."
-            );
-
-
-            const resposta =
-                await listarBeneficiarios();
-
-
-            console.log(
-                "Resposta da API de beneficiários:",
-                resposta
-            );
-
-
-            if (!resposta) {
-
-                throw new Error(
-                    "A função listarBeneficiarios não retornou uma resposta."
-                );
-
-            }
-
-
-            if (!resposta.ok) {
-
-                throw new Error(
-                    `Erro ao carregar beneficiários. HTTP ${resposta.status}`
-                );
-
-            }
-
-
-            const dados =
-                await resposta.json();
-
-
-            console.log(
-                "Dados recebidos:",
-                dados
-            );
-
-
-            // =========================================
-            // API RETORNANDO ARRAY DIRETO
-            // =========================================
-
-            if (
-                Array.isArray(dados)
-            ) {
-
-                beneficiarios =
-                    dados;
-
-            }
-
-
-            // =========================================
-            // API RETORNANDO { data: [] }
-            // =========================================
-
-            else if (
-                Array.isArray(
-                    dados?.data
-                )
-            ) {
-
-                beneficiarios =
-                    dados.data;
-
-            }
-
-
-            // =========================================
-            // API RETORNANDO { beneficiarios: [] }
-            // =========================================
-
-            else if (
-                Array.isArray(
-                    dados?.beneficiarios
-                )
-            ) {
-
-                beneficiarios =
-                    dados.beneficiarios;
-
-            }
-
-
-            // =========================================
-            // NENHUM FORMATO RECONHECIDO
-            // =========================================
-
-            else {
-
-                console.warn(
-                    "Formato de resposta dos beneficiários não reconhecido.",
-                    dados
-                );
-
-                beneficiarios = [];
-
-            }
-
-
-            console.log(
-                "Beneficiários disponíveis para QR Code:",
-                beneficiarios
-            );
-
-
-        } catch (erro) {
-
-            console.error(
-                "Erro ao carregar beneficiários para QR Code:",
-                erro
-            );
-
-            beneficiarios = [];
-
-        }
-
+    function normalizarLista(dados, nomeCampo) {
+        if (Array.isArray(dados)) return dados;
+        if (Array.isArray(dados?.data)) return dados.data;
+        if (Array.isArray(dados?.[nomeCampo])) return dados[nomeCampo];
+        return [];
     }
 
+    function somenteDataLocal(valor) {
+        if (!valor) return "-";
 
-    // =================================================
-    // ABRIR MODAL
-    // =================================================
+        const data = new Date(valor);
+        if (Number.isNaN(data.getTime())) return "-";
 
-    async function abrirModal() {
+        return new Intl.DateTimeFormat("pt-BR", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+        }).format(data);
+    }
 
-        modal.hidden =
-            false;
+    function foiGeradoHoje(valor) {
+        if (!valor) return false;
 
+        const data = new Date(valor);
+        if (Number.isNaN(data.getTime())) return false;
 
-        document.body.style.overflow =
-            "hidden";
+        const hoje = new Date();
 
+        return data.getFullYear() === hoje.getFullYear()
+            && data.getMonth() === hoje.getMonth()
+            && data.getDate() === hoje.getDate();
+    }
 
-        await carregarBeneficiarios();
-
-
-        if (
-            pesquisaBeneficiario
-        ) {
-
-            setTimeout(
-                () => {
-
-                    pesquisaBeneficiario.focus();
-
-                },
-                100
+    function atualizarCards() {
+        if (totalQRCodes) totalQRCodes.textContent = String(qrcodes.length);
+        if (qrcodesAtivos) {
+            qrcodesAtivos.textContent = String(
+                qrcodes.filter((item) => item.ativo === true).length
             );
-
         }
-
+        if (qrcodesHoje) {
+            qrcodesHoje.textContent = String(
+                qrcodes.filter((item) => foiGeradoHoje(item.criadoEm)).length
+            );
+        }
     }
 
+    function obterQRCodesFiltrados() {
+        const pesquisa = String(campoPesquisar?.value ?? "")
+            .trim()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase();
 
-    // =================================================
-    // LIMPAR FORMULÁRIO
-    // =================================================
+        const tipo = String(filtroTipo?.value ?? "").toUpperCase();
 
-    function limparFormulario() {
-
-        beneficiarioSelecionado =
-            null;
-
-
-        if (
-            pesquisaBeneficiario
-        ) {
-
-            pesquisaBeneficiario.value =
-                "";
-
-        }
-
-
-        if (
-            resultadosBeneficiarios
-        ) {
-
-            resultadosBeneficiarios.innerHTML =
-                "";
-
-            resultadosBeneficiarios.hidden =
-                true;
-
-        }
-
-
-        if (
-            beneficiarioSelecionadoElemento
-        ) {
-
-            beneficiarioSelecionadoElemento.hidden =
-                true;
-
-        }
-
-
-        if (
-            nomeBeneficiario
-        ) {
-
-            nomeBeneficiario.textContent =
-                "-";
-
-        }
-
-
-        if (
-            dadosBeneficiario
-        ) {
-
-            dadosBeneficiario.textContent =
-                "-";
-
-        }
-
-    }
-
-
-    // =================================================
-    // FECHAR MODAL
-    // =================================================
-
-    function fecharModal() {
-
-        modal.hidden =
-            true;
-
-
-        document.body.style.overflow =
-            "";
-
-
-        limparFormulario();
-
-    }
-
-
-    // =================================================
-    // PESQUISAR BENEFICIÁRIOS
-    // =================================================
-
-    function pesquisarBeneficiarios(
-        texto
-    ) {
-
-        if (
-            !resultadosBeneficiarios
-        ) {
-
-            return;
-
-        }
-
-
-        const textoOriginal =
-            String(
-                texto ?? ""
-            ).trim();
-
-
-        const pesquisa =
-            textoOriginal
+        return qrcodes.filter((item) => {
+            const codigo = String(item.codigo ?? "").toLowerCase();
+            const nome = String(item.beneficiario?.nomeCompleto ?? "")
                 .normalize("NFD")
-                .replace(
-                    /[\u0300-\u036f]/g,
-                    ""
-                )
+                .replace(/[\u0300-\u036f]/g, "")
                 .toLowerCase();
+            const cpf = String(item.beneficiario?.cpf ?? "").replace(/\D/g, "");
+            const pesquisaNumerica = pesquisa.replace(/\D/g, "");
 
+            const correspondePesquisa = !pesquisa
+                || codigo.includes(pesquisa)
+                || nome.includes(pesquisa)
+                || (pesquisaNumerica && cpf.includes(pesquisaNumerica));
 
-        const pesquisaCpf =
-            textoOriginal
-                .replace(
-                    /\D/g,
-                    ""
-                );
+            const correspondeTipo = !tipo || tipo === "BENEFICIARIO";
 
+            return correspondePesquisa && correspondeTipo;
+        });
+    }
 
-        // =============================================
-        // PESQUISA VAZIA
-        // =============================================
+    function renderizarTabela() {
+        const lista = obterQRCodesFiltrados();
 
-        if (!pesquisa) {
-
-            resultadosBeneficiarios.innerHTML =
-                "";
-
-            resultadosBeneficiarios.hidden =
-                true;
-
-            return;
-
-        }
-
-
-        // =============================================
-        // FILTRAR
-        // =============================================
-
-        const resultados =
-            beneficiarios
-                .filter(
-                    (beneficiario) => {
-
-                        const nome =
-                            String(
-                                beneficiario.nomeCompleto ??
-                                beneficiario.nome ??
-                                ""
-                            )
-                                .normalize("NFD")
-                                .replace(
-                                    /[\u0300-\u036f]/g,
-                                    ""
-                                )
-                                .toLowerCase();
-
-
-                        const cpf =
-                            String(
-                                beneficiario.cpf ??
-                                ""
-                            )
-                                .replace(
-                                    /\D/g,
-                                    ""
-                                );
-
-
-                        const encontrouNome =
-                            nome.includes(
-                                pesquisa
-                            );
-
-
-                        const encontrouCpf =
-                            pesquisaCpf.length > 0 &&
-                            cpf.includes(
-                                pesquisaCpf
-                            );
-
-
-                        return (
-                            encontrouNome ||
-                            encontrouCpf
-                        );
-
-                    }
-                )
-                .slice(
-                    0,
-                    8
-                );
-
-
-        // =============================================
-        // NENHUM RESULTADO
-        // =============================================
-
-        if (
-            resultados.length === 0
-        ) {
-
-            resultadosBeneficiarios.innerHTML = `
-
-                <div
-                    class="qrcode-sem-resultado"
-                >
-
-                    <i
-                        class="fa-solid fa-user-slash"
-                        aria-hidden="true"
-                    ></i>
-
-                    <span>
-                        Nenhum beneficiário encontrado.
-                    </span>
-
-                </div>
-
+        if (lista.length === 0) {
+            tabelaQRCodes.innerHTML = `
+                <tr>
+                    <td colspan="6" class="qrcode-tabela-vazia">
+                        <i class="fa-solid fa-qrcode" aria-hidden="true"></i>
+                        <span>Nenhum QR Code encontrado.</span>
+                    </td>
+                </tr>
             `;
-
-
-            resultadosBeneficiarios.hidden =
-                false;
-
-
             return;
-
         }
 
+        tabelaQRCodes.innerHTML = lista.map((item) => {
+            const beneficiario = item.beneficiario ?? {};
+            const status = item.ativo === true ? "Ativo" : "Inativo";
+            const statusClasse = item.ativo === true ? "ativo" : "inativo";
 
-        // =============================================
-        // MONTAR RESULTADOS
-        // =============================================
-
-        resultadosBeneficiarios.innerHTML =
-            resultados
-                .map(
-                    (beneficiario) => {
-
-                        const nome =
-                            beneficiario.nomeCompleto ??
-                            beneficiario.nome ??
-                            "Nome não informado";
-
-
-                        const cpf =
-                            beneficiario.cpf ??
-                            "";
-
-
-                        return `
-
+            return `
+                <tr>
+                    <td>
+                        <strong class="qrcode-codigo">${escaparHtml(item.codigo)}</strong>
+                    </td>
+                    <td>Beneficiário</td>
+                    <td>
+                        <div class="qrcode-beneficiario-tabela">
+                            <strong>${escaparHtml(beneficiario.nomeCompleto || "Não informado")}</strong>
+                            <span>${beneficiario.cpf ? `CPF ${escaparHtml(beneficiario.cpf)}` : `ID #${escaparHtml(item.beneficiarioId)}`}</span>
+                        </div>
+                    </td>
+                    <td>${escaparHtml(somenteDataLocal(item.criadoEm))}</td>
+                    <td>
+                        <span class="qrcode-status qrcode-status-${statusClasse}">${status}</span>
+                    </td>
+                    <td>
+                        <div class="qrcode-acoes">
                             <button
                                 type="button"
-                                class="qrcode-beneficiario-opcao"
-                                data-beneficiario-id="${escaparHtml(
-                                    beneficiario.id
-                                )}"
+                                class="qrcode-acao"
+                                data-acao="copiar"
+                                data-codigo="${escaparHtml(item.codigo)}"
+                                title="Copiar código"
+                                aria-label="Copiar código"
                             >
-
-                                <div
-                                    class="qrcode-opcao-avatar"
-                                >
-
-                                    <i
-                                        class="fa-solid fa-user"
-                                        aria-hidden="true"
-                                    ></i>
-
-                                </div>
-
-
-                                <div
-                                    class="qrcode-opcao-info"
-                                >
-
-                                    <strong>
-                                        ${escaparHtml(
-                                            nome
-                                        )}
-                                    </strong>
-
-
-                                    <span>
-
-                                        ID #${escaparHtml(
-                                            beneficiario.id
-                                        )}
-
-                                        ${
-                                            cpf
-                                                ? ` · CPF ${escaparHtml(cpf)}`
-                                                : ""
-                                        }
-
-                                    </span>
-
-                                </div>
-
-
-                                <i
-                                    class="fa-solid fa-chevron-right"
-                                    aria-hidden="true"
-                                ></i>
-
+                                <i class="fa-regular fa-copy" aria-hidden="true"></i>
                             </button>
-
-                        `;
-
-                    }
-                )
-                .join("");
-
-
-        resultadosBeneficiarios.hidden =
-            false;
-
+                            ${item.ativo === true ? `
+                                <button
+                                    type="button"
+                                    class="qrcode-acao qrcode-acao-desativar"
+                                    data-acao="desativar"
+                                    data-id="${escaparHtml(item.id)}"
+                                    title="Desativar QR Code"
+                                    aria-label="Desativar QR Code"
+                                >
+                                    <i class="fa-solid fa-ban" aria-hidden="true"></i>
+                                </button>
+                            ` : ""}
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join("");
     }
 
+    async function carregarQRCodes() {
+        tabelaQRCodes.innerHTML = `
+            <tr>
+                <td colspan="6" class="qrcode-tabela-vazia">
+                    <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
+                    <span>Carregando QR Codes...</span>
+                </td>
+            </tr>
+        `;
 
-    // =================================================
-    // SELECIONAR BENEFICIÁRIO
-    // =================================================
+        try {
+            const resposta = await listarQRCodes();
+            const dados = await resposta.json().catch(() => ({}));
 
-    function selecionarBeneficiario(
-        id
-    ) {
+            if (!resposta.ok) {
+                throw new Error(dados.message || `Erro ao carregar QR Codes. HTTP ${resposta.status}`);
+            }
 
-        const beneficiario =
-            beneficiarios.find(
-                (item) =>
-                    Number(
-                        item.id
-                    ) ===
-                    Number(
-                        id
-                    )
-            );
+            qrcodes = normalizarLista(dados, "qrcodes");
+            atualizarCards();
+            renderizarTabela();
+        } catch (erro) {
+            console.error("Erro ao carregar QR Codes:", erro);
+            qrcodes = [];
+            atualizarCards();
+            tabelaQRCodes.innerHTML = `
+                <tr>
+                    <td colspan="6" class="qrcode-tabela-vazia">
+                        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                        <span>${escaparHtml(erro.message || "Não foi possível carregar os QR Codes.")}</span>
+                    </td>
+                </tr>
+            `;
+        }
+    }
 
+    async function carregarBeneficiarios() {
+        try {
+            const resposta = await listarBeneficiarios();
+            const dados = await resposta.json().catch(() => ({}));
 
-        if (!beneficiario) {
+            if (!resposta.ok) {
+                throw new Error(dados.message || `Erro ao carregar beneficiários. HTTP ${resposta.status}`);
+            }
 
-            console.warn(
-                "Beneficiário não encontrado:",
-                id
-            );
+            beneficiarios = normalizarLista(dados, "beneficiarios");
+        } catch (erro) {
+            console.error("Erro ao carregar beneficiários para QR Code:", erro);
+            beneficiarios = [];
+        }
+    }
 
+    async function abrirModal() {
+        modal.hidden = false;
+        document.body.style.overflow = "hidden";
+        await carregarBeneficiarios();
+        setTimeout(() => pesquisaBeneficiario?.focus(), 100);
+    }
+
+    function limparFormulario() {
+        beneficiarioSelecionado = null;
+        if (pesquisaBeneficiario) pesquisaBeneficiario.value = "";
+        if (resultadosBeneficiarios) {
+            resultadosBeneficiarios.innerHTML = "";
+            resultadosBeneficiarios.hidden = true;
+        }
+        if (beneficiarioSelecionadoElemento) beneficiarioSelecionadoElemento.hidden = true;
+        if (nomeBeneficiario) nomeBeneficiario.textContent = "-";
+        if (dadosBeneficiario) dadosBeneficiario.textContent = "-";
+    }
+
+    function fecharModal() {
+        modal.hidden = true;
+        document.body.style.overflow = "";
+        limparFormulario();
+    }
+
+    function pesquisarBeneficiarios(texto) {
+        if (!resultadosBeneficiarios) return;
+
+        const textoOriginal = String(texto ?? "").trim();
+        const pesquisa = textoOriginal
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase();
+        const pesquisaCpf = textoOriginal.replace(/\D/g, "");
+
+        if (!pesquisa) {
+            resultadosBeneficiarios.innerHTML = "";
+            resultadosBeneficiarios.hidden = true;
             return;
-
         }
 
+        const resultados = beneficiarios
+            .filter((beneficiario) => {
+                const nome = String(beneficiario.nomeCompleto ?? beneficiario.nome ?? "")
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "")
+                    .toLowerCase();
+                const cpf = String(beneficiario.cpf ?? "").replace(/\D/g, "");
+                return nome.includes(pesquisa)
+                    || (pesquisaCpf.length > 0 && cpf.includes(pesquisaCpf));
+            })
+            .slice(0, 8);
 
-        // =============================================
-        // GUARDAR SELEÇÃO
-        // =============================================
-
-        beneficiarioSelecionado =
-            beneficiario;
-
-
-        // =============================================
-        // NOME
-        // =============================================
-
-        if (
-            nomeBeneficiario
-        ) {
-
-            nomeBeneficiario.textContent =
-                beneficiario.nomeCompleto ??
-                beneficiario.nome ??
-                "Nome não informado";
-
+        if (resultados.length === 0) {
+            resultadosBeneficiarios.innerHTML = `
+                <div class="qrcode-sem-resultado">
+                    <i class="fa-solid fa-user-slash" aria-hidden="true"></i>
+                    <span>Nenhum beneficiário encontrado.</span>
+                </div>
+            `;
+            resultadosBeneficiarios.hidden = false;
+            return;
         }
 
+        resultadosBeneficiarios.innerHTML = resultados.map((beneficiario) => `
+            <button
+                type="button"
+                class="qrcode-beneficiario-opcao"
+                data-beneficiario-id="${escaparHtml(beneficiario.id)}"
+            >
+                <div class="qrcode-opcao-avatar">
+                    <i class="fa-solid fa-user" aria-hidden="true"></i>
+                </div>
+                <div class="qrcode-opcao-info">
+                    <strong>${escaparHtml(beneficiario.nomeCompleto ?? beneficiario.nome ?? "Nome não informado")}</strong>
+                    <span>ID #${escaparHtml(beneficiario.id)}${beneficiario.cpf ? ` · CPF ${escaparHtml(beneficiario.cpf)}` : ""}</span>
+                </div>
+                <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+            </button>
+        `).join("");
 
-        // =============================================
-        // ID / CPF
-        // =============================================
-
-        if (
-            dadosBeneficiario
-        ) {
-
-            dadosBeneficiario.textContent =
-                `ID #${beneficiario.id}` +
-                (
-                    beneficiario.cpf
-                        ? ` · CPF ${beneficiario.cpf}`
-                        : ""
-                );
-
-        }
-
-
-        // =============================================
-        // MOSTRAR SELECIONADO
-        // =============================================
-
-        if (
-            beneficiarioSelecionadoElemento
-        ) {
-
-            beneficiarioSelecionadoElemento.hidden =
-                false;
-
-        }
-
-
-        // =============================================
-        // ESCONDER RESULTADOS
-        // =============================================
-
-        if (
-            resultadosBeneficiarios
-        ) {
-
-            resultadosBeneficiarios.innerHTML =
-                "";
-
-            resultadosBeneficiarios.hidden =
-                true;
-
-        }
-
-
-        // =============================================
-        // LIMPAR PESQUISA
-        // =============================================
-
-        if (
-            pesquisaBeneficiario
-        ) {
-
-            pesquisaBeneficiario.value =
-                "";
-
-        }
-
-
-        console.log(
-            "Beneficiário selecionado:",
-            beneficiario
-        );
-
+        resultadosBeneficiarios.hidden = false;
     }
 
+    function selecionarBeneficiario(id) {
+        const beneficiario = beneficiarios.find((item) => Number(item.id) === Number(id));
+        if (!beneficiario) return;
 
-    // =================================================
-    // REMOVER BENEFICIÁRIO
-    // =================================================
+        beneficiarioSelecionado = beneficiario;
+        if (nomeBeneficiario) {
+            nomeBeneficiario.textContent = beneficiario.nomeCompleto ?? beneficiario.nome ?? "Nome não informado";
+        }
+        if (dadosBeneficiario) {
+            dadosBeneficiario.textContent = `ID #${beneficiario.id}${beneficiario.cpf ? ` · CPF ${beneficiario.cpf}` : ""}`;
+        }
+        if (beneficiarioSelecionadoElemento) beneficiarioSelecionadoElemento.hidden = false;
+        if (resultadosBeneficiarios) {
+            resultadosBeneficiarios.innerHTML = "";
+            resultadosBeneficiarios.hidden = true;
+        }
+        if (pesquisaBeneficiario) pesquisaBeneficiario.value = "";
+    }
 
     function removerBeneficiario() {
-
-        beneficiarioSelecionado =
-            null;
-
-
-        if (
-            beneficiarioSelecionadoElemento
-        ) {
-
-            beneficiarioSelecionadoElemento.hidden =
-                true;
-
-        }
-
-
-        if (
-            pesquisaBeneficiario
-        ) {
-
-            pesquisaBeneficiario.value =
-                "";
-
+        beneficiarioSelecionado = null;
+        if (beneficiarioSelecionadoElemento) beneficiarioSelecionadoElemento.hidden = true;
+        if (pesquisaBeneficiario) {
+            pesquisaBeneficiario.value = "";
             pesquisaBeneficiario.focus();
-
         }
-
-
-        console.log(
-            "Seleção do beneficiário removida."
-        );
-
     }
 
-
-    // =================================================
-// GERAR QR CODE
-// =================================================
-
-async function gerarQRCode() {
-
-    try {
-
+    async function gerarQRCode() {
         if (!beneficiarioSelecionado) {
-
-            alert(
-                "Selecione um beneficiário antes de gerar o QR Code."
-            );
-
+            alert("Selecione um beneficiário antes de gerar o QR Code.");
             return;
         }
 
-        btnConfirmar.disabled = true;
+        try {
+            if (btnConfirmar) btnConfirmar.disabled = true;
 
-        const idBeneficiario =
-            Number(
-                beneficiarioSelecionado.id
+            const resposta = await criarQRCode(Number(beneficiarioSelecionado.id));
+            const dados = await resposta.json().catch(() => ({}));
+
+            if (!resposta.ok) {
+                throw new Error(dados.message || "Erro ao gerar QR Code.");
+            }
+
+            const qrCode = dados.data || dados.qrcode || {};
+
+            alert(
+                `QR Code criado com sucesso!\n\n` +
+                `Código: ${qrCode.codigo ?? "Gerado"}\n` +
+                `Beneficiário: ${beneficiarioSelecionado.nomeCompleto ?? beneficiarioSelecionado.nome ?? "Não informado"}`
             );
 
-        console.log(
-            "Gerando QR Code para:",
-            idBeneficiario
-        );
+            fecharModal();
 
-        const resposta =
-            await criarQRCode(
-                idBeneficiario
-            );
+            // Atualiza imediatamente a tabela e os cards depois da criação.
+            await carregarQRCodes();
+        } catch (erro) {
+            console.error("Erro ao gerar QR Code:", erro);
+            alert(erro.message || "Erro ao gerar QR Code.");
+        } finally {
+            if (btnConfirmar) btnConfirmar.disabled = false;
+        }
+    }
 
-        const dados =
-            await resposta.json();
+    async function copiarCodigo(codigo) {
+        try {
+            await navigator.clipboard.writeText(codigo);
+            alert("Código copiado com sucesso.");
+        } catch {
+            const campo = document.createElement("textarea");
+            campo.value = codigo;
+            campo.style.position = "fixed";
+            campo.style.opacity = "0";
+            document.body.appendChild(campo);
+            campo.select();
+            document.execCommand("copy");
+            campo.remove();
+            alert("Código copiado com sucesso.");
+        }
+    }
 
-        console.log(
-            "Resposta do backend:",
-            dados
-        );
+    async function desativar(id) {
+        if (!confirm("Deseja realmente desativar este QR Code?")) return;
 
-        if (!resposta.ok) {
+        try {
+            const resposta = await desativarQRCode(id);
+            const dados = await resposta.json().catch(() => ({}));
 
-            throw new Error(
+            if (!resposta.ok) {
+                throw new Error(dados.message || "Erro ao desativar QR Code.");
+            }
 
-                dados.message ||
+            await carregarQRCodes();
+        } catch (erro) {
+            console.error("Erro ao desativar QR Code:", erro);
+            alert(erro.message || "Erro ao desativar QR Code.");
+        }
+    }
 
-                "Erro ao gerar QR Code."
+    btnGerar.addEventListener("click", abrirModal);
+    btnFechar?.addEventListener("click", fecharModal);
+    btnCancelar?.addEventListener("click", fecharModal);
+    btnRemoverBeneficiario?.addEventListener("click", removerBeneficiario);
+    btnConfirmar?.addEventListener("click", gerarQRCode);
 
-            );
+    pesquisaBeneficiario?.addEventListener("input", () => {
+        pesquisarBeneficiarios(pesquisaBeneficiario.value);
+    });
 
+    resultadosBeneficiarios?.addEventListener("click", (event) => {
+        const botao = event.target.closest("[data-beneficiario-id]");
+        if (botao) selecionarBeneficiario(botao.dataset.beneficiarioId);
+    });
+
+    campoPesquisar?.addEventListener("input", renderizarTabela);
+    filtroTipo?.addEventListener("change", renderizarTabela);
+
+    tabelaQRCodes.addEventListener("click", async (event) => {
+        const botao = event.target.closest("[data-acao]");
+        if (!botao) return;
+
+        if (botao.dataset.acao === "copiar") {
+            await copiarCodigo(botao.dataset.codigo || "");
         }
 
-        const qrCode =
-
-            dados.data ||
-
-            dados.qrcode ||
-
-            {};
-
-        alert(
-
-            `QR Code criado com sucesso!\n\n` +
-
-            `Código: ${qrCode.codigo ?? "Gerado"}\n` +
-
-            `Beneficiário: ${
-                beneficiarioSelecionado.nomeCompleto ??
-                beneficiarioSelecionado.nome ??
-                "Não informado"
-            }`
-
-        );
-
-        fecharModal();
-
-        // futuramente:
-        // await carregarQRCodes();
-        // await atualizarCards();
-
-    } catch (erro) {
-
-        console.error(
-            "Erro ao gerar QR Code:",
-            erro
-        );
-
-        alert(
-            erro.message ||
-            "Erro ao gerar QR Code."
-        );
-
-    } finally {
-
-        btnConfirmar.disabled =
-            false;
-
-    }
-
-}
-
-    // =================================================
-    // EVENTO — ABRIR MODAL
-    // =================================================
-
-    btnGerar.addEventListener(
-        "click",
-        abrirModal
-    );
-
-
-    // =================================================
-    // EVENTO — FECHAR
-    // =================================================
-
-    if (
-        btnFechar
-    ) {
-
-        btnFechar.addEventListener(
-            "click",
-            fecharModal
-        );
-
-    }
-
-
-    // =================================================
-    // EVENTO — CANCELAR
-    // =================================================
-
-    if (
-        btnCancelar
-    ) {
-
-        btnCancelar.addEventListener(
-            "click",
-            fecharModal
-        );
-
-    }
-
-
-    // =================================================
-    // EVENTO — PESQUISA
-    // =================================================
-
-    if (
-        pesquisaBeneficiario
-    ) {
-
-        pesquisaBeneficiario.addEventListener(
-            "input",
-            () => {
-
-                pesquisarBeneficiarios(
-                    pesquisaBeneficiario.value
-                );
-
-            }
-        );
-
-    }
-
-
-    // =================================================
-    // EVENTO — CLICAR NO RESULTADO
-    // =================================================
-
-    if (
-        resultadosBeneficiarios
-    ) {
-
-        resultadosBeneficiarios.addEventListener(
-            "click",
-            (event) => {
-
-                const botao =
-                    event.target.closest(
-                        "[data-beneficiario-id]"
-                    );
-
-
-                if (!botao) {
-
-                    return;
-
-                }
-
-
-                selecionarBeneficiario(
-                    botao.dataset.beneficiarioId
-                );
-
-            }
-        );
-
-    }
-
-
-    // =================================================
-    // EVENTO — REMOVER SELEÇÃO
-    // =================================================
-
-    if (
-        btnRemoverBeneficiario
-    ) {
-
-        btnRemoverBeneficiario.addEventListener(
-            "click",
-            removerBeneficiario
-        );
-
-    }
-
-
-    // =================================================
-    // EVENTO — GERAR
-    // =================================================
-
-    if (
-        btnConfirmar
-    ) {
-
-        btnConfirmar.addEventListener(
-            "click",
-            gerarQRCode
-        );
-
-    }
-
-
-    // =================================================
-    // EVENTO — ESC
-    // =================================================
-
-    document.addEventListener(
-        "keydown",
-        (event) => {
-
-            if (
-                event.key === "Escape" &&
-                !modal.hidden
-            ) {
-
-                fecharModal();
-
-            }
-
+        if (botao.dataset.acao === "desativar") {
+            await desativar(Number(botao.dataset.id));
         }
-    );
+    });
 
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !modal.hidden) fecharModal();
+    });
 
-    // =================================================
-    // FINALIZAÇÃO
-    // =================================================
-
-    console.log(
-        "Módulo de QR Codes inicializado com sucesso."
-    );
-
+    await carregarQRCodes();
+    console.log("Módulo de QR Codes inicializado com sucesso.");
 }
