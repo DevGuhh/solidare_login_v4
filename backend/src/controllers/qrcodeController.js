@@ -355,6 +355,114 @@ export async function gerarImagemQRCode(req, res) {
 }
 
 
+
+// =====================================================
+// VALIDAR QR CODE ESCANEADO
+// =====================================================
+
+export async function validarQRCode(req, res) {
+    try {
+        const codigo = String(req.params.codigo ?? "").trim();
+
+        if (!codigo) {
+            return res.status(400).json({
+                ok: false,
+                valido: false,
+                message: "O código do QR Code é obrigatório."
+            });
+        }
+
+        const qrCode = await prisma.qRCode.findUnique({
+            where: { codigo },
+            include: {
+                beneficiario: {
+                    select: {
+                        id: true,
+                        nomeCompleto: true,
+                        cpf: true,
+                        telefonePrincipal: true,
+                        email: true,
+                        ativo: true,
+                        deletedAt: true,
+                        instituicao: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                ativa: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        if (!qrCode) {
+            return res.status(404).json({
+                ok: false,
+                valido: false,
+                motivo: "NAO_ENCONTRADO",
+                message: "QR Code não encontrado."
+            });
+        }
+
+        if (!qrCode.ativo) {
+            return res.status(200).json({
+                ok: true,
+                valido: false,
+                motivo: "QR_CODE_INATIVO",
+                message: "Este QR Code está desativado.",
+                data: qrCode
+            });
+        }
+
+        if (!qrCode.beneficiario || qrCode.beneficiario.deletedAt) {
+            return res.status(200).json({
+                ok: true,
+                valido: false,
+                motivo: "BENEFICIARIO_NAO_ENCONTRADO",
+                message: "O beneficiário vinculado não está disponível.",
+                data: qrCode
+            });
+        }
+
+        if (!qrCode.beneficiario.ativo) {
+            return res.status(200).json({
+                ok: true,
+                valido: false,
+                motivo: "BENEFICIARIO_INATIVO",
+                message: "O beneficiário vinculado está inativo.",
+                data: qrCode
+            });
+        }
+
+        if (!qrCode.beneficiario.instituicao?.ativa) {
+            return res.status(200).json({
+                ok: true,
+                valido: false,
+                motivo: "INSTITUICAO_INATIVA",
+                message: "A instituição vinculada está inativa.",
+                data: qrCode
+            });
+        }
+
+        return res.status(200).json({
+            ok: true,
+            valido: true,
+            message: "QR Code válido.",
+            data: qrCode
+        });
+    } catch (erro) {
+        console.error("Erro ao validar QR Code:", erro);
+
+        return res.status(500).json({
+            ok: false,
+            valido: false,
+            message: "Erro interno ao validar o QR Code.",
+            error: erro.message
+        });
+    }
+}
+
 // =====================================================
 // BUSCAR QR CODE PELO CÓDIGO
 // =====================================================

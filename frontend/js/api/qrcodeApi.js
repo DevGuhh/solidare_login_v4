@@ -166,6 +166,29 @@ export async function buscarQRCode(
 
 }
 
+
+// =====================================================
+// VALIDAR QR CODE
+// =====================================================
+
+export async function validarQRCode(codigo) {
+
+    const codigoNormalizado = String(codigo ?? "").trim();
+
+    if (!codigoNormalizado) {
+        throw new Error("Código do QR Code é obrigatório.");
+    }
+
+    return fetch(
+        `${API_URL}/qrcodes/${encodeURIComponent(codigoNormalizado)}/validar`,
+        {
+            method: "GET",
+            headers: obterHeaders(),
+            cache: "no-store"
+        }
+    );
+}
+
 // =====================================================
 // DESATIVAR QR CODE
 // =====================================================

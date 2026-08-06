@@ -7,7 +7,8 @@ import {
     listarQRCodes,
     criarQRCode,
     desativarQRCode,
-    obterImagemQRCode
+    obterImagemQRCode,
+    validarQRCode
 } from "../api/qrcodeApi.js";
 
 export async function inicializarQRCode() {
@@ -16,6 +17,8 @@ export async function inicializarQRCode() {
     let beneficiarioSelecionado = null;
     let urlImagemAtual = null;
     let qrCodeVisualizado = null;
+    let leitorQRCode = null;
+    let leituraEmAndamento = false;
 
     const btnGerar = document.getElementById("btnGerarQRCode");
     const modal = document.getElementById("modalQRCode");
@@ -45,6 +48,13 @@ export async function inicializarQRCode() {
     const visualizacaoCodigo = document.getElementById("visualizacaoCodigoQRCode");
     const btnBaixarQRCode = document.getElementById("btnBaixarQRCode");
     const btnImprimirQRCode = document.getElementById("btnImprimirQRCode");
+
+    const btnValidarQRCode = document.getElementById("btnValidarQRCode");
+    const modalValidarQRCode = document.getElementById("modalValidarQRCode");
+    const btnFecharValidarQRCode = document.getElementById("btnFecharValidarQRCode");
+    const codigoValidacaoQRCode = document.getElementById("codigoValidacaoQRCode");
+    const btnValidarCodigoManual = document.getElementById("btnValidarCodigoManual");
+    const resultadoValidacaoQRCode = document.getElementById("resultadoValidacaoQRCode");
 
     if (!btnGerar || !modal || !tabelaQRCodes) {
         console.warn("Elementos principais do módulo QR Code não encontrados.");
@@ -508,6 +518,168 @@ export async function inicializarQRCode() {
         };
     }
 
+    function mascararCPF(cpf) {
+        const numeros = String(cpf ?? "").replace(/\D/g, "");
+        if (numeros.length !== 11) return cpf || "-";
+        return `***.${numeros.slice(3, 6)}.${numeros.slice(6, 9)}-**`;
+    }
+
+    function extrairCodigoQRCode(texto) {
+        const valor = String(texto ?? "").trim();
+        if (!valor) return "";
+
+        const correspondencia = valor.match(/SOL-[A-Z0-9]+/i);
+        return String(correspondencia?.[0] ?? valor).trim().toUpperCase();
+    }
+
+    function carregarBibliotecaLeitorQRCode() {
+        if (window.Html5Qrcode) return Promise.resolve();
+
+        return new Promise((resolve, reject) => {
+            const scriptExistente = document.querySelector('script[data-html5-qrcode="true"]');
+            if (scriptExistente) {
+                scriptExistente.addEventListener("load", resolve, { once: true });
+                scriptExistente.addEventListener("error", () => reject(new Error("Não foi possível carregar o leitor de QR Code.")), { once: true });
+                return;
+            }
+
+            const script = document.createElement("script");
+            script.src = "https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js";
+            script.async = true;
+            script.dataset.html5Qrcode = "true";
+            script.onload = resolve;
+            script.onerror = () => reject(new Error("Não foi possível carregar o leitor de QR Code."));
+            document.head.appendChild(script);
+        });
+    }
+
+    function renderizarResultadoValidacao(dados) {
+        if (!resultadoValidacaoQRCode) return;
+
+        const valido = dados?.valido === true;
+        const qr = dados?.data;
+        const beneficiario = qr?.beneficiario;
+        const instituicao = beneficiario?.instituicao;
+
+        resultadoValidacaoQRCode.hidden = false;
+        resultadoValidacaoQRCode.className = `qrcode-resultado-validacao ${valido ? "valido" : "invalido"}`;
+        resultadoValidacaoQRCode.innerHTML = `
+            <div class="qrcode-resultado-topo">
+                <i class="fa-solid ${valido ? "fa-circle-check" : "fa-circle-xmark"}" aria-hidden="true"></i>
+                <div>
+                    <strong>${valido ? "QR Code válido" : "QR Code inválido"}</strong>
+                    <span>${escaparHtml(dados?.message || "Não foi possível validar o QR Code.")}</span>
+                </div>
+            </div>
+            ${qr ? `
+                <div class="qrcode-resultado-dados">
+                    <span><b>Código:</b> ${escaparHtml(qr.codigo || "-")}</span>
+                    <span><b>Beneficiário:</b> ${escaparHtml(beneficiario?.nomeCompleto || "-")}</span>
+                    <span><b>CPF:</b> ${escaparHtml(mascararCPF(beneficiario?.cpf))}</span>
+                    <span><b>Instituição:</b> ${escaparHtml(instituicao?.nome || "-")}</span>
+                    <span><b>Status:</b> ${valido ? "Ativo e liberado" : "Bloqueado"}</span>
+                </div>
+            ` : ""}
+        `;
+    }
+
+    async function validarCodigo(codigoLido) {
+        const codigo = extrairCodigoQRCode(codigoLido);
+
+        if (!codigo) {
+            renderizarResultadoValidacao({ valido: false, message: "Informe ou escaneie um código válido." });
+            return;
+        }
+
+        if (codigoValidacaoQRCode) codigoValidacaoQRCode.value = codigo;
+        if (btnValidarCodigoManual) btnValidarCodigoManual.disabled = true;
+
+        try {
+            const resposta = await validarQRCode(codigo);
+            const dados = await resposta.json().catch(() => ({}));
+
+            if (!resposta.ok && resposta.status !== 404) {
+                throw new Error(dados.message || "Erro ao validar QR Code.");
+            }
+
+            renderizarResultadoValidacao({
+                ...dados,
+                valido: resposta.ok ? dados.valido === true : false
+            });
+        } catch (erro) {
+            console.error("Erro ao validar QR Code:", erro);
+            renderizarResultadoValidacao({ valido: false, message: erro.message || "Erro ao validar QR Code." });
+        } finally {
+            if (btnValidarCodigoManual) btnValidarCodigoManual.disabled = false;
+        }
+    }
+
+    async function pararLeitorQRCode() {
+        if (!leitorQRCode) return;
+
+        try {
+            if (leituraEmAndamento) await leitorQRCode.stop();
+            await leitorQRCode.clear();
+        } catch (erro) {
+            console.warn("Não foi possível encerrar completamente a câmera:", erro);
+        } finally {
+            leitorQRCode = null;
+            leituraEmAndamento = false;
+        }
+    }
+
+    async function iniciarLeitorQRCode() {
+        try {
+            await carregarBibliotecaLeitorQRCode();
+            await pararLeitorQRCode();
+
+            leitorQRCode = new window.Html5Qrcode("leitorQRCode");
+            const cameras = await window.Html5Qrcode.getCameras();
+
+            if (!cameras?.length) {
+                throw new Error("Nenhuma câmera foi encontrada. Use a validação manual.");
+            }
+
+            const cameraTraseira = cameras.find((camera) => /back|rear|environment|traseira/i.test(camera.label));
+            const cameraId = cameraTraseira?.id || cameras[0].id;
+
+            await leitorQRCode.start(
+                cameraId,
+                { fps: 10, qrbox: { width: 230, height: 230 }, aspectRatio: 1 },
+                async (textoDecodificado) => {
+                    if (!leituraEmAndamento) return;
+                    leituraEmAndamento = false;
+                    await leitorQRCode.stop().catch(() => {});
+                    await validarCodigo(textoDecodificado);
+                },
+                () => {}
+            );
+
+            leituraEmAndamento = true;
+        } catch (erro) {
+            console.error("Erro ao iniciar leitor de QR Code:", erro);
+            renderizarResultadoValidacao({ valido: false, message: `${erro.message} A validação manual continua disponível.` });
+        }
+    }
+
+    async function abrirValidacaoQRCode() {
+        if (!modalValidarQRCode) return;
+
+        modalValidarQRCode.hidden = false;
+        document.body.style.overflow = "hidden";
+        if (resultadoValidacaoQRCode) resultadoValidacaoQRCode.hidden = true;
+        if (codigoValidacaoQRCode) codigoValidacaoQRCode.value = "";
+
+        await iniciarLeitorQRCode();
+    }
+
+    async function fecharValidacaoQRCode() {
+        await pararLeitorQRCode();
+        if (modalValidarQRCode) modalValidarQRCode.hidden = true;
+        if (resultadoValidacaoQRCode) resultadoValidacaoQRCode.hidden = true;
+        document.body.style.overflow = "";
+    }
+
     async function gerarQRCode() {
         if (!beneficiarioSelecionado) {
             alert("Selecione um beneficiário antes de gerar o QR Code.");
@@ -586,6 +758,16 @@ export async function inicializarQRCode() {
         }
     }
 
+    btnValidarQRCode?.addEventListener("click", abrirValidacaoQRCode);
+    btnFecharValidarQRCode?.addEventListener("click", fecharValidacaoQRCode);
+    btnValidarCodigoManual?.addEventListener("click", () => validarCodigo(codigoValidacaoQRCode?.value));
+    codigoValidacaoQRCode?.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") validarCodigo(codigoValidacaoQRCode.value);
+    });
+    modalValidarQRCode?.addEventListener("click", (event) => {
+        if (event.target === modalValidarQRCode) fecharValidacaoQRCode();
+    });
+
     btnGerar.addEventListener("click", abrirModal);
     btnFechar?.addEventListener("click", fecharModal);
     btnCancelar?.addEventListener("click", fecharModal);
@@ -631,6 +813,11 @@ export async function inicializarQRCode() {
 
     document.addEventListener("keydown", (event) => {
         if (event.key !== "Escape") return;
+
+        if (modalValidarQRCode && !modalValidarQRCode.hidden) {
+            fecharValidacaoQRCode();
+            return;
+        }
 
         if (modalVisualizar && !modalVisualizar.hidden) {
             fecharVisualizacao();

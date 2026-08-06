@@ -20,7 +20,17 @@
         </div>
 
 
-        <button
+        <div class="qrcode-acoes-cabecalho">
+            <button
+                type="button"
+                class="botao-validar-qrcode"
+                id="btnValidarQRCode"
+            >
+                <i class="fa-solid fa-camera" aria-hidden="true"></i>
+                Validar QR Code
+            </button>
+
+            <button
             type="button"
             class="botao-gerar-qrcode"
             id="btnGerarQRCode"
@@ -34,6 +44,7 @@
             Gerar QR Code
 
         </button>
+        </div>
 
     </div>
 
@@ -555,6 +566,41 @@
                     <i class="fa-solid fa-download" aria-hidden="true"></i>
                     Baixar PNG
                 </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- MODAL VALIDAR QR CODE -->
+    <!-- ================================================= -->
+
+    <div class="qrcode-modal-overlay" id="modalValidarQRCode" hidden>
+        <div class="qrcode-modal qrcode-modal-validacao" role="dialog" aria-modal="true" aria-labelledby="tituloValidarQRCode">
+            <div class="qrcode-modal-cabecalho">
+                <div>
+                    <h2 id="tituloValidarQRCode">Validar QR Code</h2>
+                    <p>Use a câmera ou informe o código manualmente.</p>
+                </div>
+                <button type="button" class="qrcode-modal-fechar" id="btnFecharValidarQRCode" aria-label="Fechar" title="Fechar">
+                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            <div class="qrcode-modal-corpo">
+                <div id="leitorQRCode" class="qrcode-leitor"></div>
+
+                <div class="qrcode-separador"><span>ou</span></div>
+
+                <div class="qrcode-validacao-manual">
+                    <label for="codigoValidacaoQRCode">Código do QR Code</label>
+                    <div class="qrcode-validacao-campo">
+                        <input type="text" id="codigoValidacaoQRCode" placeholder="Ex.: SOL-4C256804645B" autocomplete="off">
+                        <button type="button" id="btnValidarCodigoManual">Validar</button>
+                    </div>
+                </div>
+
+                <div id="resultadoValidacaoQRCode" class="qrcode-resultado-validacao" hidden aria-live="polite"></div>
             </div>
         </div>
     </div>

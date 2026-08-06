@@ -5,6 +5,7 @@ import {
   criarQRCode,
   buscarQRCode,
   gerarImagemQRCode,
+  validarQRCode,
   desativarQRCode,
 } from "../controllers/qrcodeController.js";
 
@@ -26,6 +27,14 @@ router.get("/", protect, listarQRCodes);
 
 router.post("/", protect, criarQRCode);
 
+
+
+// =====================================================
+// VALIDAR QR CODE ESCANEADO
+// GET /qrcodes/:codigo/validar
+// =====================================================
+
+router.get("/:codigo/validar", protect, validarQRCode);
 
 // =====================================================
 // GERAR IMAGEM PNG DO QR CODE

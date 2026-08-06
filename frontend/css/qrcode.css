@@ -699,3 +699,31 @@
     width: 100%;
   }
 }
+
+
+/* ==========================================================================
+   VALIDAÇÃO E LEITURA DE QR CODE
+   ========================================================================== */
+
+.qrcode-acoes-cabecalho { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.botao-validar-qrcode { border: 1px solid #2563eb; background: #fff; color: #2563eb; min-height: 44px; padding: 0 18px; border-radius: 10px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: .2s ease; }
+.botao-validar-qrcode:hover { background: #eff6ff; transform: translateY(-1px); }
+.qrcode-modal-validacao { width: min(620px, calc(100vw - 32px)); }
+.qrcode-leitor { width: 100%; min-height: 280px; overflow: hidden; border: 1px solid #dbe3ef; border-radius: 14px; background: #0f172a; }
+.qrcode-leitor:empty::before { content: "A câmera será iniciada ao abrir o leitor."; min-height: 280px; display: grid; place-items: center; padding: 24px; color: #cbd5e1; text-align: center; }
+.qrcode-separador { display: flex; align-items: center; gap: 12px; margin: 18px 0; color: #94a3b8; font-size: 13px; text-transform: uppercase; }
+.qrcode-separador::before, .qrcode-separador::after { content: ""; flex: 1; height: 1px; background: #e2e8f0; }
+.qrcode-validacao-manual label { display: block; margin-bottom: 8px; color: #334155; font-weight: 700; }
+.qrcode-validacao-campo { display: flex; gap: 10px; }
+.qrcode-validacao-campo input { flex: 1; min-width: 0; min-height: 44px; border: 1px solid #cbd5e1; border-radius: 10px; padding: 0 14px; text-transform: uppercase; outline: none; }
+.qrcode-validacao-campo input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+.qrcode-validacao-campo button { min-height: 44px; border: 0; border-radius: 10px; padding: 0 18px; background: #2563eb; color: #fff; font-weight: 700; cursor: pointer; }
+.qrcode-resultado-validacao { margin-top: 18px; border-radius: 14px; padding: 18px; border: 1px solid transparent; }
+.qrcode-resultado-validacao.valido { background: #ecfdf5; border-color: #86efac; color: #166534; }
+.qrcode-resultado-validacao.invalido { background: #fff1f2; border-color: #fda4af; color: #9f1239; }
+.qrcode-resultado-topo { display: flex; align-items: flex-start; gap: 12px; }
+.qrcode-resultado-topo i { font-size: 26px; margin-top: 2px; }
+.qrcode-resultado-topo strong { display: block; font-size: 18px; margin-bottom: 4px; }
+.qrcode-resultado-dados { display: grid; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid currentColor; border-top-color: rgba(100,116,139,.25); }
+.qrcode-resultado-dados span { display: block; font-size: 14px; }
+@media (max-width: 640px) { .qrcode-acoes-cabecalho { width: 100%; } .botao-validar-qrcode, .botao-gerar-qrcode { flex: 1; } .qrcode-validacao-campo { flex-direction: column; } .qrcode-validacao-campo button { width: 100%; } }
