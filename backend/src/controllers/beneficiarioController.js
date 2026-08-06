@@ -2,6 +2,9 @@ import { prisma } from "../config/db.js";
 import { ZodError } from "zod";
 import { criarBeneficiarioSchema } from "../validators/beneficiarioValidator.js";
 
+// Schema usado para validar atualizações parciais do beneficiário.
+const atualizarBeneficiarioSchema = criarBeneficiarioSchema.partial();
+
 class BeneficiarioController {
   async cadastrarBeneficiario(req, res) {
     try {
@@ -72,8 +75,6 @@ class BeneficiarioController {
   }
 
   async listarBeneficiarios(req, res) {
-    const atualizarBeneficiarioSchema = criarBeneficiarioSchema.partial();
-
     try {
       // Filtro base: busca somente beneficiários não deletados.
       const where = { deletedAt: null };

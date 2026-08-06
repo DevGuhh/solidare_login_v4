@@ -490,6 +490,11 @@ function capturarElementosDaTela() {
                 "email"
             ),
 
+        composicaoFamiliar:
+            document.getElementById(
+                "composicaoFamiliar"
+            ),
+
         tipoBeneficio:
             document.getElementById(
                 "tipoBeneficio"
@@ -2173,6 +2178,11 @@ function montarDadosFormulario() {
             campos.email.value
                 .trim(),
 
+        composicaoFamiliar:
+            Number(
+                campos.composicaoFamiliar?.value
+            ),
+
         tipoBeneficio:
             campos.tipoBeneficio.value,
 
@@ -2185,6 +2195,20 @@ function montarDadosFormulario() {
                 .trim()
 
     };
+
+    if (
+        !Number.isInteger(
+            dados.composicaoFamiliar
+        ) ||
+        dados.composicaoFamiliar < 1 ||
+        dados.composicaoFamiliar > 50
+    ) {
+
+        throw new Error(
+            "Informe uma composição familiar válida entre 1 e 50 pessoas."
+        );
+
+    }
 
     if (
         usuarioLogado.role ===
@@ -2384,6 +2408,16 @@ async function editarBeneficiario(id) {
 
         campos.email.value =
             beneficiario.email ?? "";
+
+        if (campos.composicaoFamiliar) {
+
+            campos.composicaoFamiliar.value =
+                String(
+                    beneficiario.composicaoFamiliar ??
+                    1
+                );
+
+        }
 
         campos.tipoBeneficio.value =
             beneficiario.tipoBeneficio ??

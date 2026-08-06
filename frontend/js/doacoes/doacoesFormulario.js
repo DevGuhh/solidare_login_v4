@@ -483,9 +483,24 @@ export function preencherQuantidadePorComposicaoFamiliar(
             ? String(composicaoFamiliar)
             : "1";
 
+    bloquearCampoQuantidade(campos.quantidade);
+
 }
 
 
+
+
+// =====================================================
+// BLOQUEIO DEFINITIVO DO CAMPO QUANTIDADE
+// =====================================================
+function bloquearCampoQuantidade(campo){
+ if(!campo||campo.dataset.bloqueadoQuantidade)return;
+ campo.readOnly=true;
+ campo.dataset.bloqueadoQuantidade='1';
+ campo.addEventListener('wheel',e=>e.preventDefault(),{passive:false});
+ campo.addEventListener('paste',e=>e.preventDefault());
+ campo.addEventListener('keydown',e=>{if(!['Tab','Shift','Control','Alt'].includes(e.key))e.preventDefault();});
+}
 // =====================================================
 // PREPARAR NOVA DOAÇÃO
 // =====================================================
@@ -556,8 +571,8 @@ export async function prepararNovaDoacao({
     campos.tipo.value =
         "CESTA";
 
-    campos.quantidade.value =
-        "1";
+    campos.quantidade.value = "1";
+    bloquearCampoQuantidade(campos.quantidade);
 
     abrirModalDoacao(
         elementos.modal
@@ -724,6 +739,8 @@ export async function prepararEdicaoDoacao({
                 doacao.quantidade ??
                 1
             );
+
+        bloquearCampoQuantidade(campos.quantidade);
 
         campos.observacoes.value =
             doacao.observacoes ??

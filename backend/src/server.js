@@ -55,9 +55,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // Rotas
 app.use("/auth", authRoutes);
-app.use("/", instituicoesRoutes);
-app.use("/", beneficariosRoutes);
-app.use("/", doacoesRoutes);
+app.use("/instituicoes", instituicoesRoutes);
+app.use("/beneficiarios", beneficariosRoutes);
+app.use("/doacoes", doacoesRoutes);
 app.use("/qrcodes", qrcodeRoutes);
 
 // Porta do servidor
