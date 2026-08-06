@@ -8,12 +8,12 @@ const router = express.Router();
 
 router.use(protect);
 
-router.post("/doacoes", DoacoesController.cadastrarDoacao);
-router.get("/doacoes", DoacoesController.listarDoacoes);
-router.get("/doacoes/:id", DoacoesController.detalheDeDoacao);
-router.put("/doacoes/:id", DoacoesController.atualizarUmaDoacao);
+router.post("/", DoacoesController.cadastrarDoacao);
+router.get("/", DoacoesController.listarDoacoes);
+router.get("/:id", DoacoesController.detalheDeDoacao);
+router.put("/:id", DoacoesController.atualizarUmaDoacao);
 router.patch(
-  "/doacoes/:id/comprovante",
+  "/:id/comprovante",
   DoacoesController.alterarComprovanteDoacao,
 );
 router.delete("/doacoes/:id", DoacoesController.cancelarDoacao);

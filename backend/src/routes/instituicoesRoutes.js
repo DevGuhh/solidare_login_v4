@@ -5,37 +5,37 @@ import { authorize, protect } from "../middlewares/authMiddleware.js";
 const router = express.Router();
 
 router.get(
-  "/instituicoes",
+  "/",
   protect,
   authorize("ADMIN"),
   instituicoesController.listarInstituicoes,
 );
 router.get(
-  "/instituicoes/:id",
+  "/:id",
   protect,
   authorize("ADMIN"),
   instituicoesController.detalheDaInstituicao,
 );
 router.post(
-  "/instituicoes",
+  "/",
   protect,
   authorize("ADMIN"),
   instituicoesController.cadastrarInstituicao,
 );
 router.put(
-  "/instituicoes/:id",
+  "/:id",
   protect,
   authorize("ADMIN"),
   instituicoesController.atualizarDadosInstituicao,
 );
 router.patch(
-  "/instituicoes/:id/status_ok",
+  "/:id/status_ok",
   protect,
   authorize("ADMIN"),
   instituicoesController.atualizaStatus,
 );
 router.delete(
-  "/instituicoes/:id",
+  "/:id",
   protect,
   authorize("ADMIN"),
   instituicoesController.removeInstituicao,
