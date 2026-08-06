@@ -93,6 +93,7 @@ export const criarBeneficiarioSchema = z.object({
     // Quantidade total de pessoas que fazem parte da família.
     // O valor será usado para sugerir automaticamente a quantidade da doação.
     composicaoFamiliar: z
+        .coerce
         .number({
             required_error: "Informe a composição familiar.",
             invalid_type_error: "A composição familiar deve ser um número."
@@ -135,6 +136,7 @@ export const criarBeneficiarioSchema = z.object({
     // - ADMIN pode enviar pelo formulário.
     // - Usuário INSTITUICAO usa o id vindo do token.
     instituicaoId: z
+        .coerce
         .number()
         .int()
         .positive()

@@ -2114,3 +2114,23 @@
 
 }
 
+
+
+/* =====================================================
+   CAMPO QUANTIDADE AUTOMÁTICA
+===================================================== */
+#quantidadeDoacao[readonly]{
+ background:#f2f4f7;
+ color:#667085;
+ cursor:not-allowed;
+ font-weight:700;
+}
+#quantidadeDoacao::-webkit-inner-spin-button,
+#quantidadeDoacao::-webkit-outer-spin-button{
+ -webkit-appearance:none;
+ margin:0;
+}
+#quantidadeDoacao{
+ appearance:textfield;
+ -moz-appearance:textfield;
+}
