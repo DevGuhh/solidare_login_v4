@@ -32,9 +32,9 @@ const configuracoesPaginas = {
         descricao: "Gerencie as instituições parceiras."
     },
 
-    "rfid.html": {
-        titulo: "Cartões RFID",
-        descricao: "Gerencie os cartões e acessos RFID."
+    "qrcode.html": {
+        titulo: "QR Codes",
+        descricao: "Gere e gerencie os códigos QR dos beneficiários."
     },
 
     "doacoes.html": {
@@ -56,6 +56,10 @@ const configuracoesPaginas = {
 
 const inicializadoresPaginas = {
 
+    // =================================================
+    // DASHBOARD
+    // =================================================
+
     "home.html": async () => {
 
         const modulo =
@@ -75,6 +79,10 @@ const inicializadoresPaginas = {
     },
 
 
+    // =================================================
+    // BENEFICIÁRIOS
+    // =================================================
+
     "beneficiarios.html": async () => {
 
         const modulo =
@@ -92,7 +100,54 @@ const inicializadoresPaginas = {
         }
 
     },
-    
+
+
+    // =================================================
+    // QR CODES
+    // =================================================
+
+    "qrcode.html": async () => {
+
+        try {
+
+            const modulo =
+                await import(
+                    "./Qrcode/qrcode.js"
+                );
+
+
+            if (
+                typeof modulo.inicializarQRCode ===
+                "function"
+            ) {
+
+                await modulo.inicializarQRCode();
+
+            } else {
+
+                console.warn(
+                    "A função inicializarQRCode não foi encontrada no módulo."
+                );
+
+            }
+
+        } catch (erro) {
+
+            console.error(
+                "Erro ao inicializar o módulo de QR Codes:",
+                erro
+            );
+
+            throw erro;
+
+        }
+
+    },
+
+
+    // =================================================
+    // DOAÇÕES
+    // =================================================
 
     "doacoes.html": async () => {
 
@@ -112,6 +167,10 @@ const inicializadoresPaginas = {
 
     },
 
+
+    // =================================================
+    // INSTITUIÇÕES
+    // =================================================
 
     "instituicoes.html": async () => {
 
@@ -142,6 +201,10 @@ const inicializadoresPaginas = {
 
     },
 
+
+    // =================================================
+    // RELATÓRIOS
+    // =================================================
 
     "relatorios.html": async () => {
 
@@ -179,24 +242,32 @@ const inicializadoresPaginas = {
 // ATUALIZAR CABEÇALHO
 // =====================================================
 
-function atualizarCabecalho(pagina) {
+function atualizarCabecalho(
+    pagina
+) {
 
     const configuracao =
         configuracoesPaginas[pagina] ||
         {
-            titulo: "Instituto Solidare",
-            descricao: "Sistema de gestão."
+            titulo:
+                "Instituto Solidare",
+
+            descricao:
+                "Sistema de gestão."
         };
+
 
     const tituloPagina =
         document.getElementById(
             "tituloPagina"
         );
 
+
     const descricaoPagina =
         document.getElementById(
             "descricaoPagina"
         );
+
 
     const breadcrumbPagina =
         document.getElementById(
@@ -245,6 +316,7 @@ async function executarInicializadorDaPagina(
     const inicializador =
         inicializadoresPaginas[pagina];
 
+
     if (!inicializador) {
 
         console.log(
@@ -254,6 +326,7 @@ async function executarInicializadorDaPagina(
         return;
 
     }
+
 
     try {
 
@@ -277,20 +350,25 @@ async function executarInicializadorDaPagina(
 // REMOVER SCRIPTS DO HTML CARREGADO
 // =====================================================
 
-function removerScriptsDoHtml(html) {
+function removerScriptsDoHtml(
+    html
+) {
 
     const template =
         document.createElement(
             "template"
         );
 
+
     template.innerHTML =
         html;
+
 
     const scripts =
         template.content.querySelectorAll(
             "script"
         );
+
 
     scripts.forEach(
         (script) => {
@@ -299,6 +377,7 @@ function removerScriptsDoHtml(html) {
 
         }
     );
+
 
     return template.innerHTML;
 
@@ -318,6 +397,7 @@ function marcarMenuAtivo(
             ".menu-link"
         );
 
+
     links.forEach(
         (link) => {
 
@@ -327,6 +407,7 @@ function marcarMenuAtivo(
 
         }
     );
+
 
     if (linkSelecionado) {
 
@@ -358,14 +439,33 @@ function encontrarLinkDaPagina(
 // ESCAPAR HTML
 // =====================================================
 
-function escaparHtml(valor) {
+function escaparHtml(
+    valor
+) {
 
-    return String(valor ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+    return String(
+        valor ?? ""
+    )
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
 
 }
 
@@ -382,7 +482,9 @@ function animarConteudo(
         "pagina-entrando"
     );
 
+
     void container.offsetWidth;
+
 
     container.classList.add(
         "pagina-entrando"
@@ -395,10 +497,15 @@ function animarConteudo(
 // CONVERTER PÁGINA EM HASH
 // =====================================================
 
-function paginaParaHash(pagina) {
+function paginaParaHash(
+    pagina
+) {
 
     return pagina
-        .replace(".html", "")
+        .replace(
+            ".html",
+            ""
+        )
         .trim();
 
 }
@@ -412,12 +519,19 @@ function hashParaPagina() {
 
     const hash =
         window.location.hash
-            .replace("#", "")
+            .replace(
+                "#",
+                ""
+            )
             .trim();
 
+
     if (!hash) {
+
         return null;
+
     }
+
 
     return `${hash}.html`;
 
@@ -437,9 +551,13 @@ function paginaPermitidaNoMenu(
             pagina
         );
 
+
     if (!link) {
+
         return false;
+
     }
+
 
     return !link.hidden;
 
@@ -460,8 +578,10 @@ function atualizarUrl(
             pagina
         );
 
+
     const novaUrl =
         `${window.location.pathname}${window.location.search}#${hash}`;
+
 
     if (substituir) {
 
@@ -476,6 +596,7 @@ function atualizarUrl(
         return;
 
     }
+
 
     window.history.pushState(
         {
@@ -507,6 +628,7 @@ async function carregarPagina(
             "conteudo"
         );
 
+
     if (!conteudo) {
 
         console.error(
@@ -516,6 +638,7 @@ async function carregarPagina(
         return false;
 
     }
+
 
     if (!pagina) {
 
@@ -545,6 +668,7 @@ async function carregarPagina(
         linkAtivo
     );
 
+
     atualizarCabecalho(
         pagina
     );
@@ -570,6 +694,7 @@ async function carregarPagina(
                 }
             );
 
+
         if (!resposta.ok) {
 
             throw new Error(
@@ -581,6 +706,7 @@ async function carregarPagina(
 
         const html =
             await resposta.text();
+
 
         const htmlSemScripts =
             removerScriptsDoHtml(
@@ -597,17 +723,22 @@ async function carregarPagina(
         );
 
 
-        /*
-         * Depois que o HTML foi inserido,
-         * executamos a função responsável
-         * por inicializar a página.
-         */
+        // =============================================
+        // INICIALIZAR PÁGINA
+        // =============================================
+
         await executarInicializadorDaPagina(
             pagina
         );
 
 
-        if (!opcoes.ignorarHistorico) {
+        // =============================================
+        // HISTÓRICO
+        // =============================================
+
+        if (
+            !opcoes.ignorarHistorico
+        ) {
 
             atualizarUrl(
                 pagina,
@@ -618,7 +749,9 @@ async function carregarPagina(
 
         }
 
+
         return true;
+
 
     } catch (erro) {
 
@@ -642,7 +775,9 @@ async function carregarPagina(
                 </h2>
 
                 <p>
-                    ${escaparHtml(erro.message)}
+                    ${escaparHtml(
+                        erro.message
+                    )}
                 </p>
 
                 <button
@@ -650,9 +785,13 @@ async function carregarPagina(
                     class="botao-tentar-novamente"
                     data-tentar-novamente
                 >
-                    <i class="fa-solid fa-rotate-right"></i>
+
+                    <i
+                        class="fa-solid fa-rotate-right"
+                    ></i>
 
                     Tentar novamente
+
                 </button>
 
             </section>
@@ -666,7 +805,9 @@ async function carregarPagina(
             );
 
 
-        if (botaoTentarNovamente) {
+        if (
+            botaoTentarNovamente
+        ) {
 
             botaoTentarNovamente.addEventListener(
                 "click",
@@ -681,6 +822,7 @@ async function carregarPagina(
             );
 
         }
+
 
         return false;
 
@@ -700,6 +842,7 @@ function configurarMenu() {
             ".menu-link[data-pagina]"
         );
 
+
     links.forEach(
         (link) => {
 
@@ -709,12 +852,17 @@ function configurarMenu() {
 
                     event.preventDefault();
 
+
                     const pagina =
                         link.dataset.pagina;
 
+
                     if (!pagina) {
+
                         return;
+
                     }
+
 
                     await carregarPagina(
                         pagina,
@@ -741,9 +889,13 @@ function configurarBreadcrumb() {
             "breadcrumbInicio"
         );
 
+
     if (!breadcrumbInicio) {
+
         return;
+
     }
+
 
     breadcrumbInicio.addEventListener(
         "click",
@@ -753,6 +905,7 @@ function configurarBreadcrumb() {
                 encontrarLinkDaPagina(
                     "home.html"
                 );
+
 
             await carregarPagina(
                 "home.html",
@@ -780,6 +933,7 @@ function configurarHistorico() {
                 hashParaPagina() ||
                 "home.html";
 
+
             if (
                 !paginaPermitidaNoMenu(
                     pagina
@@ -791,15 +945,20 @@ function configurarHistorico() {
 
             }
 
+
             await carregarPagina(
+
                 pagina,
+
                 encontrarLinkDaPagina(
                     pagina
                 ),
+
                 {
                     ignorarHistorico:
                         true
                 }
+
             );
 
         }
@@ -830,10 +989,13 @@ function inicializarRouter() {
 function obterPaginaAtual() {
 
     return (
+
         sessionStorage.getItem(
             CHAVE_PAGINA_ATUAL
         ) ||
+
         "home.html"
+
     );
 
 }
@@ -845,6 +1007,7 @@ function obterPaginaAtual() {
 
 window.carregarPagina =
     carregarPagina;
+
 
 window.obterPaginaAtual =
     obterPaginaAtual;

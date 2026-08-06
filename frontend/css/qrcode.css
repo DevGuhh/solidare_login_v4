@@ -1,0 +1,520 @@
+/* =====================================================
+   QR CODES
+   ===================================================== */
+
+.pagina-qrcode {
+  width: 100%;
+}
+
+/* =====================================================
+   CABEÇALHO
+   ===================================================== */
+
+.qrcode-cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.qrcode-cabecalho h1 {
+  margin: 0 0 6px;
+  font-size: 28px;
+}
+
+.qrcode-cabecalho p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* =====================================================
+   BOTÃO GERAR
+   ===================================================== */
+
+.botao-gerar-qrcode {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  padding: 12px 18px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: #2563eb;
+  color: #ffffff;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.botao-gerar-qrcode:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+/* =====================================================
+   CARDS
+   ===================================================== */
+
+.qrcode-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  gap: 20px;
+
+  margin-bottom: 28px;
+}
+
+.qrcode-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  padding: 20px;
+
+  background: #ffffff;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.qrcode-card-icone {
+  width: 48px;
+  height: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+
+  background: #eff6ff;
+  color: #2563eb;
+
+  font-size: 20px;
+}
+
+.qrcode-card span {
+  display: block;
+
+  margin-bottom: 4px;
+
+  color: #6b7280;
+
+  font-size: 13px;
+}
+
+.qrcode-card strong {
+  display: block;
+
+  color: #111827;
+
+  font-size: 24px;
+}
+
+/* =====================================================
+   FILTROS
+   ===================================================== */
+
+.qrcode-filtros {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  margin-bottom: 20px;
+}
+
+.qrcode-pesquisa {
+  position: relative;
+
+  flex: 1;
+}
+
+.qrcode-pesquisa i {
+  position: absolute;
+
+  left: 14px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  color: #9ca3af;
+}
+
+.qrcode-pesquisa input {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  padding: 12px 14px 12px 40px;
+
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+
+  outline: none;
+
+  background: #ffffff;
+
+  font-size: 14px;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.qrcode-pesquisa input:focus {
+  border-color: #2563eb;
+
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.qrcode-filtro-tipo {
+  min-width: 190px;
+
+  padding: 12px 14px;
+
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  color: #374151;
+
+  font-size: 14px;
+
+  outline: none;
+
+  cursor: pointer;
+}
+
+/* =====================================================
+   TABELA
+   ===================================================== */
+
+.qrcode-tabela-container {
+  overflow-x: auto;
+
+  background: #ffffff;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.qrcode-tabela {
+  width: 100%;
+
+  border-collapse: collapse;
+
+  min-width: 800px;
+}
+
+.qrcode-tabela th {
+  padding: 14px 16px;
+
+  background: #f9fafb;
+
+  border-bottom: 1px solid #e5e7eb;
+
+  color: #6b7280;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  text-align: left;
+
+  text-transform: uppercase;
+}
+
+.qrcode-tabela td {
+  padding: 16px;
+
+  border-bottom: 1px solid #f3f4f6;
+
+  color: #374151;
+
+  font-size: 14px;
+}
+
+.qrcode-tabela tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.qrcode-tabela tbody tr:hover {
+  background: #f9fafb;
+}
+
+/* =====================================================
+   TABELA VAZIA
+   ===================================================== */
+
+.qrcode-tabela-vazia {
+  height: 220px;
+
+  text-align: center !important;
+
+  color: #9ca3af !important;
+}
+
+.qrcode-tabela-vazia i {
+  display: block;
+
+  margin-bottom: 12px;
+
+  font-size: 40px;
+
+  color: #d1d5db;
+}
+
+.qrcode-tabela-vazia span {
+  font-size: 14px;
+}
+
+/* =====================================================
+   RESPONSIVIDADE
+   ===================================================== */
+
+@media (max-width: 900px) {
+  .qrcode-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .qrcode-cabecalho {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .botao-gerar-qrcode {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .qrcode-filtros {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .qrcode-filtro-tipo {
+    width: 100%;
+  }
+}
+
+/* =====================================================
+   MODAL QR CODE
+   ===================================================== */
+
+.qrcode-modal-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 1000;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.qrcode-modal-overlay[hidden] {
+  display: none;
+}
+
+.qrcode-modal {
+  width: 100%;
+  max-width: 520px;
+
+  background: #ffffff;
+
+  border-radius: 14px;
+
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+
+  overflow: hidden;
+}
+
+.qrcode-modal-cabecalho {
+  display: flex;
+
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding: 24px;
+
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.qrcode-modal-cabecalho h2 {
+  margin: 0 0 6px;
+
+  color: #111827;
+
+  font-size: 20px;
+}
+
+.qrcode-modal-cabecalho p {
+  margin: 0;
+
+  color: #6b7280;
+
+  font-size: 13px;
+}
+
+.qrcode-modal-fechar {
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: #6b7280;
+
+  cursor: pointer;
+
+  font-size: 18px;
+}
+
+.qrcode-modal-fechar:hover {
+  background: #f3f4f6;
+
+  color: #111827;
+}
+
+.qrcode-modal-corpo {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 20px;
+
+  padding: 24px;
+}
+
+.qrcode-campo {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 8px;
+}
+
+.qrcode-campo label {
+  color: #374151;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.qrcode-campo input,
+.qrcode-campo select {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  padding: 12px 14px;
+
+  border: 1px solid #d1d5db;
+
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  color: #374151;
+
+  font-size: 14px;
+
+  outline: none;
+}
+
+.qrcode-campo input:focus,
+.qrcode-campo select:focus {
+  border-color: #2563eb;
+
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.qrcode-modal-rodape {
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 12px;
+
+  padding: 18px 24px;
+
+  border-top: 1px solid #e5e7eb;
+
+  background: #f9fafb;
+}
+
+.qrcode-botao-cancelar,
+.qrcode-botao-confirmar {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  padding: 11px 16px;
+
+  border-radius: 8px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.qrcode-botao-cancelar {
+  border: 1px solid #d1d5db;
+
+  background: #ffffff;
+
+  color: #374151;
+}
+
+.qrcode-botao-cancelar:hover {
+  background: #f3f4f6;
+}
+
+.qrcode-botao-confirmar {
+  border: none;
+
+  background: #2563eb;
+
+  color: #ffffff;
+}
+
+.qrcode-botao-confirmar:hover {
+  background: #1d4ed8;
+}

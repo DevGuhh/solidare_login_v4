@@ -80,6 +80,7 @@ model Beneficiario {
   composicaoFamiliar     Int                 @default(1)
   instituicao            InstituicaoParceira @relation(fields: [instituicaoId], references: [id])
   doacoes                Doacao[]
+  qrcodes                QRCode[]
 
   @@index([instituicaoId])
   @@map("beneficiarios")
@@ -109,6 +110,21 @@ model Doacao {
   @@index([dataDoacao])
   @@index([instituicaoId, dataDoacao])
   @@map("doacoes")
+}
+
+model QRCode {
+  id             Int      @id @default(autoincrement())
+  codigo         String   @unique
+  beneficiarioId Int
+  ativo          Boolean  @default(true)
+  criadoEm       DateTime @default(now())
+  atualizadoEm   DateTime @updatedAt
+
+  beneficiario Beneficiario @relation(fields: [beneficiarioId], references: [id])
+
+  @@index([beneficiarioId])
+  @@index([ativo])
+  @@map("qrcodes")
 }
 
 enum RoleUsuario {

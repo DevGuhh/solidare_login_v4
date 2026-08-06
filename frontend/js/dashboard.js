@@ -46,7 +46,7 @@ const paginasPermitidasPorPerfil = {
         "home.html",
         "beneficiarios.html",
         "instituicoes.html",
-        "rfid.html",
+        "qrcode.html",
         "doacoes.html",
         "relatorios.html"
     ],
@@ -54,7 +54,7 @@ const paginasPermitidasPorPerfil = {
     INSTITUICAO: [
         "home.html",
         "beneficiarios.html",
-        "rfid.html",
+        "qrcode.html",
         "doacoes.html"
     ]
 

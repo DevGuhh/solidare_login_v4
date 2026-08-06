@@ -11,6 +11,7 @@ import authRoutes from "./routes/authRoutes.js";
 import instituicoesRoutes from "./routes/instituicoesRoutes.js";
 import beneficariosRoutes from "./routes/beneficariosRoutes.js";
 import doacoesRoutes from "./routes/doacoesRoutes.js";
+import qrcodeRoutes from "./routes/qrcodeRoutes.js";
 
 // Carrega as variáveis de ambiente
 config();
@@ -57,6 +58,7 @@ app.use("/auth", authRoutes);
 app.use("/", instituicoesRoutes);
 app.use("/", beneficariosRoutes);
 app.use("/", doacoesRoutes);
+app.use("/qrcodes", qrcodeRoutes);
 
 // Porta do servidor
 const PORT = process.env.PORT || 3000;
