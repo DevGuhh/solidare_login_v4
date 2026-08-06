@@ -1,488 +1,262 @@
 import { prisma } from "../config/db.js";
 import crypto from "node:crypto";
 
-
-// =====================================================
-// GERAR CÓDIGO ÚNICO
-// =====================================================
-
 function gerarCodigoQRCode() {
+  const parte = crypto.randomBytes(6).toString("hex").toUpperCase();
 
-    const parte =
-        crypto
-            .randomBytes(6)
-            .toString("hex")
-            .toUpperCase();
-
-    return `SOL-${parte}`;
-
+  return `SOL-${parte}`;
 }
 
-
-// =====================================================
-// LISTAR QR CODES
-// =====================================================
-
-export async function listarQRCodes(req, res) {
-
+class QrCodeController {
+  async listarQRCodes(req, res) {
     try {
+      const qrcodes = await prisma.qRCode.findMany({
+        include: {
+          beneficiario: {
+            select: {
+              id: true,
+              nomeCompleto: true,
+              cpf: true,
+            },
+          },
+        },
 
-        const qrcodes =
-            await prisma.qRCode.findMany({
+        orderBy: {
+          criadoEm: "desc",
+        },
+      });
 
-                include: {
+      return res.status(200).json({
+        ok: true,
 
-                    beneficiario: {
-
-                        select: {
-
-                            id: true,
-                            nomeCompleto: true,
-                            cpf: true
-
-                        }
-
-                    }
-
-                },
-
-                orderBy: {
-
-                    criadoEm: "desc"
-
-                }
-
-            });
-
-
-        return res.status(200).json({
-
-            ok: true,
-
-            data: qrcodes
-
-        });
-
-
+        data: qrcodes,
+      });
     } catch (erro) {
+      console.error("Erro ao listar QR Codes:", erro);
 
-        console.error(
-            "Erro ao listar QR Codes:",
-            erro
-        );
+      return res.status(500).json({
+        ok: false,
 
+        message: "Erro interno ao listar QR Codes.",
 
-        return res.status(500).json({
-
-            ok: false,
-
-            message:
-                "Erro interno ao listar QR Codes.",
-
-            error:
-                erro.message
-
-        });
-
+        error: erro.message,
+      });
     }
-
-}
-
-
-// =====================================================
-// GERAR QR CODE PARA BENEFICIÁRIO
-// =====================================================
-
-export async function criarQRCode(req, res) {
-
+  }
+  async criarQRCode(req, res) {
     try {
+      const { beneficiarioId } = req.body;
 
-        const {
-            beneficiarioId
-        } = req.body;
+      if (!beneficiarioId) {
+        return res.status(400).json({
+          ok: false,
 
-
-        // ---------------------------------------------
-        // VALIDAR BENEFICIÁRIO
-        // ---------------------------------------------
-
-        if (!beneficiarioId) {
-
-            return res.status(400).json({
-
-                ok: false,
-
-                message:
-                    "O beneficiarioId é obrigatório."
-
-            });
-
-        }
-
-
-        const id =
-            Number(beneficiarioId);
-
-
-        if (!Number.isInteger(id)) {
-
-            return res.status(400).json({
-
-                ok: false,
-
-                message:
-                    "O beneficiarioId deve ser um número inteiro."
-
-            });
-
-        }
-
-
-        // ---------------------------------------------
-        // BUSCAR BENEFICIÁRIO
-        // ---------------------------------------------
-
-        const beneficiario =
-            await prisma.beneficiario.findUnique({
-
-                where: {
-
-                    id
-
-                }
-
-            });
-
-
-        if (!beneficiario) {
-
-            return res.status(404).json({
-
-                ok: false,
-
-                message:
-                    "Beneficiário não encontrado."
-
-            });
-
-        }
-
-
-        // ---------------------------------------------
-        // VERIFICAR QR CODE ATIVO
-        // ---------------------------------------------
-
-        const qrCodeAtivo =
-            await prisma.qRCode.findFirst({
-
-                where: {
-
-                    beneficiarioId: id,
-
-                    ativo: true
-
-                }
-
-            });
-
-
-        if (qrCodeAtivo) {
-
-            return res.status(409).json({
-
-                ok: false,
-
-                message:
-                    "Este beneficiário já possui um QR Code ativo.",
-
-                data: {
-
-                    qrCode: qrCodeAtivo
-
-                }
-
-            });
-
-        }
-
-
-        // ---------------------------------------------
-        // GERAR CÓDIGO
-        // ---------------------------------------------
-
-        const codigo =
-            gerarCodigoQRCode();
-
-
-        // ---------------------------------------------
-        // CRIAR QR CODE
-        // ---------------------------------------------
-
-        const qrCode =
-            await prisma.qRCode.create({
-
-                data: {
-
-                    codigo,
-
-                    beneficiarioId: id,
-
-                    ativo: true
-
-                },
-
-                include: {
-
-                    beneficiario: {
-
-                        select: {
-
-                            id: true,
-
-                            nomeCompleto: true,
-
-                            cpf: true
-
-                        }
-
-                    }
-
-                }
-
-            });
-
-
-        return res.status(201).json({
-
-            ok: true,
-
-            message:
-                "QR Code criado com sucesso.",
-
-            data: qrCode
-
+          message: "O beneficiarioId é obrigatório.",
         });
+      }
 
+      const id = Number(beneficiarioId);
 
+      if (!Number.isInteger(id)) {
+        return res.status(400).json({
+          ok: false,
+
+          message: "O beneficiarioId deve ser um número inteiro.",
+        });
+      }
+
+      const beneficiario = await prisma.beneficiario.findUnique({
+        where: {
+          id,
+        },
+      });
+
+      if (!beneficiario) {
+        return res.status(404).json({
+          ok: false,
+
+          message: "Beneficiário não encontrado.",
+        });
+      }
+
+      // ---------------------------------------------
+      // VERIFICAR QR CODE ATIVO
+      // ---------------------------------------------
+
+      const qrCodeAtivo = await prisma.qRCode.findFirst({
+        where: {
+          beneficiarioId: id,
+
+          ativo: true,
+        },
+      });
+
+      if (qrCodeAtivo) {
+        return res.status(409).json({
+          ok: false,
+
+          message: "Este beneficiário já possui um QR Code ativo.",
+
+          data: {
+            qrCode: qrCodeAtivo,
+          },
+        });
+      }
+
+      // ---------------------------------------------
+      // GERAR CÓDIGO
+      // ---------------------------------------------
+
+      const codigo = gerarCodigoQRCode();
+
+      // ---------------------------------------------
+      // CRIAR QR CODE
+      // ---------------------------------------------
+
+      const qrCode = await prisma.qRCode.create({
+        data: {
+          codigo,
+
+          beneficiarioId: id,
+
+          ativo: true,
+        },
+
+        include: {
+          beneficiario: {
+            select: {
+              id: true,
+
+              nomeCompleto: true,
+
+              cpf: true,
+            },
+          },
+        },
+      });
+
+      return res.status(201).json({
+        ok: true,
+
+        message: "QR Code criado com sucesso.",
+
+        data: qrCode,
+      });
     } catch (erro) {
+      console.error("Erro ao criar QR Code:", erro);
 
-        console.error(
-            "Erro ao criar QR Code:",
-            erro
-        );
+      return res.status(500).json({
+        ok: false,
 
+        message: "Erro interno ao criar QR Code.",
 
-        return res.status(500).json({
-
-            ok: false,
-
-            message:
-                "Erro interno ao criar QR Code.",
-
-            error:
-                erro.message
-
-        });
-
+        error: erro.message,
+      });
     }
-
-}
-
-
-// =====================================================
-// BUSCAR QR CODE PELO CÓDIGO
-// =====================================================
-
-export async function buscarQRCode(req, res) {
-
+  }
+  async buscarQRCode(req, res) {
     try {
+      const { codigo } = req.params;
 
-        const {
-            codigo
-        } = req.params;
+      const qrCode = await prisma.qRCode.findUnique({
+        where: {
+          codigo,
+        },
 
+        include: {
+          beneficiario: {
+            select: {
+              id: true,
+              nomeCompleto: true,
+              cpf: true,
+              telefonePrincipal: true,
+              email: true,
+              ativo: true,
+            },
+          },
+        },
+      });
 
-        const qrCode =
-            await prisma.qRCode.findUnique({
+      if (!qrCode) {
+        return res.status(404).json({
+          ok: false,
 
-                where: {
-
-                    codigo
-
-                },
-
-                include: {
-
-                    beneficiario: {
-
-                        select: {
-
-                            id: true,
-                            nomeCompleto: true,
-                            cpf: true,
-                            telefonePrincipal: true,
-                            email: true,
-                            ativo: true
-
-                        }
-
-                    }
-
-                }
-
-            });
-
-
-        if (!qrCode) {
-
-            return res.status(404).json({
-
-                ok: false,
-
-                message:
-                    "QR Code não encontrado."
-
-            });
-
-        }
-
-
-        return res.status(200).json({
-
-            ok: true,
-
-            data: qrCode
-
+          message: "QR Code não encontrado.",
         });
+      }
 
+      return res.status(200).json({
+        ok: true,
 
+        data: qrCode,
+      });
     } catch (erro) {
+      console.error("Erro ao buscar QR Code:", erro);
 
-        console.error(
-            "Erro ao buscar QR Code:",
-            erro
-        );
+      return res.status(500).json({
+        ok: false,
 
+        message: "Erro interno ao buscar QR Code.",
 
-        return res.status(500).json({
-
-            ok: false,
-
-            message:
-                "Erro interno ao buscar QR Code.",
-
-            error:
-                erro.message
-
-        });
-
+        error: erro.message,
+      });
     }
-
-}
-
-
-// =====================================================
-// DESATIVAR QR CODE
-// =====================================================
-
-export async function desativarQRCode(req, res) {
-
+  }
+  async desativarQRCode(req, res) {
     try {
+      const id = Number(req.params.id);
 
-        const id =
-            Number(req.params.id);
+      if (!Number.isInteger(id)) {
+        return res.status(400).json({
+          ok: false,
 
-
-        if (!Number.isInteger(id)) {
-
-            return res.status(400).json({
-
-                ok: false,
-
-                message:
-                    "ID do QR Code inválido."
-
-            });
-
-        }
-
-
-        const qrCode =
-            await prisma.qRCode.findUnique({
-
-                where: {
-
-                    id
-
-                }
-
-            });
-
-
-        if (!qrCode) {
-
-            return res.status(404).json({
-
-                ok: false,
-
-                message:
-                    "QR Code não encontrado."
-
-            });
-
-        }
-
-
-        const atualizado =
-            await prisma.qRCode.update({
-
-                where: {
-
-                    id
-
-                },
-
-                data: {
-
-                    ativo: false
-
-                }
-
-            });
-
-
-        return res.status(200).json({
-
-            ok: true,
-
-            message:
-                "QR Code desativado com sucesso.",
-
-            data: atualizado
-
+          message: "ID do QR Code inválido.",
         });
+      }
 
+      const qrCode = await prisma.qRCode.findUnique({
+        where: {
+          id,
+        },
+      });
 
+      if (!qrCode) {
+        return res.status(404).json({
+          ok: false,
+
+          message: "QR Code não encontrado.",
+        });
+      }
+
+      const atualizado = await prisma.qRCode.update({
+        where: {
+          id,
+        },
+
+        data: {
+          ativo: false,
+        },
+      });
+
+      return res.status(200).json({
+        ok: true,
+
+        message: "QR Code desativado com sucesso.",
+
+        data: atualizado,
+      });
     } catch (erro) {
+      console.error("Erro ao desativar QR Code:", erro);
 
-        console.error(
-            "Erro ao desativar QR Code:",
-            erro
-        );
+      return res.status(500).json({
+        ok: false,
 
+        message: "Erro interno ao desativar QR Code.",
 
-        return res.status(500).json({
-
-            ok: false,
-
-            message:
-                "Erro interno ao desativar QR Code.",
-
-            error:
-                erro.message
-
-        });
-
+        error: erro.message,
+      });
     }
-
+  }
 }
+
+export default new QrCodeController()
