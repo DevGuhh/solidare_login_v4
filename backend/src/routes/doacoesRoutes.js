@@ -16,6 +16,6 @@ router.patch(
   "/:id/comprovante",
   DoacoesController.alterarComprovanteDoacao,
 );
-router.delete("/doacoes/:id", DoacoesController.cancelarDoacao);
+router.delete("/:id", DoacoesController.cancelarDoacao);
 
 export default router;

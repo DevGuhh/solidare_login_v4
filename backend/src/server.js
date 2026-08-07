@@ -29,6 +29,7 @@ const app = express();
 }));*/
 const allowedOrigins = [
   "https://solidare-login-v4.vercel.app",
+  "https://solidare-system-v1.vercel.app",
   "https://solidare-login-v4-jihy0l9fa-devguhhs-projects.vercel.app",
   "http://127.0.0.1:5500",
 ];
