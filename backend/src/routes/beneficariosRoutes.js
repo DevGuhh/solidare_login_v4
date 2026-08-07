@@ -8,8 +8,7 @@ router.post("/", protect, beneficiarioController.cadastrarBeneficiario)
 router.get("/", protect, beneficiarioController.listarBeneficiarios)
 router.get("/:id", protect, beneficiarioController.detalheDoBeneficiario)
 router.put("/:id", protect, beneficiarioController.atualizarDadosBeneficiario)
-router.patch("/:id", protect, beneficiarioController.atualizarStatus)
-router.delete("/:id", protect, beneficiarioController.removeBeneficiario)
+router.patch("/:id", protect, beneficiarioController.desativarBeneficiario)
 
 export default router;
 

@@ -184,11 +184,7 @@ class InstituicaoController {
               telefone: data.telefone,
 
               // Mantém o campo legado "endereco" preenchido.
-              endereco: [
-                data.logradouro,
-                data.numero,
-                data.complemento,
-              ]
+              endereco: [data.logradouro, data.numero, data.complemento]
                 .filter(Boolean)
                 .join(", "),
 
@@ -327,36 +323,24 @@ class InstituicaoController {
         data.complemento !== undefined
       ) {
         const logradouro =
-          data.logradouro ??
-          instituicaoExistente.logradouro ??
-          "";
+          data.logradouro ?? instituicaoExistente.logradouro ?? "";
 
-        const numero =
-          data.numero ??
-          instituicaoExistente.numero ??
-          "";
+        const numero = data.numero ?? instituicaoExistente.numero ?? "";
 
         const complemento =
-          data.complemento ??
-          instituicaoExistente.complemento ??
-          "";
+          data.complemento ?? instituicaoExistente.complemento ?? "";
 
-        dadosAtualizacao.endereco = [
-          logradouro,
-          numero,
-          complemento,
-        ]
+        dadosAtualizacao.endereco = [logradouro, numero, complemento]
           .filter(Boolean)
           .join(", ");
       }
 
-      const instituicaoAtualizada =
-        await prisma.instituicaoParceira.update({
-          where: {
-            id,
-          },
-          data: dadosAtualizacao,
-        });
+      const instituicaoAtualizada = await prisma.instituicaoParceira.update({
+        where: {
+          id,
+        },
+        data: dadosAtualizacao,
+      });
 
       return res.status(200).json({
         mensagem: "Instituição atualizada com sucesso.",
@@ -399,21 +383,18 @@ class InstituicaoController {
     }
   }
 
-  async removeInstituicao(req, res) {
+  async desativarInstituicao(req, res) {
     const id = Number(req.params.id);
 
     if (!idValido(id)) {
       return res.status(400).json({
-        error: "ID inválido. Informe um número inteiro positivo.",
+        error: "ID inválido.",
       });
     }
 
     try {
-      const instituicao = await prisma.instituicaoParceira.findFirst({
-        where: {
-          id,
-          deletedAt: null,
-        },
+      const instituicao = await prisma.instituicaoParceira.findUnique({
+        where: { id },
       });
 
       if (!instituicao) {
@@ -422,19 +403,25 @@ class InstituicaoController {
         });
       }
 
-      await prisma.instituicaoParceira.update({
-        where: {
-          id,
-        },
-        data: {
-          deletedAt: new Date(),
-          ativa: false,
-        },
+      const data = atualizarInstituicaoSchema.parse(req.body);
+      const { ativa } = data;
+
+      // Garante que o status seja booleano.
+      if (typeof ativo !== "boolean") {
+        return res.status(400).json({
+          error: "Status deve ser true ou false",
+        });
+      }
+
+      const instituicaoAtualizada = await prisma.instituicaoParceira.update({
+        where: { id },
+        data: { ativa },
       });
 
       return res.status(200).json({
         mensagem: "Instituição removida com sucesso.",
       });
+      
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&

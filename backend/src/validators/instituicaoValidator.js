@@ -79,6 +79,10 @@ export const criarInstituicaoSchema = z.object({
     error: "Selecione o estado."
   }),
 
+  ativa: z
+    .boolean()
+    .default(true),
+
   statusOk: z
   .enum(["OK", "PENDENTE"], {
     error: "Status deve ser 'OK' ou 'PENDENTE'."

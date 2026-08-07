@@ -16,6 +16,12 @@ router.get(
   authorize("ADMIN"),
   instituicoesController.detalheDaInstituicao,
 );
+router.get(
+  "/:id/beneficiarios",
+  protect,
+  authorize("ADMIN"),
+  instituicoesController.listarBeneficiariosInstituicao,
+);
 router.post(
   "/",
   protect,
@@ -34,11 +40,12 @@ router.patch(
   authorize("ADMIN"),
   instituicoesController.atualizaStatus,
 );
-router.delete(
+router.patch(
   "/:id",
   protect,
   authorize("ADMIN"),
-  instituicoesController.removeInstituicao,
+  instituicoesController.desativarInstituicao,
 );
+
 
 export default router;

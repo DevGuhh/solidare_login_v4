@@ -233,7 +233,7 @@ class BeneficiarioController {
       });
     }
   }
-  async atualizarStatus(req, res) {
+  async desativarBeneficiario(req, res) {
     const id = Number(req.params.id);
 
     if (!Number.isInteger(id) || id <= 0) {
@@ -243,19 +243,14 @@ class BeneficiarioController {
     }
 
     try {
-      const where = {
-        id,
-        deletedAt: null,
-      };
+      const beneficiario = await prisma.beneficiario.findUnique({
+        where: { id },
+      });
 
       // Instituição só pode alterar status dos próprios beneficiários.
       if (req.user.role !== "ADMIN") {
         where.instituicaoId = req.user.instituicaoId;
       }
-
-      const beneficiario = await prisma.beneficiario.findFirst({
-        where,
-      });
 
       if (!beneficiario) {
         return res.status(404).json({
@@ -299,53 +294,6 @@ class BeneficiarioController {
 
       return res.status(500).json({
         error: "Erro interno do servidor",
-      });
-    }
-  }
-  async removeBeneficiario(req, res) {
-    const id = Number(req.params.id);
-
-    if (!Number.isInteger(id) || id <= 0) {
-      return res.status(400).json({
-        error: "ID inválido. Use um inteiro positivo",
-      });
-    }
-
-    try {
-      const where = {
-        id,
-        deletedAt: null,
-      };
-
-      // Instituição só pode remover seus próprios beneficiários.
-      if (req.user.role !== "ADMIN") {
-        where.instituicaoId = req.user.instituicaoId;
-      }
-
-      const beneficiario = await prisma.beneficiario.findFirst({
-        where,
-      });
-
-      if (!beneficiario) {
-        return res.status(404).json({
-          error: "Beneficiário não encontrado.",
-        });
-      }
-
-      // Soft delete: marca a data de exclusão.
-      await prisma.beneficiario.update({
-        where: { id },
-        data: {
-          deletedAt: new Date(),
-        },
-      });
-
-      return res.status(204).send();
-    } catch (error) {
-      console.error(`DELETE /beneficiarios/${req.params.id} error:`, error);
-
-      return res.status(500).json({
-        error: "Erro interno ao deletar beneficiário.",
       });
     }
   }
