@@ -406,20 +406,33 @@ class InstituicaoController {
       const data = atualizarInstituicaoSchema.parse(req.body);
       const { ativa } = data;
 
-      // Garante que o status seja booleano.
-      if (typeof ativo !== "boolean") {
+      // O endpoint PATCH /instituicoes/:id altera apenas a situação ativa/inativa.
+      if (typeof ativa !== "boolean") {
         return res.status(400).json({
-          error: "Status deve ser true ou false",
+          error: "O campo ativa deve ser true ou false.",
         });
       }
 
-      const instituicaoAtualizada = await prisma.instituicaoParceira.update({
-        where: { id },
-        data: { ativa },
+      // Mantém a instituição e o usuário vinculado com a mesma situação.
+      const instituicaoAtualizada = await prisma.$transaction(async (tx) => {
+        const atualizada = await tx.instituicaoParceira.update({
+          where: { id },
+          data: { ativa },
+        });
+
+        await tx.usuario.updateMany({
+          where: { instituicaoId: id },
+          data: { ativo: ativa },
+        });
+
+        return atualizada;
       });
 
       return res.status(200).json({
-        mensagem: "Instituição removida com sucesso.",
+        mensagem: ativa
+          ? "Instituição ativada com sucesso."
+          : "Instituição inativada com sucesso.",
+        instituicao: instituicaoAtualizada,
       });
       
     } catch (error) {
