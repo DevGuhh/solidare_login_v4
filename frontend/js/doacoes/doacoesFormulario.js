@@ -477,11 +477,17 @@ export function preencherQuantidadePorComposicaoFamiliar(
                 ?.composicaoFamiliar
         );
 
-    campos.quantidade.value =
+    // 1 cesta básica atende até 4 pessoas.
+    // Math.ceil garante que grupos incompletos também recebam uma cesta.
+    // Ex.: 1-4 = 1 cesta, 5-8 = 2 cestas, 45 = 12 cestas.
+    const quantidadeCestas =
         Number.isInteger(composicaoFamiliar) &&
         composicaoFamiliar > 0
-            ? String(composicaoFamiliar)
-            : "1";
+            ? Math.ceil(composicaoFamiliar / 4)
+            : 1;
+
+    campos.quantidade.value =
+        String(quantidadeCestas);
 
     bloquearCampoQuantidade(campos.quantidade);
 
